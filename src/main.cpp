@@ -40,7 +40,7 @@ Adafruit_MLX90614 mlx = Adafruit_MLX90614();
 */
 void setup() {
   // setup serial
-  Serial.begin(115200, SERIAL_8N1);
+  Serial.begin(115200);
 
   setup_wifi();
 
