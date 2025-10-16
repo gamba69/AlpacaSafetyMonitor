@@ -3,6 +3,7 @@
 .vscode/c_cpp_properties.json
 .vscode/launch.json
 .vscode/ipch
+.vscode/extensions.json
 docs/api
 data/www/jsondata.device
 data/www/jsondata.server
