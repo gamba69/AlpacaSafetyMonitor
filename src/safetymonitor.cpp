@@ -1,7 +1,7 @@
 #include "safetymonitor.h"
 #include "meteo.h"
 /*
-Adafruit_BME280 bme;  // I2C
+Adafruit_BMP280 bmp;  // I2C
 Adafruit_MLX90614 mlx = Adafruit_MLX90614();
 */
 // todo: set update() to private and only run when needed
@@ -21,9 +21,9 @@ bool SafetyMonitor::begin()
 void SafetyMonitor::update(Meteo meteo, unsigned long measureDelay)
 {
   //  update meteo
-  temperature = meteo.bme_temperature;
-  humidity = meteo.bme_humidity;
-  pressure = meteo.bme_pressure;
+  temperature = meteo.bmp_temperature;
+  humidity = meteo.bmp_humidity;
+  pressure = meteo.bmp_pressure;
   dewpoint = meteo.dewpoint;
   tempsky = meteo.tempsky;
 

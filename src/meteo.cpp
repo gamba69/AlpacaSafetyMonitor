@@ -1,6 +1,6 @@
 #include "meteo.h"
 
-Adafruit_BME280 bme; // I2C
+Adafruit_BMP280 bmp; // I2C
 Adafruit_MLX90614 mlx = Adafruit_MLX90614();
 
 Meteo::Meteo(const std::string &newName) : Name(newName) {}
@@ -10,13 +10,13 @@ const std::string &Meteo::getName() const
   return Name;
 }
 
-void Meteo::setup_i2cmlxbme()
+void Meteo::setup_i2cmlxbmp()
 {
   Wire.end(); // Set I2C pinout
   Wire.setPins(SDApin, SCLpin);
   Wire.begin();
   mlx.begin(); // Initialize sensors
-  bme.begin(0x76);
+  bmp.begin();
 }
 
 #define sgn(x) ((x) < 0 ? -1 : ((x) > 0 ? 1 : 0))
@@ -89,19 +89,19 @@ float cb_snr_calc()
   return (10 * log10(s / n));
 }
 
-// Read through i2c bus mlx90614 and bme280 sensors
+// Read through i2c bus mlx90614 and bmp280 sensors
 
-void Meteo::update_i2cmlxbme(unsigned long measureDelay)
+void Meteo::update_i2cmlxbmp(unsigned long measureDelay)
 {
   Serial.print(F("# update meteo1 & safetymonitors\n"));
 
-  bme_temperature = bme.readTemperature();
-  bme_humidity = bme.readHumidity();
-  bme_pressure = bme.readPressure() / 100.0F;
+  bmp_temperature = bmp.readTemperature();
+  // bmp_humidity = bmp.readHumidity();
+  bmp_pressure = bmp.readPressure() / 100.0F;
   mlx_tempamb = mlx.readAmbientTempC();
   mlx_tempobj = mlx.readObjectTempC();
 
-  dewpoint = bme_temperature - (100 - bme_humidity) / 5.;
+  // dewpoint = bmp_temperature - (100 - bmp_humidity) / 5.;
   tempsky = tsky_calc(mlx_tempobj, mlx_tempamb);
   cb_add(tempsky); // add tempsky value to circular buffer and calculate  Turbulence (noise dB) / Seeing estimation
   noise_db = cb_noise_db_calc();

@@ -33,7 +33,7 @@ WiFiClient tcpClient;
 
 AlpacaServer alpacaServer("Alpaca_ESP32");
 /*
-Adafruit_BME280 bme;  // I2C
+Adafruit_BMP280 bmp;  // I2C
 Adafruit_MLX90614 mlx = Adafruit_MLX90614();
 */
 void setup()
@@ -63,14 +63,14 @@ void setup()
   // load settings
   alpacaServer.loadSettings();
 
-  meteo1.setup_i2cmlxbme();
+  meteo1.setup_i2cmlxbmp();
 }
 
 void loop()
 {
   if (millis() > lastTimeRan + measureDelay)
   { // read every measureDelay without blocking Webserver
-    meteo1.update_i2cmlxbme(measureDelay);
+    meteo1.update_i2cmlxbmp(measureDelay);
     safetymonitor[0].update(meteo1, measureDelay);
     observingconditions[0].update(meteo1, measureDelay);
     lastTimeRan = millis();

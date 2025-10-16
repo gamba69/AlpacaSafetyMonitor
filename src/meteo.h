@@ -1,10 +1,10 @@
 #pragma once
 #include <Arduino.h>
 #include "config.h"
-// mlx & bme
+// mlx & bmp
 #include <Wire.h>
 #include <Adafruit_MLX90614.h>
-#include <Adafruit_BME280.h>
+#include <Adafruit_BMP280.h>
 
 // Circular buffer functions
 #define CB_SIZE 24
@@ -22,17 +22,17 @@ class Meteo
 public:
     // attributes
     std::string Name;
-    float bme_temperature, bme_humidity, bme_pressure, mlx_tempamb, mlx_tempobj, tempsky, noise_db, dewpoint, cloudcover, skyquality, skybrightness;
+    float bmp_temperature, bmp_humidity, bmp_pressure, mlx_tempamb, mlx_tempobj, tempsky, noise_db, dewpoint, cloudcover, skyquality, skybrightness;
     // sensors
     // methods
-    void update_i2cmlxbme(unsigned long measureDelay);
+    void update_i2cmlxbmp(unsigned long measureDelay);
     Meteo(const std::string &newName); // constructor place
     // setters
     void setIssafe(bool value);
     // getters
     bool getIssafe() const;
     const std::string &getName() const;
-    void setup_i2cmlxbme();
+    void setup_i2cmlxbmp();
 };
 
 #endif

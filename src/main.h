@@ -20,6 +20,6 @@ static unsigned long lastTimeRan;         // a
 void setup_wifi();
 
 // module housekeeping
-// void update_i2cmlxbme(unsigned long measureDelay);
+// void update_i2cmlxbmp(unsigned long measureDelay);
 
 Meteo meteo1("AlpacaESP32");
