@@ -26,7 +26,7 @@
 #define PIN_DS1820 18
 
 // LEDS
-#define PIN_WIFI_LED 23
+#define PIN_WIFI_LED 21
 
 // Roof pinout
 #define ROOFpin 4

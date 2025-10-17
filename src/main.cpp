@@ -84,8 +84,7 @@ void setup_wifi()
   pinMode(PIN_WIFI_LED, OUTPUT);
 
   // setup wifi
-  Serial.print(F("\n# Starting WiFi"));
-  Serial.flush();
+  Serial.println(F("# Starting WiFi"));
 
   // DoubleResetDetector drd = DoubleResetDetector(DRD_TIMEOUT, DRD_ADDRESS);
   ESP_WiFiManager ESP_wifiManager(HOSTNAME);
