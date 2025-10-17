@@ -18,6 +18,7 @@ void ObservingConditions::update(Meteo meteo, unsigned long measureDelay)
     //  update meteo
     temperature = meteo.bmp_temperature;
     // humidity = meteo.bmp_humidity;
+    humidity = meteo.aht_humidity;
     pressure = meteo.bmp_pressure;
     dewpoint = meteo.dewpoint;
     tempsky = meteo.tempsky;

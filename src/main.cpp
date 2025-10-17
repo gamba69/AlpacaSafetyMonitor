@@ -33,8 +33,9 @@ WiFiClient tcpClient;
 
 AlpacaServer alpacaServer("Alpaca_ESP32");
 /*
-Adafruit_BMP280 bmp;  // I2C
 Adafruit_MLX90614 mlx = Adafruit_MLX90614();
+Adafruit_BMP280 bmp;
+Adafruit_AHTX0 aht;
 */
 void setup()
 {
@@ -63,16 +64,16 @@ void setup()
   // load settings
   alpacaServer.loadSettings();
 
-  meteo1.setup_i2cmlxbmp();
+  meteo.setup_i2c();
 }
 
 void loop()
 {
   if (millis() > lastTimeRan + measureDelay)
   { // read every measureDelay without blocking Webserver
-    meteo1.update_i2cmlxbmp(measureDelay);
-    safetymonitor[0].update(meteo1, measureDelay);
-    observingconditions[0].update(meteo1, measureDelay);
+    meteo.update_i2c(measureDelay);
+    safetymonitor[0].update(meteo, measureDelay);
+    observingconditions[0].update(meteo, measureDelay);
     lastTimeRan = millis();
   }
   delay(50);
@@ -84,6 +85,7 @@ void setup_wifi()
 
   // setup wifi
   Serial.print(F("\n# Starting WiFi"));
+  Serial.flush();
 
   // DoubleResetDetector drd = DoubleResetDetector(DRD_TIMEOUT, DRD_ADDRESS);
   ESP_WiFiManager ESP_wifiManager(HOSTNAME);

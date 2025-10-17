@@ -18,7 +18,9 @@
 #define ALPACA_UDP_PORT 32227
 #define ALPACA_TCP_PORT 80
 
-// MLX90614 sensor
-#define SDApin 22 // Pins at SDA=22 SCL=21. Change them as required
-#define SCLpin 21
-#define bmp_i2caddress 0x77
+// I2C Sensors
+#define I2C_SDA_PIN 5
+#define I2C_SCL_PIN 6
+#define I2C_MLX_ADDR 0x5A
+#define I2C_BMP_ADDR 0x77
+#define I2C_AHT_ADDR 0x38
