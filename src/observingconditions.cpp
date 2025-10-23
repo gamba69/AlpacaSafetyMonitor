@@ -5,16 +5,14 @@
 uint8_t ObservingConditions::_n_observingconditionss = 0;
 ObservingConditions *ObservingConditions::_observingconditions_array[4] = {nullptr, nullptr, nullptr, nullptr};
 
-bool ObservingConditions::begin()
-{
+bool ObservingConditions::begin() {
 
     // done
     _observingconditions_array[_observingconditions_index] = this;
     return true;
 }
 
-void ObservingConditions::update(Meteo meteo, unsigned long measureDelay)
-{
+void ObservingConditions::update(Meteo meteo, unsigned long measureDelay) {
     //  update meteo
     temperature = meteo.bmp_temperature;
     // humidity = meteo.bmp_humidity;
@@ -28,18 +26,15 @@ void ObservingConditions::update(Meteo meteo, unsigned long measureDelay)
     skybrightness = meteo.skybrightness;
 };
 
-void ObservingConditions::aReadJson(JsonObject &root)
-{
+void ObservingConditions::aReadJson(JsonObject &root) {
     AlpacaObservingConditions::aReadJson(root);
-    if (JsonObject obj_config = root[F("Configuration")])
-    {
+    if (JsonObject obj_config = root[F("Configuration")]) {
         _avgperiod = obj_config[F("Average Period")] | _avgperiod;
         _refresh = obj_config[F("Refresh Period")] | _refresh;
     }
 }
 
-void ObservingConditions::aWriteJson(JsonObject &root)
-{
+void ObservingConditions::aWriteJson(JsonObject &root) {
     AlpacaObservingConditions::aWriteJson(root);
     // read-only values marked with #
     JsonObject obj_config = root[F("Configuration")].to<JsonObject>();

@@ -1,11 +1,11 @@
 #pragma once
-#include <Arduino.h>
 #include "config.h"
+#include <Arduino.h>
 // I2C Sensors
-#include <Wire.h>
-#include <Adafruit_MLX90614.h>
-#include <Adafruit_BMP280.h>
 #include <Adafruit_AHTX0.h>
+#include <Adafruit_BMP280.h>
+#include <Adafruit_MLX90614.h>
+#include <Wire.h>
 
 // Circular buffer functions
 #define CB_SIZE 24
@@ -18,9 +18,8 @@ static float cb_rms = 0.0;
 #ifndef METEO_H
 #define METEO_H
 
-class Meteo
-{
-public:
+class Meteo {
+  public:
     // attributes
     std::string Name;
     float

@@ -1,12 +1,11 @@
 #pragma once
-#include <Arduino.h>
-#include "config.h"
 #include "AlpacaObservingConditions.h"
+#include "config.h"
 #include "meteo.h"
+#include <Arduino.h>
 
-class ObservingConditions : public AlpacaObservingConditions
-{
-private:
+class ObservingConditions : public AlpacaObservingConditions {
+  private:
     static uint8_t _n_observingconditionss;
     static ObservingConditions *_observingconditions_array[4];
     uint8_t _observingconditions_index;
@@ -16,7 +15,7 @@ private:
     float _avgperiod = 5;
     int _refresh = 0;
 
-public:
+  public:
     ObservingConditions() : AlpacaObservingConditions() { _observingconditions_index = _n_observingconditionss++; }
     bool begin();
     void update(Meteo meteo, unsigned long measureDelay);
@@ -40,13 +39,11 @@ public:
     void aGetCloudCover(AsyncWebServerRequest *request) { _alpacaServer->respond(request, cloudcover); }
 
     // alpaca setters
-    void aPutAveragePeriod(AsyncWebServerRequest *request)
-    {
+    void aPutAveragePeriod(AsyncWebServerRequest *request) {
         _alpacaServer->getParam(request, "averageperiod", _avgperiod);
         _alpacaServer->respond(request, nullptr);
     }
-    void aPutRefresh(AsyncWebServerRequest *request)
-    {
+    void aPutRefresh(AsyncWebServerRequest *request) {
         _alpacaServer->getParam(request, "refresh", _refresh);
         _alpacaServer->respond(request, nullptr);
     }

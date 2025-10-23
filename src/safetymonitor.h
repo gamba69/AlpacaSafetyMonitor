@@ -1,13 +1,12 @@
 #pragma once
-#include <Arduino.h>
-#include "config.h"
-#include "pins.h"
 #include "AlpacaSafetyMonitor.h"
+#include "config.h"
 #include "meteo.h"
+#include "pins.h"
+#include <Arduino.h>
 
-class SafetyMonitor : public AlpacaSafetyMonitor
-{
-private:
+class SafetyMonitor : public AlpacaSafetyMonitor {
+  private:
     static uint8_t _n_safetymonitors;
     static SafetyMonitor *_safetymonitor_array[4];
     uint8_t _safetymonitor_index;
@@ -23,7 +22,7 @@ private:
     // acquired parameters
     float temperature, humidity, pressure, dewpoint, tempsky;
 
-public:
+  public:
     SafetyMonitor() : AlpacaSafetyMonitor() { _safetymonitor_index = _n_safetymonitors++; }
     bool begin();
     void update(Meteo meteo, unsigned long measureDelay);
