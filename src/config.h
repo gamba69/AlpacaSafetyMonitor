@@ -18,6 +18,9 @@
 #define I2C_BMP_ADDR 0x77
 #define I2C_AHT_ADDR 0x38
 
+// METEO
+#define METEO_MEASURE_DELAY 3000
+
 // LEDS
 #define PIN_WIFI_LED 21
 

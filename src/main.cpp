@@ -60,11 +60,11 @@ void setup() {
 }
 
 void loop() {
-    if (millis() > lastTimeRan + measureDelay) { // read every measureDelay without blocking Webserver
-        meteo.update_i2c(measureDelay);
-        safetymonitor.update(meteo, measureDelay);
-        observingconditions.update(meteo, measureDelay);
-        lastTimeRan = millis();
+    if (millis() > meteoLastTimeRan + meteoMeasureDelay) { // read every measureDelay without blocking Webserver
+        meteo.update_i2c(meteoMeasureDelay);
+        safetymonitor.update(meteo, meteoMeasureDelay);
+        observingconditions.update(meteo, meteoMeasureDelay);
+        meteoLastTimeRan = millis();
     }
     delay(50);
 }
