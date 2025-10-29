@@ -1,13 +1,10 @@
-.pio
-.vscode/.browse.c_cpp.db*
-.vscode/c_cpp_properties.json
-.vscode/launch.json
-.vscode/ipch
+.pio/*
+.vscode/*
+src/secrets.h
 docs/api
 data/www/jsondata.device
 data/www/jsondata.server
 data/www/links.json
-.gitignore
 data/www/js/jquery-ui.min.js
 data/www/js/jquery.min.js
 data/www/js/bootstrap.min.js

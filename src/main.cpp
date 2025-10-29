@@ -1,116 +1,84 @@
 #include "main.h"
+#include "secrets.h"
+#include "wifimanager.h"
 
-#if SAFETYMONITOR2_ENABLE
-  #define N_SAFETYMONITORS 2
-#else
-  #define N_SAFETYMONITORS 1
-#endif
+RTC_DS3231 rtc;
 
-SafetyMonitor safetymonitor[N_SAFETYMONITORS] = {
-  SafetyMonitor()
-#if SAFETYMONITOR2_ENABLE
-  ,SafetyMonitor()
-#endif
-};
+WIFIMANAGER WifiManager;
 
+AsyncWebServer *tcp_server;
+AsyncUDP udp_server;
 
-#if OBSERVINGCONDITIONS2_ENABLE
-  #define N_OBSERVINGCONDITIONSS 2
-#else
-  #define N_OBSERVINGCONDITIONSS 1
-#endif
-
-ObservingConditions observingconditions[N_OBSERVINGCONDITIONSS] = {
-  ObservingConditions()
-#if OBSERVINGCONDITIONS2_ENABLE
-  ,ObservingConditions()
-#endif
-};
-
-
-
-
-WiFiServer tcpServer(TCP_PORT);
-WiFiClient tcpClient;
-
+SafetyMonitor safetymonitor = SafetyMonitor();
+ObservingConditions observingconditions = ObservingConditions();
 AlpacaServer alpacaServer("Alpaca_ESP32");
-/*
-Adafruit_BME280 bme;  // I2C
-Adafruit_MLX90614 mlx = Adafruit_MLX90614();
-*/
+
 void setup() {
-  // setup serial
-  Serial.begin(115200, SERIAL_8N1);
+    // setup serial
+    Serial.begin(115200);
+    while (!Serial) {
+        // wait for serial port to connect.
+    }
+    delay(1000);
+    Serial.println("[SAFEMON] Serial is ready");
 
-  setup_wifi();
+    // setup_wifi();
 
-  // setup ASCOM Alpaca server
-  alpacaServer.begin(ALPACA_UDP_PORT, ALPACA_TCP_PORT);
-  //alpacaServer.debug;   // uncoment to get Server messages in Serial monitor
+    tcp_server = new AsyncWebServer(ALPACA_TCP_PORT);
+    
+    WifiManager.startBackgroundTask();        // Run the background task to take care of our Wifi
+    WifiManager.fallbackToSoftAp(true);       // Run a SoftAP if no known AP can be reached
+    WifiManager.attachWebServer(tcp_server);  // Attach our API to the HTTP Webserver 
+    WifiManager.attachUI(); 
 
-  // add devices
-  for(uint8_t i=0; i<N_SAFETYMONITORS; i++) {
-    safetymonitor[i].begin();
-    alpacaServer.addDevice(&safetymonitor[i]);
-  }
+    tcp_server->begin();
 
-  for(uint8_t i=0; i<N_OBSERVINGCONDITIONSS; i++) {
-    observingconditions[i].begin();
-    alpacaServer.addDevice(&observingconditions[i]);
-  }
-  
-  
-  // load settings
-  alpacaServer.loadSettings();
 
-  meteo1.setup_i2cmlxbme();
+    // setup ASCOM Alpaca server
+    udp_server.listen(ALPACA_UDP_PORT);
+    alpacaServer.begin(&udp_server, ALPACA_UDP_PORT, tcp_server, ALPACA_TCP_PORT);
+    // alpacaServer.debug;   // uncoment to get Server messages in Serial monitor
+    alpacaServer.addDevice(&safetymonitor);
+    alpacaServer.addDevice(&observingconditions);
+    alpacaServer.loadSettings();
+
+    meteo.setup_i2c();
+
+    // if (!rtc.begin()) {
+    //     Serial.println("Couldn't find RTC");
+    // }
+
+    // if (rtc.lostPower()) {
+    //     Serial.println("RTC lost power, let's set the time!");
+    //     rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+    // }
+
+    // Serial.print("[SAFEMON] RTC ");
+    // char buffer[30];
+    // strcpy(buffer, "YYYY-MM-DD hh:mm:ss"); // Example format: 2025-10-27 19:57:00
+    // Serial.println(rtc.now().toString(buffer));
 }
-  
+
 void loop() {
-  if (millis() > lastTimeRan + measureDelay)  {   // read every measureDelay without blocking Webserver
-    meteo1.update_i2cmlxbme(measureDelay);
-    safetymonitor[0].update(meteo1,measureDelay);
-    observingconditions[0].update(meteo1,measureDelay);
-    lastTimeRan = millis();
-  }
-  delay(50); 
+    if (millis() > lastTimeRan + measureDelay) { // read every measureDelay without blocking Webserver
+        meteo.update_i2c(measureDelay);
+        safetymonitor.update(meteo, measureDelay);
+        observingconditions.update(meteo, measureDelay);
+        lastTimeRan = millis();
+    }
+    delay(50);
 }
 
-void setup_wifi()
-{
-  pinMode(PIN_WIFI_LED, OUTPUT);
-
-  // setup wifi
-  Serial.print(F("\n# Starting WiFi"));
-
-  //DoubleResetDetector drd = DoubleResetDetector(DRD_TIMEOUT, DRD_ADDRESS);
-  ESP_WiFiManager ESP_wifiManager(HOSTNAME);
-  ESP_wifiManager.setConnectTimeout(30);
-
-  //if (ESP_wifiManager.WiFi_SSID() == "" || drd.detectDoubleReset()) {
-  if (ESP_wifiManager.WiFi_SSID() == "" ) {
-    Serial.println(F("# Starting Config Portal"));
-    //digitalWrite(PIN_WIFI_LED, HIGH);
-    if (!ESP_wifiManager.startConfigPortal()) {
-      Serial.println(F("# Not connected to WiFi"));
-    } else {
-      Serial.println(F("# connected"));
+void setup_wifi() {
+    // pinMode(PIN_WIFI_LED, OUTPUT);
+    Serial.println(F("[SAFEMON] Setup WiFi"));
+    WiFi.begin(WIFISSID, WIFIPASS);
+    int pause = 10000;
+    unsigned long begin = millis();
+    while (WiFi.status() != WL_CONNECTED && millis() - begin < pause) {
+        delay(500);
+        Serial.print(".");
     }
-  } else {
-    WiFi.mode(WIFI_STA);
-    WiFi.begin();
-  } 
-  WiFi.waitForConnectResult();
-  if (WiFi.status() != WL_CONNECTED) {
-    Serial.println(F("# Failed to connect"));
-  }
-  else {
-    Serial.print(F("# Local IP: "));
+    Serial.print("[SAFEMON] WiFi connected: ");
     Serial.println(WiFi.localIP());
-    //digitalWrite(PIN_WIFI_LED, HIGH);
-    if(!MDNS.begin("HOSTNAME")) {
-     Serial.println("# Error starting mDNS");
-     return;
-    }
-  }
 }
