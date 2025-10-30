@@ -14,7 +14,7 @@ const std::string &Meteo::getName() const {
     return Name;
 }
 
-void Meteo::setup_i2c() {
+void Meteo::begin() {
     Wire.end();
     // Set I2C pinout
     Wire.setPins(I2C_SDA_PIN, I2C_SCL_PIN);
@@ -86,7 +86,7 @@ float cb_snr_calc() {
 
 // Read through i2c bus
 
-void Meteo::update_i2c(unsigned long measureDelay) {
+void Meteo::update(unsigned long measureDelay) {
     char buffer[100];
     DEBUGSTREAM->println(F("[SAFEMON] Update Meteo & Safety Monitors"));
 

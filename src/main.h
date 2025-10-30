@@ -17,5 +17,3 @@ static unsigned long meteoLastTimeRan;
 
 // module setup
 void setup_wifi();
-
-Meteo meteo("AlpacaESP32");

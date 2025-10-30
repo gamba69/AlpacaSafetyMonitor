@@ -1,7 +1,7 @@
 #include "main.h"
-#include "otawebupdater.h"
 #include "secrets.h"
 #include "wifimanager.h"
+#include "otawebupdater.h"
 
 RTC_DS3231 rtc;
 
@@ -15,6 +15,8 @@ AlpacaServer alpacaServer("Alpaca_ESP32");
 
 SafetyMonitor safetymonitor = SafetyMonitor();
 ObservingConditions observingconditions = ObservingConditions();
+
+Meteo meteo("AlpacaESP32");
 
 void setup() {
     // setup serial
@@ -50,21 +52,16 @@ void setup() {
     alpacaServer.addDevice(&observingconditions);
     alpacaServer.loadSettings();
 
-    meteo.setup_i2c();
+    meteo.begin();
 
-    // if (!rtc.begin()) {
-    //     Serial.println("Couldn't find RTC");
-    // }
+    if (!rtc.begin()) {
+        Serial.println("Couldn't find RTC");
+    }
 
-    // if (rtc.lostPower()) {
-    //     Serial.println("RTC lost power, let's set the time!");
-    //     rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-    // }
-
-    // Serial.print("[SAFEMON] RTC ");
-    // char buffer[30];
-    // strcpy(buffer, "YYYY-MM-DD hh:mm:ss"); // Example format: 2025-10-27 19:57:00
-    // Serial.println(rtc.now().toString(buffer));
+    if (rtc.lostPower()) {
+        Serial.println("RTC lost power, let's set the time!");
+        rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+    }
 }
 
 void loop() {
@@ -77,10 +74,15 @@ void loop() {
     };
     // Actual Load
     if (millis() > meteoLastTimeRan + meteoMeasureDelay) { // read every measureDelay without blocking Webserver
-        meteo.update_i2c(meteoMeasureDelay);
+        meteo.update(meteoMeasureDelay);
         safetymonitor.update(meteo, meteoMeasureDelay);
         observingconditions.update(meteo, meteoMeasureDelay);
         meteoLastTimeRan = millis();
+
+        // Serial.print("[SAFEMON] RTC ");
+        // char buffer[30];
+        // strcpy(buffer, "YYYY-MM-DD hh:mm:ss"); // Example format: 2025-10-27 19:57:00
+        // Serial.println(rtc.now().toString(buffer));
     }
     delay(50);
 }

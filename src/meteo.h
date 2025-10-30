@@ -40,14 +40,14 @@ class Meteo {
         skybrightness;
     // sensors
     // methods
-    void update_i2c(unsigned long measureDelay);
+    void update(unsigned long measureDelay);
     Meteo(const std::string &newName); // constructor place
     // setters
     void setIssafe(bool value);
     // getters
     bool getIssafe() const;
     const std::string &getName() const;
-    void setup_i2c();
+    void begin();
 };
 
 #endif
