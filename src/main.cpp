@@ -1,7 +1,7 @@
 #include "main.h"
+#include "otawebupdater.h"
 #include "secrets.h"
 #include "wifimanager.h"
-#include "otawebupdater.h"
 
 RTC_DS3231 rtc;
 
@@ -22,20 +22,20 @@ void setup() {
     // setup serial
     Serial.begin(115200);
     while (!Serial) {
-        // wait for serial port to connect.
     }
-    delay(3000);
-    Serial.println("[SAFEMON] Serial is ready");
+    delay(4000);
 
     // setup_wifi();
 
     tcp_server = new AsyncWebServer(ALPACA_TCP_PORT);
 
+    WifiManager.setLogger(&Serial);          // Set message logger
     WifiManager.startBackgroundTask();       // Run the background task to take care of our Wifi
     WifiManager.fallbackToSoftAp(true);      // Run a SoftAP if no known AP can be reached
     WifiManager.attachWebServer(tcp_server); // Attach our API to the HTTP Webserver
     WifiManager.attachUI();
 
+    OtaWebUpdater.setLogger(&Serial); // Set message logger
     // OtaWebUpdater.setBaseUrl(OTA_BASE_URL);        // Set the OTA Base URL for automatic updates
     OtaWebUpdater.setFirmware(__DATE__, "1.0.0"); // Set the current firmware version
     OtaWebUpdater.startBackgroundTask();          // Run the background task to check for updates
@@ -47,7 +47,6 @@ void setup() {
     // setup ASCOM Alpaca server
     udp_server.listen(ALPACA_UDP_PORT);
     alpacaServer.begin(&udp_server, ALPACA_UDP_PORT, tcp_server, ALPACA_TCP_PORT);
-    // alpacaServer.debug;   // uncoment to get Server messages in Serial monitor
     alpacaServer.addDevice(&observingconditions);
     alpacaServer.addDevice(&safetymonitor);
     alpacaServer.loadSettings();
