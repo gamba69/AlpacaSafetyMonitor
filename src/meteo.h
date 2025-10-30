@@ -44,7 +44,7 @@ class Meteo {
     const std::string &getName() const;
     void begin();
     // Set current logger
-    void setLogger(Stream *stream, std::function<String()> logtime);
+    void setLogger(Stream *stream, std::function<String()> logtime = NULL);
 
   private:
     // Logger stream
@@ -52,9 +52,9 @@ class Meteo {
     // Logger time function
     std::function<String()> logtime = nullptr;
     // Print a log message, can be overwritten
-    virtual void logMessage(String msg, bool showtime);
+    virtual void logMessage(String msg, bool showtime = true);
     // Print a part of log message, can be overwritten
-    virtual void logMessagePart(String msg, bool showtime);
+    virtual void logMessagePart(String msg, bool showtime = false);
 };
 
 #endif

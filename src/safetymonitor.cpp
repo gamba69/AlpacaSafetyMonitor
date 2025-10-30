@@ -5,21 +5,21 @@
 uint8_t SafetyMonitor::_n_safetymonitors = 0;
 SafetyMonitor *SafetyMonitor::_safetymonitor_array[4] = {nullptr, nullptr, nullptr, nullptr};
 
-void SafetyMonitor::logMessage(String msg, bool showtime = true) {
+void SafetyMonitor::logMessage(String msg, bool showtime) {
     if(logtime && showtime) {
         logger->print(logtime() + " ");
     }
     logger->println(msg);
 }
 
-void SafetyMonitor::logMessagePart(String msg, bool showtime = false) {
+void SafetyMonitor::logMessagePart(String msg, bool showtime) {
     if(logtime && showtime) {
         logger->print(logtime() + " ");
     }
     logger->print(msg);
 }
 
-void SafetyMonitor::setLogger(Stream *stream, std::function<String()> function = nullptr) {
+void SafetyMonitor::setLogger(Stream *stream, std::function<String()> function) {
     logger = stream;
     logtime = function;
 }
