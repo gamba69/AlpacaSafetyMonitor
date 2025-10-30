@@ -48,8 +48,8 @@ void setup() {
     udp_server.listen(ALPACA_UDP_PORT);
     alpacaServer.begin(&udp_server, ALPACA_UDP_PORT, tcp_server, ALPACA_TCP_PORT);
     // alpacaServer.debug;   // uncoment to get Server messages in Serial monitor
-    alpacaServer.addDevice(&safetymonitor);
     alpacaServer.addDevice(&observingconditions);
+    alpacaServer.addDevice(&safetymonitor);
     alpacaServer.loadSettings();
 
     meteo.begin();
