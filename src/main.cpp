@@ -77,7 +77,7 @@ void setup() {
     tcp_server = new AsyncWebServer(ALPACA_TCP_PORT);
 
     // WiFi Manager
-    WifiManager.setLogger(&Serial);          // Set message logger
+    WifiManager.setLogger(&Serial, logTime);          // Set message logger
     WifiManager.startBackgroundTask();       // Run the background task to take care of our Wifi
     WifiManager.fallbackToSoftAp(true);      // Run a SoftAP if no known AP can be reached
     WifiManager.attachWebServer(tcp_server); // Attach our API to the HTTP Webserver
@@ -86,7 +86,7 @@ void setup() {
     // OTA Manager
     // TODO Versions!
     // OtaWebUpdater.setBaseUrl(OTA_BASE_URL);    // Set the OTA Base URL for automatic updates
-    OtaWebUpdater.setLogger(&Serial);             // Set message logger
+    OtaWebUpdater.setLogger(&Serial, logTime);             // Set message logger
     OtaWebUpdater.setFirmware(__DATE__, "1.0.0"); // Set the current firmware version
     OtaWebUpdater.startBackgroundTask();          // Run the background task to check for updates
     OtaWebUpdater.attachWebServer(tcp_server);    // Attach our API to the Webserver
