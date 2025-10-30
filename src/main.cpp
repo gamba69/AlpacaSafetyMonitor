@@ -33,17 +33,15 @@ String logTime() {
 
 Stream *logger = &Serial;
 
-void logMessage(String msg, bool withtime = true) {
-    String timestamp = logTime() + " ";
-    if (!withtime)
-        timestamp = "";
-    logger->println(timestamp + msg);
+void logMessage(String msg, bool showtime = true) {
+    if (showtime)
+        logger->print(logTime() + " ");
+    logger->println(msg);
 }
 
-void logMessagePart(String msg, bool withtime = false) {
-    String timestamp = logTime() + " ";
-    if (withtime)
-        logger->print(timestamp);
+void logMessagePart(String msg, bool showtime = false) {
+    if (showtime)
+        logger->print(logTime() + " ");
     logger->print(msg);
 }
 

@@ -5,21 +5,17 @@
 uint8_t SafetyMonitor::_n_safetymonitors = 0;
 SafetyMonitor *SafetyMonitor::_safetymonitor_array[4] = {nullptr, nullptr, nullptr, nullptr};
 
-void SafetyMonitor::logMessage(String msg) {
-    String timestamp = "";
-    if(logtime) {
-        timestamp = logtime() + " ";
+void SafetyMonitor::logMessage(String msg, bool showtime = true) {
+    if(logtime && showtime) {
+        logger->print(logtime() + " ");
     }
-    logger->println(timestamp + msg);
+    logger->println(msg);
 }
 
-void SafetyMonitor::logMessagePart(String msg, bool first = false) {
-    String timestamp = "";
-    if(logtime) {
-        timestamp = logtime() + " ";
+void SafetyMonitor::logMessagePart(String msg, bool showtime = false) {
+    if(logtime && showtime) {
+        logger->print(logtime() + " ");
     }
-    if (first)
-        logger->print(timestamp);
     logger->print(msg);
 }
 

@@ -10,10 +10,10 @@ class SafetyMonitor : public AlpacaSafetyMonitor {
     Stream *logger = &Serial;
     // Logger time function
     std::function<String()> logtime = nullptr;
-    // Print a log message to Serial, can be overwritten
-    virtual void logMessage(String msg);
-    // Print a part of log message to Serial, can be overwritten
-    virtual void logMessagePart(String msg, bool first);
+    // Print a log message, can be overwritten
+    virtual void logMessage(String msg, bool showtime);
+    // Print a part of log message, can be overwritten
+    virtual void logMessagePart(String msg, bool showtime);
 
     static uint8_t _n_safetymonitors;
     static SafetyMonitor *_safetymonitor_array[4];

@@ -6,21 +6,17 @@ Adafruit_AHTX0 aht;
 
 Meteo::Meteo(const std::string &newName) : Name(newName) {}
 
-void Meteo::logMessage(String msg) {
-    String timestamp = "";
-    if(logtime) {
-        timestamp = logtime() + " ";
+void Meteo::logMessage(String msg, bool showtime = true) {
+    if(logtime && showtime) {
+        logger->print(logtime() + " ");
     }
-    logger->println(timestamp + msg);
+    logger->println(msg);
 }
 
-void Meteo::logMessagePart(String msg, bool first = false) {
-    String timestamp = "";
-    if(logtime) {
-        timestamp = logtime() + " ";
+void Meteo::logMessagePart(String msg, bool showtime = false) {
+    if(logtime && showtime) {
+        logger->print(logtime() + " ");
     }
-    if (first)
-        logger->print(timestamp);
     logger->print(msg);
 }
 
