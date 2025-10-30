@@ -6,6 +6,15 @@
 
 class SafetyMonitor : public AlpacaSafetyMonitor {
   private:
+    // Logger stream
+    Stream *logger = &Serial;
+    // Logger time function
+    std::function<String()> logtime = nullptr;
+    // Print a log message to Serial, can be overwritten
+    virtual void logMessage(String msg);
+    // Print a part of log message to Serial, can be overwritten
+    virtual void logMessagePart(String msg, bool first);
+
     static uint8_t _n_safetymonitors;
     static SafetyMonitor *_safetymonitor_array[4];
     uint8_t _safetymonitor_index;
@@ -23,6 +32,10 @@ class SafetyMonitor : public AlpacaSafetyMonitor {
 
   public:
     SafetyMonitor() : AlpacaSafetyMonitor() { _safetymonitor_index = _n_safetymonitors++; }
+
+    // Set current logger
+    void setLogger(Stream *stream, std::function<String()> logtime);
+
     bool begin();
     void update(Meteo meteo, unsigned long measureDelay);
 

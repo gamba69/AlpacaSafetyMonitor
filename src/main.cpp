@@ -18,25 +18,75 @@ ObservingConditions observingconditions = ObservingConditions();
 
 Meteo meteo("AlpacaESP32");
 
+String logTime() {
+    time_t now;
+    struct tm timeinfo;
+    time(&now);
+    setenv("TZ", "Europe/Kiev", 1);
+    tzset();
+    localtime_r(&now, &timeinfo);
+    // gmtime_r(&now, &timeinfo);
+    char strftime_buf[64]; // Ensure buffer is large enough
+    strftime(strftime_buf, sizeof(strftime_buf), "%Y-%m-%d %H:%M:%S", &timeinfo);
+    return String(strftime_buf);
+}
+
+Stream *logger = &Serial;
+
+void logMessage(String msg) {
+    String timestamp = logTime() + " ";
+    logger->println(timestamp + msg);
+}
+
+void logMessagePart(String msg, bool first = false) {
+    String timestamp = logTime() + " ";
+    if (first)
+        logger->print(timestamp);
+    logger->print(msg);
+}
+
 void setup() {
-    // setup serial
+
+    // Setup serial
     Serial.begin(115200);
     while (!Serial) {
     }
     delay(4000);
 
+    // RTC
+    if (!rtc.begin())
+        logMessage("[MAIN] Couldn't find RTC");
+
+    // Init unpowered RTC
+    if (rtc.lostPower()) {
+        logMessage("[MAIN] RTC lost power, let's set the time!");
+        rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+    }
+
+    // Read time from RTC
+    DateTime rtcNow = rtc.now();
+    struct timeval tv;
+    tv.tv_sec = rtcNow.unixtime();
+    tv.tv_usec = 0;
+    settimeofday(&tv, NULL);
+
+    // TODO Fixed WiFI settings with reconnect
     // setup_wifi();
 
+    // TCP server
     tcp_server = new AsyncWebServer(ALPACA_TCP_PORT);
 
+    // WiFi Manager
     WifiManager.setLogger(&Serial);          // Set message logger
     WifiManager.startBackgroundTask();       // Run the background task to take care of our Wifi
     WifiManager.fallbackToSoftAp(true);      // Run a SoftAP if no known AP can be reached
     WifiManager.attachWebServer(tcp_server); // Attach our API to the HTTP Webserver
     WifiManager.attachUI();
 
-    OtaWebUpdater.setLogger(&Serial); // Set message logger
-    // OtaWebUpdater.setBaseUrl(OTA_BASE_URL);        // Set the OTA Base URL for automatic updates
+    // OTA Manager
+    // TODO Versions!
+    // OtaWebUpdater.setBaseUrl(OTA_BASE_URL);    // Set the OTA Base URL for automatic updates
+    OtaWebUpdater.setLogger(&Serial);             // Set message logger
     OtaWebUpdater.setFirmware(__DATE__, "1.0.0"); // Set the current firmware version
     OtaWebUpdater.startBackgroundTask();          // Run the background task to check for updates
     OtaWebUpdater.attachWebServer(tcp_server);    // Attach our API to the Webserver
@@ -44,24 +94,22 @@ void setup() {
 
     tcp_server->begin();
 
-    // setup ASCOM Alpaca server
+    // UDP Server
     udp_server.listen(ALPACA_UDP_PORT);
+
+    // ALPACA Server
     alpacaServer.setLogger(&Serial);
     alpacaServer.begin(&udp_server, ALPACA_UDP_PORT, tcp_server, ALPACA_TCP_PORT);
+    // Observing Conditions
     alpacaServer.addDevice(&observingconditions);
+    // Safety Monitor
+    safetymonitor.setLogger(&Serial, logTime);
     alpacaServer.addDevice(&safetymonitor);
     alpacaServer.loadSettings();
 
+    // Meteo sensors
+    meteo.setLogger(&Serial, logTime);
     meteo.begin();
-
-    if (!rtc.begin()) {
-        Serial.println("Couldn't find RTC");
-    }
-
-    if (rtc.lostPower()) {
-        Serial.println("RTC lost power, let's set the time!");
-        rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-    }
 }
 
 void loop() {
@@ -89,14 +137,14 @@ void loop() {
 
 void setup_wifi() {
     // pinMode(PIN_WIFI_LED, OUTPUT);
-    Serial.println(F("[SAFEMON] Setup WiFi"));
+    logMessagePart(F("[MAIN] Setup WiFi "), true);
     WiFi.begin(WIFISSID, WIFIPASS);
     int pause = 10000;
     unsigned long begin = millis();
     while (WiFi.status() != WL_CONNECTED && millis() - begin < pause) {
         delay(500);
-        Serial.print(".");
+        logMessagePart(".");
     }
-    Serial.print("[SAFEMON] WiFi connected: ");
-    Serial.println(WiFi.localIP());
+    logMessagePart("\n");
+    logMessage("[MAIN] WiFi connected: " + String(WiFi.localIP()));
 }

@@ -1,19 +1,34 @@
 #include "safetymonitor.h"
 #include "meteo.h"
-/*
-Adafruit_BMP280 bmp;
-Adafruit_MLX90614 mlx = Adafruit_MLX90614();
-Adafruit_AHTX0 ahtl
-*/
-// todo: set update() to private and only run when needed
 
 // cannot call member functions directly from interrupt, so need these helpers for up to 1 SafetyMonitor
 uint8_t SafetyMonitor::_n_safetymonitors = 0;
 SafetyMonitor *SafetyMonitor::_safetymonitor_array[4] = {nullptr, nullptr, nullptr, nullptr};
 
-bool SafetyMonitor::begin() {
+void SafetyMonitor::logMessage(String msg) {
+    String timestamp = "";
+    if(logtime) {
+        timestamp = logtime() + " ";
+    }
+    logger->println(timestamp + msg);
+}
 
-    // done
+void SafetyMonitor::logMessagePart(String msg, bool first = false) {
+    String timestamp = "";
+    if(logtime) {
+        timestamp = logtime() + " ";
+    }
+    if (first)
+        logger->print(timestamp);
+    logger->print(msg);
+}
+
+void SafetyMonitor::setLogger(Stream *stream, std::function<String()> function = nullptr) {
+    logger = stream;
+    logtime = function;
+}
+
+bool SafetyMonitor::begin() {
     _safetymonitor_array[_safetymonitor_index] = this;
     return true;
 }
@@ -53,28 +68,28 @@ void SafetyMonitor::update(Meteo meteo, unsigned long measureDelay) {
     }
     if (instant_status == false) {
         if (status_weather == true)
-            Serial.println("Unsafe received");
+            logMessage("[SAFEMON] Unsafe received");
         time2open = delay2open;
         status_weather = false;
         if (status_roof == true) {
             if (time2close == 0.) {
                 status_roof = false;
                 _issafe = false;
-                Serial.println("Close Roofs");
+                logMessage("[SAFEMON] Close Roofs");
                 digitalWrite(ROOFpin, LOW);
             }
         }
     }
     if (instant_status == true) {
         if (status_weather == false)
-            Serial.println("Safe received");
+            logMessage("[SAFEMON] Safe received");
         time2close = delay2close;
         status_weather = true;
         if (status_roof == false) {
             if (time2open == 0.) {
                 status_roof = true;
                 _issafe = true;
-                Serial.println("Open Roofs");
+                logMessage("[SAFEMON] Open Roofs");
                 digitalWrite(ROOFpin, HIGH);
             }
         }

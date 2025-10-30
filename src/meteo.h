@@ -20,9 +20,6 @@ static float cb_rms = 0.0;
 
 class Meteo {
   public:
-    // debug
-    bool debug = true;
-    Stream *debugstream = &Serial;
     // attributes
     std::string Name;
     float
@@ -43,11 +40,21 @@ class Meteo {
     void update(unsigned long measureDelay);
     Meteo(const std::string &newName); // constructor place
     // setters
-    void setIssafe(bool value);
     // getters
-    bool getIssafe() const;
     const std::string &getName() const;
     void begin();
+    // Set current logger
+    void setLogger(Stream *stream, std::function<String()> logtime);
+
+  private:
+    // Logger stream
+    Stream *logger = &Serial;
+    // Logger time function
+    std::function<String()> logtime = nullptr;
+    // Print a log message to Serial, can be overwritten
+    virtual void logMessage(String msg);
+    // Print a part of log message to Serial, can be overwritten
+    virtual void logMessagePart(String msg, bool first);
 };
 
 #endif

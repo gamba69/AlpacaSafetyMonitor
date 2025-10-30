@@ -1,14 +1,33 @@
 #include "meteo.h"
 
-#define DEBUGSTREAM \
-    if (debug)      \
-    debugstream
-
 Adafruit_BMP280 bmp;
 Adafruit_MLX90614 mlx = Adafruit_MLX90614();
 Adafruit_AHTX0 aht;
 
 Meteo::Meteo(const std::string &newName) : Name(newName) {}
+
+void Meteo::logMessage(String msg) {
+    String timestamp = "";
+    if(logtime) {
+        timestamp = logtime() + " ";
+    }
+    logger->println(timestamp + msg);
+}
+
+void Meteo::logMessagePart(String msg, bool first = false) {
+    String timestamp = "";
+    if(logtime) {
+        timestamp = logtime() + " ";
+    }
+    if (first)
+        logger->print(timestamp);
+    logger->print(msg);
+}
+
+void Meteo::setLogger(Stream *stream, std::function<String()> function = nullptr) {
+    logger = stream;
+    logtime = function;
+}
 
 const std::string &Meteo::getName() const {
     return Name;
@@ -88,42 +107,53 @@ float cb_snr_calc() {
 
 void Meteo::update(unsigned long measureDelay) {
     char buffer[100];
-    DEBUGSTREAM->println(F("[SAFEMON] Update Meteo & Safety Monitors"));
+    logMessage(F("[METEO] Update Meteo & Safety Monitors"));
 
     bmp_temperature = bmp.readTemperature();
-    snprintf(buffer, sizeof(buffer), "[SAFEMON] BMP Temperature: %.1f", bmp_temperature);
-    DEBUGSTREAM->println(buffer);
+    snprintf(buffer, sizeof(buffer), "[METEO][BMP] Temperature: %.1f", bmp_temperature);
+    logMessage(buffer);
 
     bmp_pressure = bmp.readPressure() / 100.0F;
-    snprintf(buffer, sizeof(buffer), "[SAFEMON] BMP Pressure: %.0f", bmp_pressure);
-    DEBUGSTREAM->println(buffer);
+    snprintf(buffer, sizeof(buffer), "[METEO][BMP] Pressure: %.0f", bmp_pressure);
+    logMessage(buffer);
 
     sensors_event_t aht_sensor_humidity, aht_sensor_temp;
     aht.getEvent(&aht_sensor_humidity, &aht_sensor_temp);
     
     aht_temperature = aht_sensor_temp.temperature;
-    snprintf(buffer, sizeof(buffer), "[SAFEMON] AHT Temperature: %.1f", aht_temperature);
-    DEBUGSTREAM->println(buffer);
+    snprintf(buffer, sizeof(buffer), "[METEO][AHT] Temperature: %.1f", aht_temperature);
+    logMessage(buffer);
 
     aht_humidity = aht_sensor_humidity.relative_humidity;
-    snprintf(buffer, sizeof(buffer), "[SAFEMON] AHT HUMIDITY: %.0f", aht_humidity);
-    DEBUGSTREAM->println(buffer);
+    snprintf(buffer, sizeof(buffer), "[METEO][AHT] HUMIDITY: %.0f", aht_humidity);
+    logMessage(buffer);
 
     mlx_tempamb = mlx.readAmbientTempC();
-    snprintf(buffer, sizeof(buffer), "[SAFEMON] MLX AMBIENT: %.1f", mlx_tempamb);
-    DEBUGSTREAM->println(buffer);
+    snprintf(buffer, sizeof(buffer), "[METEO][MLX] AMBIENT: %.1f", mlx_tempamb);
+    logMessage(buffer);
 
     mlx_tempobj = mlx.readObjectTempC();
-    snprintf(buffer, sizeof(buffer), "[SAFEMON] MLX OBJECT: %.1f", mlx_tempobj);
-    DEBUGSTREAM->println(buffer);
+    snprintf(buffer, sizeof(buffer), "[METEO][MLX] OBJECT: %.1f", mlx_tempobj);
+    logMessage(buffer);
 
     dewpoint = aht_temperature - (100 - aht_humidity) / 5.;
+    snprintf(buffer, sizeof(buffer), "[METEO][CALC] DEWPOINT: %.1f", dewpoint);
+    logMessage(buffer);
+    
     tempsky = tsky_calc(mlx_tempobj, mlx_tempamb);
+    snprintf(buffer, sizeof(buffer), "[METEO][CALC] SKYTEMP: %.1f", tempsky);
+    logMessage(buffer);
     cb_add(tempsky); // add tempsky value to circular buffer and calculate  Turbulence (noise dB) / Seeing estimation
+    
     noise_db = cb_noise_db_calc();
+    snprintf(buffer, sizeof(buffer), "[METEO][CALC] NOISE: %.1f", noise_db);
+    logMessage(buffer);
+
     cloudcover = 100. + (tempsky * 6.);
     if (cloudcover > 100.)
         cloudcover = 100.;
     if (cloudcover < 0.)
         cloudcover = 0.;
+    snprintf(buffer, sizeof(buffer), "[METEO][CALC] CLOUD: %.1f", cloudcover);
+    logMessage(buffer);
 }
