@@ -46,6 +46,7 @@ void setup() {
 
     // setup ASCOM Alpaca server
     udp_server.listen(ALPACA_UDP_PORT);
+    alpacaServer.setLogger(&Serial);
     alpacaServer.begin(&udp_server, ALPACA_UDP_PORT, tcp_server, ALPACA_TCP_PORT);
     alpacaServer.addDevice(&observingconditions);
     alpacaServer.addDevice(&safetymonitor);
