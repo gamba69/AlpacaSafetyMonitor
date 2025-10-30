@@ -50,7 +50,7 @@ class Meteo {
     // Logger stream
     Stream *logger = &Serial;
     // Logger time function
-    std::function<String()> logtime = nullptr;
+    std::function<String()> logtime = NULL;
     // Print a log message, can be overwritten
     virtual void logMessage(String msg, bool showtime = true);
     // Print a part of log message, can be overwritten
