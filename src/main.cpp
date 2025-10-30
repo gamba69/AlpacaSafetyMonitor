@@ -33,14 +33,16 @@ String logTime() {
 
 Stream *logger = &Serial;
 
-void logMessage(String msg) {
+void logMessage(String msg, bool withtime = true) {
     String timestamp = logTime() + " ";
+    if (!withtime)
+        timestamp = "";
     logger->println(timestamp + msg);
 }
 
-void logMessagePart(String msg, bool first = false) {
+void logMessagePart(String msg, bool withtime = false) {
     String timestamp = logTime() + " ";
-    if (first)
+    if (withtime)
         logger->print(timestamp);
     logger->print(msg);
 }
@@ -145,6 +147,6 @@ void setup_wifi() {
         delay(500);
         logMessagePart(".");
     }
-    logMessagePart("\n");
+    logMessage(".");
     logMessage("[MAIN] WiFi connected: " + String(WiFi.localIP()));
 }
