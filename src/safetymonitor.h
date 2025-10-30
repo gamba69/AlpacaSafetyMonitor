@@ -6,8 +6,8 @@
 
 class SafetyMonitor : public AlpacaSafetyMonitor {
   private:
-    // Logger stream
-    Stream *logger = &Serial;
+    // Logger print
+    Print *logger = &Serial;
     // Logger time function
     std::function<String()> logtime = NULL;
     // Print a log message, can be overwritten
@@ -34,7 +34,7 @@ class SafetyMonitor : public AlpacaSafetyMonitor {
     SafetyMonitor() : AlpacaSafetyMonitor() { _safetymonitor_index = _n_safetymonitors++; }
 
     // Set current logger
-    void setLogger(Stream *stream, std::function<String()> logtime = NULL);
+    void setLogger(Print *print, std::function<String()> logtime = NULL);
 
     bool begin();
     void update(Meteo meteo, unsigned long measureDelay);

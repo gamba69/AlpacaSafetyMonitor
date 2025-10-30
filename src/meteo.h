@@ -44,11 +44,11 @@ class Meteo {
     const std::string &getName() const;
     void begin();
     // Set current logger
-    void setLogger(Stream *stream, std::function<String()> logtime = NULL);
+    void setLogger(Print *print, std::function<String()> logtime = NULL);
 
   private:
-    // Logger stream
-    Stream *logger = &Serial;
+    // Logger print
+    Print *logger = &Serial;
     // Logger time function
     std::function<String()> logtime = NULL;
     // Print a log message, can be overwritten

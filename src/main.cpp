@@ -2,6 +2,7 @@
 #include "otawebupdater.h"
 #include "secrets.h"
 #include "wifimanager.h"
+#include <MycilaWebSerial.h>
 
 RTC_DS3231 rtc;
 
@@ -18,6 +19,8 @@ ObservingConditions observingconditions = ObservingConditions();
 
 Meteo meteo("AlpacaESP32");
 
+WebSerial webSerial;
+
 String logTime() {
     time_t now;
     struct tm timeinfo;
@@ -31,7 +34,7 @@ String logTime() {
     return String(strftime_buf);
 }
 
-Stream *logger = &Serial;
+Print *logger = &Serial;
 
 void logMessage(String msg, bool showtime = true) {
     if (showtime)
@@ -76,8 +79,12 @@ void setup() {
     // TCP server
     tcp_server = new AsyncWebServer(ALPACA_TCP_PORT);
 
+    webSerial.onMessage([](const std::string &msg) { Serial.println(msg.c_str()); });
+    webSerial.begin(tcp_server);
+    webSerial.setBuffer(100);
+
     // WiFi Manager
-    WifiManager.setLogger(&Serial, logTime);          // Set message logger
+    WifiManager.setLogger(&Serial, logTime); // Set message logger
     WifiManager.startBackgroundTask();       // Run the background task to take care of our Wifi
     WifiManager.fallbackToSoftAp(true);      // Run a SoftAP if no known AP can be reached
     WifiManager.attachWebServer(tcp_server); // Attach our API to the HTTP Webserver
@@ -86,7 +93,7 @@ void setup() {
     // OTA Manager
     // TODO Versions!
     // OtaWebUpdater.setBaseUrl(OTA_BASE_URL);    // Set the OTA Base URL for automatic updates
-    OtaWebUpdater.setLogger(&Serial, logTime);             // Set message logger
+    OtaWebUpdater.setLogger(&Serial, logTime);    // Set message logger
     OtaWebUpdater.setFirmware(__DATE__, "1.0.0"); // Set the current firmware version
     OtaWebUpdater.startBackgroundTask();          // Run the background task to check for updates
     OtaWebUpdater.attachWebServer(tcp_server);    // Attach our API to the Webserver
