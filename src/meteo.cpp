@@ -126,28 +126,28 @@ void Meteo::update(unsigned long measureDelay) {
     logMessage(buffer);
 
     aht_humidity = aht_sensor_humidity.relative_humidity;
-    snprintf(buffer, sizeof(buffer), "[METEO][AHT] HUMIDITY: %.0f", aht_humidity);
+    snprintf(buffer, sizeof(buffer), "[METEO][AHT] Humidity: %.0f", aht_humidity);
     logMessage(buffer);
 
     mlx_tempamb = mlx.readAmbientTempC();
-    snprintf(buffer, sizeof(buffer), "[METEO][MLX] AMBIENT: %.1f", mlx_tempamb);
+    snprintf(buffer, sizeof(buffer), "[METEO][MLX] Ambient: %.1f", mlx_tempamb);
     logMessage(buffer);
 
     mlx_tempobj = mlx.readObjectTempC();
-    snprintf(buffer, sizeof(buffer), "[METEO][MLX] OBJECT: %.1f", mlx_tempobj);
+    snprintf(buffer, sizeof(buffer), "[METEO][MLX] Object: %.1f", mlx_tempobj);
     logMessage(buffer);
 
     dewpoint = aht_temperature - (100 - aht_humidity) / 5.;
-    snprintf(buffer, sizeof(buffer), "[METEO][CALC] DEWPOINT: %.1f", dewpoint);
+    snprintf(buffer, sizeof(buffer), "[METEO][CALC] Dewpoint: %.1f", dewpoint);
     logMessage(buffer);
 
     tempsky = tsky_calc(mlx_tempobj, mlx_tempamb);
-    snprintf(buffer, sizeof(buffer), "[METEO][CALC] SKYTEMP: %.1f", tempsky);
+    snprintf(buffer, sizeof(buffer), "[METEO][CALC] Sky temperature: %.1f", tempsky);
     logMessage(buffer);
     cb_add(tempsky); // add tempsky value to circular buffer and calculate  Turbulence (noise dB) / Seeing estimation
 
     noise_db = cb_noise_db_calc();
-    snprintf(buffer, sizeof(buffer), "[METEO][CALC] NOISE: %.1f", noise_db);
+    snprintf(buffer, sizeof(buffer), "[METEO][CALC] Noise: %.1f", noise_db);
     logMessage(buffer);
 
     cloudcover = 100. + (tempsky * 6.);
@@ -155,6 +155,6 @@ void Meteo::update(unsigned long measureDelay) {
         cloudcover = 100.;
     if (cloudcover < 0.)
         cloudcover = 0.;
-    snprintf(buffer, sizeof(buffer), "[METEO][CALC] CLOUD: %.1f", cloudcover);
+    snprintf(buffer, sizeof(buffer), "[METEO][CALC] Cloud cover: %.1f", cloudcover);
     logMessage(buffer);
 }

@@ -113,7 +113,7 @@ void setup() {
     udp_server.listen(ALPACA_UDP_PORT);
 
     // ALPACA Server
-    alpacaServer.setLogger(&Serial, logTime);
+    alpacaServer.setLogger(logLine, logLinePart, logTime);
     alpacaServer.begin(&udp_server, ALPACA_UDP_PORT, tcp_server, ALPACA_TCP_PORT);
     // Observing Conditions
     alpacaServer.addDevice(&observingconditions);
