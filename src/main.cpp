@@ -92,7 +92,7 @@ void setup() {
     webSerial.begin(tcp_server);
 
     // WiFi Manager
-    WifiManager.setLogger(&Serial, logTime); // Set message logger
+    WifiManager.setLogger(logLine, logLinePart, logTime); // Set message logger
     WifiManager.startBackgroundTask();       // Run the background task to take care of our Wifi
     WifiManager.fallbackToSoftAp(true);      // Run a SoftAP if no known AP can be reached
     WifiManager.attachWebServer(tcp_server); // Attach our API to the HTTP Webserver
