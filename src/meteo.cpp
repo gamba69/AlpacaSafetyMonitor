@@ -7,22 +7,27 @@ Adafruit_AHTX0 aht;
 Meteo::Meteo(const std::string &newName) : Name(newName) {}
 
 void Meteo::logMessage(String msg, bool showtime) {
-    if(logtime && showtime) {
-        logger->print(logtime() + " ");
+    if (logLine && logLinePart) {
+        if (logTime && showtime) {
+            logLinePart(logTime() + " ");
+        }
+        logLine(msg);
     }
-    logger->println(msg);
 }
 
 void Meteo::logMessagePart(String msg, bool showtime) {
-    if(logtime && showtime) {
-        logger->print(logtime() + " ");
+    if (logLinePart) {
+        if (logTime && showtime) {
+            logLinePart(logTime() + " ");
+        }
+        logLinePart(msg);
     }
-    logger->print(msg);
 }
 
-void Meteo::setLogger(Print *print, std::function<String()> function) {
-    logger = print;
-    logtime = function;
+void Meteo::setLogger(std::function<void(String)> logLineCallback, std::function<void(String)> logLinePartCallback, std::function<String()> logTimeCallback) {
+    logLine = logLineCallback;
+    logLinePart = logLinePartCallback;
+    logTime = logTimeCallback;
 }
 
 const std::string &Meteo::getName() const {
@@ -115,7 +120,7 @@ void Meteo::update(unsigned long measureDelay) {
 
     sensors_event_t aht_sensor_humidity, aht_sensor_temp;
     aht.getEvent(&aht_sensor_humidity, &aht_sensor_temp);
-    
+
     aht_temperature = aht_sensor_temp.temperature;
     snprintf(buffer, sizeof(buffer), "[METEO][AHT] Temperature: %.1f", aht_temperature);
     logMessage(buffer);
@@ -135,12 +140,12 @@ void Meteo::update(unsigned long measureDelay) {
     dewpoint = aht_temperature - (100 - aht_humidity) / 5.;
     snprintf(buffer, sizeof(buffer), "[METEO][CALC] DEWPOINT: %.1f", dewpoint);
     logMessage(buffer);
-    
+
     tempsky = tsky_calc(mlx_tempobj, mlx_tempamb);
     snprintf(buffer, sizeof(buffer), "[METEO][CALC] SKYTEMP: %.1f", tempsky);
     logMessage(buffer);
     cb_add(tempsky); // add tempsky value to circular buffer and calculate  Turbulence (noise dB) / Seeing estimation
-    
+
     noise_db = cb_noise_db_calc();
     snprintf(buffer, sizeof(buffer), "[METEO][CALC] NOISE: %.1f", noise_db);
     logMessage(buffer);

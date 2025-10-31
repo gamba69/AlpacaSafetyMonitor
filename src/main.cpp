@@ -34,18 +34,26 @@ String logTime() {
     return String(strftime_buf);
 }
 
-Print *logger = &Serial;
+void logLine(String line) {
+    Serial.println(line);
+    webSerial.println(line);
+}
+
+void logLinePart(String line) {
+    Serial.print(line);
+    webSerial.print(line);
+}
 
 void logMessage(String msg, bool showtime = true) {
     if (showtime)
-        logger->print(logTime() + " ");
-    logger->println(msg);
+        logLinePart(logTime() + " ");
+    logLine(msg);
 }
 
 void logMessagePart(String msg, bool showtime = false) {
     if (showtime)
-        logger->print(logTime() + " ");
-    logger->print(msg);
+        logLinePart(logTime() + " ");
+    logLinePart(msg);
 }
 
 void setup() {
@@ -55,14 +63,14 @@ void setup() {
     while (!Serial) {
     }
     delay(4000);
-
+    Stream *stream;
     // RTC
     if (!rtc.begin())
-        logMessage("[MAIN] Couldn't find RTC");
+        logMessage("[MAIN] Couldn't find RTC", false);
 
     // Init unpowered RTC
     if (rtc.lostPower()) {
-        logMessage("[MAIN] RTC lost power, let's set the time!");
+        logMessage("[MAIN] RTC lost power, let's set the time!", false);
         rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
     }
 
@@ -80,8 +88,8 @@ void setup() {
     tcp_server = new AsyncWebServer(ALPACA_TCP_PORT);
 
     webSerial.onMessage([](const std::string &msg) { Serial.println(msg.c_str()); });
-    webSerial.begin(tcp_server);
     webSerial.setBuffer(100);
+    webSerial.begin(tcp_server);
 
     // WiFi Manager
     WifiManager.setLogger(&Serial, logTime); // Set message logger
@@ -110,12 +118,12 @@ void setup() {
     // Observing Conditions
     alpacaServer.addDevice(&observingconditions);
     // Safety Monitor
-    safetymonitor.setLogger(&Serial, logTime);
+    safetymonitor.setLogger(logLine, logLinePart, logTime);
     alpacaServer.addDevice(&safetymonitor);
     alpacaServer.loadSettings();
 
     // Meteo sensors
-    meteo.setLogger(&Serial, logTime);
+    meteo.setLogger(logLine, logLinePart, logTime);
     meteo.begin();
 }
 

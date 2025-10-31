@@ -44,13 +44,15 @@ class Meteo {
     const std::string &getName() const;
     void begin();
     // Set current logger
-    void setLogger(Print *print, std::function<String()> logtime = NULL);
+    void setLogger(std::function<void(String)> logLineCallback = NULL, std::function<void(String)> logLinePartCallback = NULL, std::function<String()> logTimeCallback = NULL);
 
   private:
+    // Logger println
+    std::function<void(String)> logLine = NULL;
     // Logger print
-    Print *logger = &Serial;
+    std::function<void(String)> logLinePart = NULL;
     // Logger time function
-    std::function<String()> logtime = NULL;
+    std::function<String()> logTime = NULL;
     // Print a log message, can be overwritten
     virtual void logMessage(String msg, bool showtime = true);
     // Print a part of log message, can be overwritten

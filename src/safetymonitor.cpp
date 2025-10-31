@@ -6,22 +6,27 @@ uint8_t SafetyMonitor::_n_safetymonitors = 0;
 SafetyMonitor *SafetyMonitor::_safetymonitor_array[4] = {nullptr, nullptr, nullptr, nullptr};
 
 void SafetyMonitor::logMessage(String msg, bool showtime) {
-    if(logtime && showtime) {
-        logger->print(logtime() + " ");
+    if (logLine && logLinePart) {
+        if (logTime && showtime) {
+            logLinePart(logTime() + " ");
+        }
+        logLine(msg);
     }
-    logger->println(msg);
 }
 
 void SafetyMonitor::logMessagePart(String msg, bool showtime) {
-    if(logtime && showtime) {
-        logger->print(logtime() + " ");
+    if (logLinePart) {
+        if (logTime && showtime) {
+            logLinePart(logTime() + " ");
+        }
+        logLinePart(msg);
     }
-    logger->print(msg);
 }
 
-void SafetyMonitor::setLogger(Print *print, std::function<String()> function) {
-    logger = print;
-    logtime = function;
+void SafetyMonitor::setLogger(std::function<void(String)> logLineCallback, std::function<void(String)> logLinePartCallback, std::function<String()> logTimeCallback) {
+    logLine = logLineCallback;
+    logLinePart = logLinePartCallback;
+    logTime = logTimeCallback;
 }
 
 bool SafetyMonitor::begin() {
