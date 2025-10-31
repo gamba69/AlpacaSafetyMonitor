@@ -22,14 +22,11 @@ Meteo meteo("AlpacaESP32");
 
 WebSerial webSerial;
 
-#define NTP_TIMEOUT 5000
-const PROGMEM char *ntpServer = "time.google.com";
-
 String logTime() {
     time_t now;
     struct tm timeinfo;
     time(&now);
-    setenv("TZ", "Europe/Kiev", 1);
+    setenv("TZ", RTC_TIMEZONE, 1);
     tzset();
     localtime_r(&now, &timeinfo);
     // gmtime_r(&now, &timeinfo);
@@ -66,7 +63,7 @@ void setup() {
     Serial.begin(115200);
     while (!Serial) {
     }
-    delay(4000);
+    delay(10000);
     Stream *stream;
 
     // RTC
@@ -105,12 +102,12 @@ void setup() {
             break;
         }
     });
-    NTP.setTimeZone(TZ_Europe_Kiev);
-    NTP.setInterval(600);
+    NTP.setTimeZone(NTP_TIMEZONE);
+    NTP.setInterval(NTP_INTERVAL_SHORT, NTP_INTERVAL_LONG);
     NTP.setNTPTimeout(NTP_TIMEOUT);
     // NTP.setMinSyncAccuracy (5000);
     // NTP.settimeSyncThreshold (3000);
-    NTP.begin(ntpServer);
+    NTP.begin(NTP_SERVER);
 
     // TCP server
     tcp_server = new AsyncWebServer(ALPACA_TCP_PORT);

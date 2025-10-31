@@ -1,5 +1,15 @@
 #pragma once
 
+// RTC
+#define RTC_TIMEZONE "Europe/Kiev"
+
+// NTP
+#define NTP_TIMEZONE TZ_Europe_Kiev
+#define NTP_TIMEOUT 5000
+#define NTP_INTERVAL_SHORT 10
+#define NTP_INTERVAL_LONG 900
+#define NTP_SERVER "time.google.com"
+
 // ASCOM Alpaca
 #define ALPACA_UDP_PORT 32227
 #define ALPACA_TCP_PORT 80
