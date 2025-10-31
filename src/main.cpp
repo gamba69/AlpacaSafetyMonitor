@@ -1,8 +1,9 @@
 #include "main.h"
-#include "otawebupdater.h"
 #include "secrets.h"
-#include "wifimanager.h"
+#include <ESPNtpClient.h>
 #include <MycilaWebSerial.h>
+#include <otawebupdater.h>
+#include <wifimanager.h>
 
 RTC_DS3231 rtc;
 
@@ -20,6 +21,9 @@ ObservingConditions observingconditions = ObservingConditions();
 Meteo meteo("AlpacaESP32");
 
 WebSerial webSerial;
+
+#define NTP_TIMEOUT 5000
+const PROGMEM char *ntpServer = "time.google.com";
 
 String logTime() {
     time_t now;
@@ -64,17 +68,14 @@ void setup() {
     }
     delay(4000);
     Stream *stream;
+
     // RTC
     if (!rtc.begin())
-        logMessage("[MAIN] Couldn't find RTC", false);
-
-    // Init unpowered RTC
+        logMessage("[TIME][RTC] Couldn't find RTC", false);
     if (rtc.lostPower()) {
-        logMessage("[MAIN] RTC lost power, let's set the time!", false);
+        logMessage("[TIME][RTC] RTC lost power, let's set the time!", false);
         rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
     }
-
-    // Read time from RTC
     DateTime rtcNow = rtc.now();
     struct timeval tv;
     tv.tv_sec = rtcNow.unixtime();
@@ -83,6 +84,33 @@ void setup() {
 
     // TODO Fixed WiFI settings with reconnect
     // setup_wifi();
+
+    // NTP
+    NTP.onNTPSyncEvent([](NTPEvent_t event) {
+        switch (event.event) {
+        case timeSyncd: {
+            struct timeval now;
+            gettimeofday(&now, NULL);
+            time_t t = now.tv_sec;
+            rtc.adjust(DateTime(t));
+            logMessage("[TIME][RTC] Synced");
+            logMessage("[TIME][NTP] " + String(NTP.ntpEvent2str(event)));
+        } break;
+        case partlySync:
+        case syncNotNeeded:
+        case accuracyError:
+            logMessage("[TIME][NTP] " + String(NTP.ntpEvent2str(event)));
+            break;
+        default:
+            break;
+        }
+    });
+    NTP.setTimeZone(TZ_Europe_Kiev);
+    NTP.setInterval(600);
+    NTP.setNTPTimeout(NTP_TIMEOUT);
+    // NTP.setMinSyncAccuracy (5000);
+    // NTP.settimeSyncThreshold (3000);
+    NTP.begin(ntpServer);
 
     // TCP server
     tcp_server = new AsyncWebServer(ALPACA_TCP_PORT);
@@ -93,19 +121,19 @@ void setup() {
 
     // WiFi Manager
     WifiManager.setLogger(logLine, logLinePart, logTime); // Set message logger
-    WifiManager.startBackgroundTask();       // Run the background task to take care of our Wifi
-    WifiManager.fallbackToSoftAp(true);      // Run a SoftAP if no known AP can be reached
-    WifiManager.attachWebServer(tcp_server); // Attach our API to the HTTP Webserver
+    WifiManager.startBackgroundTask();                    // Run the background task to take care of our Wifi
+    WifiManager.fallbackToSoftAp(true);                   // Run a SoftAP if no known AP can be reached
+    WifiManager.attachWebServer(tcp_server);              // Attach our API to the HTTP Webserver
     WifiManager.attachUI();
 
     // OTA Manager
     // TODO Versions!
     // OtaWebUpdater.setBaseUrl(OTA_BASE_URL);    // Set the OTA Base URL for automatic updates
-    OtaWebUpdater.setLogger(logLine, logLinePart, logTime);    // Set message logger
-    OtaWebUpdater.setFirmware(__DATE__, "1.0.0"); // Set the current firmware version
-    OtaWebUpdater.startBackgroundTask();          // Run the background task to check for updates
-    OtaWebUpdater.attachWebServer(tcp_server);    // Attach our API to the Webserver
-    OtaWebUpdater.attachUI();                     // Attach the UI to the Webserver
+    OtaWebUpdater.setLogger(logLine, logLinePart, logTime); // Set message logger
+    OtaWebUpdater.setFirmware(__DATE__, "1.0.0");           // Set the current firmware version
+    OtaWebUpdater.startBackgroundTask();                    // Run the background task to check for updates
+    OtaWebUpdater.attachWebServer(tcp_server);              // Attach our API to the Webserver
+    OtaWebUpdater.attachUI();                               // Attach the UI to the Webserver
 
     tcp_server->begin();
 

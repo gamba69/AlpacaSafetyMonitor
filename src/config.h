@@ -1,12 +1,5 @@
 #pragma once
 
-// General
-#define DEVICENAME "AlpacaESP32driver"
-#define VERSION "v1.2.1"
-#define COPYRIGHT "2021 Njål Brekke & 2023 @agnuca"
-#define SAFETYMONITOR2_ENABLE false
-#define DEBUG
-
 // ASCOM Alpaca
 #define ALPACA_UDP_PORT 32227
 #define ALPACA_TCP_PORT 80
