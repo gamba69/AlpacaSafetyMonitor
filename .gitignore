@@ -2,7 +2,6 @@
 .vscode/*
 src/secrets.h
 src/version.h
-versioning
 docs/api
 data/www/jsondata.device
 data/www/jsondata.server
