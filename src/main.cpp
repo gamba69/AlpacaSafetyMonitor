@@ -1,5 +1,6 @@
 #include "main.h"
 #include "secrets.h"
+#include "version.h"
 #include <ESPNtpClient.h>
 #include <MycilaWebSerial.h>
 #include <otawebupdater.h>
@@ -127,7 +128,7 @@ void setup() {
     // TODO Versions!
     // OtaWebUpdater.setBaseUrl(OTA_BASE_URL);    // Set the OTA Base URL for automatic updates
     OtaWebUpdater.setLogger(logLine, logLinePart, logTime); // Set message logger
-    OtaWebUpdater.setFirmware(__DATE__, "1.0.0");           // Set the current firmware version
+    OtaWebUpdater.setFirmware(BUILD_DATE, VERSION);           // Set the current firmware version
     OtaWebUpdater.startBackgroundTask();                    // Run the background task to check for updates
     OtaWebUpdater.attachWebServer(tcp_server);              // Attach our API to the Webserver
     OtaWebUpdater.attachUI();                               // Attach the UI to the Webserver
