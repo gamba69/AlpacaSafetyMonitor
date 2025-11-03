@@ -126,7 +126,7 @@ void Meteo::update(unsigned long measureDelay) {
     logMessage(buffer);
 
     aht_humidity = aht_sensor_humidity.relative_humidity;
-    snprintf(buffer, sizeof(buffer), "[METEO][AHT] Humidity: %.0f %", aht_humidity);
+    snprintf(buffer, sizeof(buffer), "[METEO][AHT] Humidity: %.0f %%", aht_humidity);
     logMessage(buffer);
 
     mlx_tempamb = mlx.readAmbientTempC();
@@ -155,6 +155,6 @@ void Meteo::update(unsigned long measureDelay) {
         cloudcover = 100.;
     if (cloudcover < 0.)
         cloudcover = 0.;
-    snprintf(buffer, sizeof(buffer), "[METEO][CALC] Cloud cover: %.1f %", cloudcover);
+    snprintf(buffer, sizeof(buffer), "[METEO][CALC] Cloud cover: %.1f %%", cloudcover);
     logMessage(buffer);
 }
