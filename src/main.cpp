@@ -65,7 +65,6 @@ void setup() {
     while (!Serial) {
     }
     delay(10000);
-    Stream *stream;
 
     // RTC
     if (!rtc.begin())
@@ -125,7 +124,6 @@ void setup() {
     WifiManager.attachUI();
 
     // OTA Manager
-    // TODO Versions!
     // OtaWebUpdater.setBaseUrl(OTA_BASE_URL);    // Set the OTA Base URL for automatic updates
     OtaWebUpdater.setLogger(logLine, logLinePart, logTime); // Set message logger
     OtaWebUpdater.setFirmware(BUILD_DATE, VERSION);           // Set the current firmware version
@@ -167,11 +165,6 @@ void loop() {
         safetymonitor.update(meteo, meteoMeasureDelay);
         observingconditions.update(meteo, meteoMeasureDelay);
         meteoLastTimeRan = millis();
-
-        // Serial.print("[SAFEMON] RTC ");
-        // char buffer[30];
-        // strcpy(buffer, "YYYY-MM-DD hh:mm:ss"); // Example format: 2025-10-27 19:57:00
-        // Serial.println(rtc.now().toString(buffer));
     }
     delay(50);
 }
