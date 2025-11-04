@@ -22,7 +22,12 @@
 #define I2C_AHT_ADDR 0x38
 
 // METEO
+// Sensors read cycle in ms. Always greater than 3000.
 #define METEO_MEASURE_DELAY 3000
+
+// MQTT
+#define MQTT_STATUS_DELAY 20000
+#define MQTT_LOG_TOPIC "safetymonitor/log"
 
 // LEDS
 #define PIN_WIFI_LED 21
