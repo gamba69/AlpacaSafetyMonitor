@@ -138,6 +138,6 @@ void Meteo::update(unsigned long measureDelay) {
     logMessage("[METEO][CALC] Dewpoint: " + String(dewpoint, 1) + " °C");
     logMessage("[METEO][CALC] Sky temperature: " + String(tempsky, 1) + " °C");
     logMessage("[METEO][CALC] Cloud cover: " + String(cloudcover, 0) + " %");
-    logMessage("[METEO][CALC] Turbulence,: " + String(noise_db, 1) + " dB");
+    logMessage("[METEO][CALC] Turbulence: " + String(noise_db, 1) + " dB");
     logMessage("[METEO][RAIN] Rain rate: " + String(rainrate, 1) + " mm/h");
 }
