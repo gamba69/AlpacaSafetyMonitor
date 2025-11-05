@@ -26,15 +26,22 @@ class SafetyMonitor : public AlpacaSafetyMonitor {
     float limit_humid = 90.; // risk for electronics above this
     float limit_dew = 5.;    // risk for optics with temp - dewpoint below this
 
+    bool temp_prove = true;
     float temp_low_limit = -15;
     float temp_high_limit = -13;
+    bool skytemp_prove = true;
     float skytemp_low_limit = -18;
     float skytemp_high_limit = -16;
+    bool humi_prove = true;
     float humi_low_limit = 90;
     float humi_high_limit = 95;
+    bool dewdelta_prove = true;
     float dewdelta_low_limit = 4;
     float dewdelta_high_limit = 5;
+    bool rain_prove = true;
     float rain_off_delay = 600;
+    bool wind_prove = true;
+    // WIND
 
     float delay2open = 1200.; // waiting time before open roof after a safety close
     float delay2close = 120.; // waiting time before close roof with continuos overall safety waring for this

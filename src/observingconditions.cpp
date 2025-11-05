@@ -14,7 +14,7 @@ bool ObservingConditions::begin() {
 
 void ObservingConditions::update(Meteo meteo, unsigned long measureDelay) {
     //  update meteo
-    temperature = meteo.bmp_temperature;
+    temperature = (meteo.bmp_temperature + meteo.aht_temperature) / 2;
     humidity = meteo.aht_humidity;
     pressure = meteo.bmp_pressure;
     rainrate = meteo.rainrate;
