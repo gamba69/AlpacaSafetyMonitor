@@ -17,6 +17,7 @@ void ObservingConditions::update(Meteo meteo, unsigned long measureDelay) {
     temperature = meteo.bmp_temperature;
     humidity = meteo.aht_humidity;
     pressure = meteo.bmp_pressure;
+    rainrate = meteo.rainrate;
     dewpoint = meteo.dewpoint;
     tempsky = meteo.tempsky;
     noise_db = meteo.noise_db;
@@ -41,14 +42,16 @@ void ObservingConditions::aWriteJson(JsonObject &root) {
     obj_config[F("Refresh Period")] = _refresh;
 
     JsonObject obj_state = root[F("State")].to<JsonObject>();
-    obj_state[F("Sensors_Description")] = sensordescription;
-    obj_state[F("Ambient_Temperature")] = temperature;
-    obj_state[F("Sky_Temperature ")] = tempsky;
-    obj_state[F("Humidity")] = humidity;
-    obj_state[F("Pressure")] = pressure;
-    obj_state[F("Dewpoint")] = dewpoint;
-    obj_state[F("Turbulence_db")] = noise_db; // not exactly seeing (fwhm)
-    obj_state[F("Cloud_Cover")] = cloudcover;
-    obj_state[F("Sky_Quality")] = skyquality;
-    obj_state[F("Sky_Brightness")] = skybrightness;
+    obj_state[F("Sensors Description")] = sensordescription;
+    obj_state[F("Temperature, °C")] = String(temperature, 1);
+    obj_state[F("Humidity, %")] = String(humidity, 0);
+    obj_state[F("Pressure, hPa")] = String(pressure, 0);
+    obj_state[F("Rain Rate, mm/h")] = String(rainrate, 1);
+    obj_state[F("Dewpoint, °C")] = String(dewpoint, 1);
+    obj_state[F("Sky Temperature, °C")] = String(tempsky, 1);
+    obj_state[F("Cloud Cover, %")] = String(cloudcover, 0);
+    // not exactly seeing (fwhm)
+    obj_state[F("Turbulence, dB")] = String(noise_db, 1);
+    // obj_state[F("Sky Quality")] = skyquality;
+    // obj_state[F("Sky Brightness")] = skybrightness;
 }

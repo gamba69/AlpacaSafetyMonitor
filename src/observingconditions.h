@@ -11,7 +11,7 @@ class ObservingConditions : public AlpacaObservingConditions {
     uint8_t _observingconditions_index;
     float temperature, humidity, pressure, dewpoint, tempsky, noise_db;
     float skybrightness, winddir, windgust, windspeed, timelastupdate, rainrate, cloudcover, skyquality = 0;
-    const char *sensordescription = "ESP32 MLX90614 BMP280";
+    const char *sensordescription = "Xiao Seeed ESP32S3/BMP280/AHT20/MLX90614";
     float _avgperiod = 5;
     int _refresh = 0;
 

@@ -36,11 +36,12 @@ bool SafetyMonitor::begin() {
 
 void SafetyMonitor::update(Meteo meteo, unsigned long measureDelay) {
     //  update meteo
-    temperature = meteo.bmp_temperature;
+    temperature = (meteo.bmp_temperature + meteo.aht_temperature) / 2;
     humidity = meteo.aht_humidity;
-    pressure = meteo.bmp_pressure;
     dewpoint = meteo.dewpoint;
+    dewpoint_delta = (temperature - dewpoint > 0 ? temperature - dewpoint : 0);
     tempsky = meteo.tempsky;
+    rainrate = meteo.rainrate;
 
     if (temperature > limit_tamb) {
         status_tamb = true;
@@ -127,12 +128,14 @@ void SafetyMonitor::aWriteJson(JsonObject &root) {
     obj_config[F("Delay_to_Open")] = delay2open;
     obj_config[F("Delay_to_Close")] = delay2close;
 
+    // 🟢 🔴 ⚫
     JsonObject obj_state = root[F("State")].to<JsonObject>();
-    obj_state[F("Ambient_Temperature")] = temperature;
-    obj_state[F("Sky_Temperature ")] = tempsky;
-    obj_state[F("Humidity")] = humidity;
-    obj_state[F("Pressure")] = pressure;
-    obj_state[F("Time_to_open")] = time2open;
-    obj_state[F("Time_to_close")] = time2close;
+    obj_state[F("🟢 Temperature, °C")] = temperature;
+    obj_state[F("⚫ Sky Temperature, °C")] = tempsky;
+    obj_state[F("Humidity, %")] = humidity;
+    obj_state[F("Dewpoint, °C")] = dewpoint;
+    obj_state[F("Dewpoint Δ, °C")] = dewpoint_delta;
+    obj_state[F("Time_to_open, s")] = time2open;
+    obj_state[F("Time_to_close, s")] = time2close;
     obj_state[F("Safety_Monitor_status")] = status_roof;
 }

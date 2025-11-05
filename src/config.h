@@ -25,6 +25,8 @@
 // Sensors read cycle in ms. Always greater than 3000.
 #define METEO_MEASURE_DELAY 3000
 
+// TODO Configurable OC & SM updates
+
 // RAIN
 #define RAIN_SENSOR_PIN 8
 

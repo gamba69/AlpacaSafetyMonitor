@@ -106,62 +106,38 @@ float cb_snr_calc() {
 // Read through i2c bus
 
 void Meteo::update(unsigned long measureDelay) {
-    char buffer[100];
-    logMessage(F("[METEO] Update Meteo & Safety Monitors"));
-
+    logMessage(F("[METEO] Updating Meteo monitors"));
     bmp_temperature = bmp.readTemperature();
-    snprintf(buffer, sizeof(buffer), "[METEO][BMP] Temperature: %.1f °C", bmp_temperature);
-    logMessage(buffer);
-
     bmp_pressure = bmp.readPressure() / 100.0F;
-    snprintf(buffer, sizeof(buffer), "[METEO][BMP] Pressure: %.0f hPa", bmp_pressure);
-    logMessage(buffer);
-
     sensors_event_t aht_sensor_humidity, aht_sensor_temp;
     aht.getEvent(&aht_sensor_humidity, &aht_sensor_temp);
-
     aht_temperature = aht_sensor_temp.temperature;
-    snprintf(buffer, sizeof(buffer), "[METEO][AHT] Temperature: %.1f °C", aht_temperature);
-    logMessage(buffer);
-
     aht_humidity = aht_sensor_humidity.relative_humidity;
-    snprintf(buffer, sizeof(buffer), "[METEO][AHT] Humidity: %.0f %%", aht_humidity);
-    logMessage(buffer);
-
     mlx_tempamb = mlx.readAmbientTempC();
-    snprintf(buffer, sizeof(buffer), "[METEO][MLX] Ambient: %.1f °C", mlx_tempamb);
-    logMessage(buffer);
-
     mlx_tempobj = mlx.readObjectTempC();
-    snprintf(buffer, sizeof(buffer), "[METEO][MLX] Object: %.1f °C", mlx_tempobj);
-    logMessage(buffer);
-
     dewpoint = aht_temperature - (100 - aht_humidity) / 5.;
-    snprintf(buffer, sizeof(buffer), "[METEO][CALC] Dewpoint: %.1f °C", dewpoint);
-    logMessage(buffer);
-
     tempsky = tsky_calc(mlx_tempobj, mlx_tempamb);
-    snprintf(buffer, sizeof(buffer), "[METEO][CALC] Sky temperature: %.1f °C", tempsky);
-    logMessage(buffer);
     cb_add(tempsky); // add tempsky value to circular buffer and calculate  Turbulence (noise dB) / Seeing estimation
-
     noise_db = cb_noise_db_calc();
-    snprintf(buffer, sizeof(buffer), "[METEO][CALC] Noise: %.1f dB", noise_db);
-    logMessage(buffer);
-
     cloudcover = 100. + (tempsky * 6.);
     if (cloudcover > 100.)
         cloudcover = 100.;
     if (cloudcover < 0.)
         cloudcover = 0.;
-    snprintf(buffer, sizeof(buffer), "[METEO][CALC] Cloud cover: %.1f %%", cloudcover);
-    logMessage(buffer);
-
     if (digitalRead(RAIN_SENSOR_PIN)) {
         rainrate = 1;
     } else {
         rainrate = 0;
     }
-    snprintf(buffer, sizeof(buffer), "[METEO][RAIN] Rain rate: %.1f mm/h", rainrate);
-    logMessage(buffer);
+    logMessage("[METEO][BMP] Temperature: " + String(bmp_temperature, 1) + " °C");
+    logMessage("[METEO][BMP] Pressure: " + String(bmp_pressure, 0) + " hPa");
+    logMessage("[METEO][AHT] Temperature: " + String(aht_temperature, 1) + " °C");
+    logMessage("[METEO][AHT] Humidity: " + String(aht_humidity, 0) + " %");
+    logMessage("[METEO][MLX] Ambient: " + String(mlx_tempamb, 1) + " °C");
+    logMessage("[METEO][MLX] Object: " + String(mlx_tempobj, 1) + " °C");
+    logMessage("[METEO][CALC] Dewpoint: " + String(dewpoint, 1) + " °C");
+    logMessage("[METEO][CALC] Sky temperature: " + String(tempsky, 1) + " °C");
+    logMessage("[METEO][CALC] Cloud cover: " + String(cloudcover, 0) + " %");
+    logMessage("[METEO][CALC] Turbulence,: " + String(noise_db, 1) + " dB");
+    logMessage("[METEO][RAIN] Rain rate: " + String(rainrate, 1) + " mm/h");
 }
