@@ -22,6 +22,8 @@ ObservingConditions observingconditions = ObservingConditions();
 
 Meteo meteo("AlpacaESP32");
 
+bool immediateMeteoUpdate = false;
+
 WebSerial webSerial;
 
 PicoMQTT::Client *mqttClient = nullptr;
@@ -99,6 +101,10 @@ void setupMqtt() {
     } else {
         logMqttStatus();
     }
+}
+
+void IRAM_ATTR rainSensorChanged() {
+    immediateMeteoUpdate = true;
 }
 
 void setup() {
@@ -183,6 +189,8 @@ void setup() {
     // Meteo sensors
     meteo.setLogger(logLine, logLinePart, logTime);
     meteo.begin();
+    // Rain sensor
+    attachInterrupt(digitalPinToInterrupt(RAIN_SENSOR_PIN), rainSensorChanged, CHANGE);
 }
 
 void loop() {
@@ -212,11 +220,12 @@ void loop() {
         lastMqttStatus = millis();
     }
     // Actual Load
-    if (millis() > meteoLastTimeRan + meteoMeasureDelay) { // read every measureDelay without blocking Webserver
+    if (immediateMeteoUpdate || (millis() > meteoLastTimeRan + meteoMeasureDelay)) { // read every measureDelay without blocking Webserver
         meteo.update(meteoMeasureDelay);
         safetymonitor.update(meteo, meteoMeasureDelay);
         observingconditions.update(meteo, meteoMeasureDelay);
         meteoLastTimeRan = millis();
+        immediateMeteoUpdate = false;
     }
     delay(50);
 }

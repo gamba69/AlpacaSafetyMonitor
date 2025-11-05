@@ -35,11 +35,10 @@ const std::string &Meteo::getName() const {
 }
 
 void Meteo::begin() {
+    pinMode(RAIN_SENSOR_PIN, INPUT_PULLDOWN);
     Wire.end();
-    // Set I2C pinout
     Wire.setPins(I2C_SDA_PIN, I2C_SCL_PIN);
     Wire.begin();
-    // Initialize sensors
     mlx.begin(I2C_MLX_ADDR);
     bmp.begin(I2C_BMP_ADDR);
     aht.begin(&Wire, 0, I2C_AHT_ADDR);
@@ -156,5 +155,13 @@ void Meteo::update(unsigned long measureDelay) {
     if (cloudcover < 0.)
         cloudcover = 0.;
     snprintf(buffer, sizeof(buffer), "[METEO][CALC] Cloud cover: %.1f %%", cloudcover);
+    logMessage(buffer);
+
+    if (digitalRead(RAIN_SENSOR_PIN)) {
+        rainrate = 1;
+    } else {
+        rainrate = 0;
+    }
+    snprintf(buffer, sizeof(buffer), "[METEO][RAIN] Rain rate: %.1f mm/h", rainrate);
     logMessage(buffer);
 }

@@ -25,6 +25,9 @@
 // Sensors read cycle in ms. Always greater than 3000.
 #define METEO_MEASURE_DELAY 3000
 
+// RAIN
+#define RAIN_SENSOR_PIN 8
+
 // MQTT
 #define MQTT_STATUS_DELAY 20000
 #define MQTT_LOG_TOPIC "safetymonitor/log"
@@ -33,4 +36,4 @@
 #define PIN_WIFI_LED 21
 
 // ROOF PINOUT
-#define ROOFpin 4
+// #define ROOFpin 4

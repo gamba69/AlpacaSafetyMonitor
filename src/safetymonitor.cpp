@@ -77,7 +77,7 @@ void SafetyMonitor::update(Meteo meteo, unsigned long measureDelay) {
                 status_roof = false;
                 _issafe = false;
                 logMessage("[SAFEMON] Close Roofs");
-                digitalWrite(ROOFpin, LOW);
+                // digitalWrite(ROOFpin, LOW);
             }
         }
     }
@@ -91,7 +91,7 @@ void SafetyMonitor::update(Meteo meteo, unsigned long measureDelay) {
                 status_roof = true;
                 _issafe = true;
                 logMessage("[SAFEMON] Open Roofs");
-                digitalWrite(ROOFpin, HIGH);
+                // digitalWrite(ROOFpin, HIGH);
             }
         }
     }

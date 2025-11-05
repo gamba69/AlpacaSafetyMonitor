@@ -8,7 +8,7 @@
 #include <Wire.h>
 
 // Circular buffer functions
-#define CB_SIZE 24
+#define CB_SIZE 40
 static float cb[CB_SIZE] = {0.};
 static float cb_noise[CB_SIZE] = {0.};
 static int cb_index = 0;
@@ -34,7 +34,8 @@ class Meteo {
         dewpoint,
         cloudcover,
         skyquality,
-        skybrightness;
+        skybrightness,
+        rainrate;
     // sensors
     // methods
     void update(unsigned long measureDelay);
