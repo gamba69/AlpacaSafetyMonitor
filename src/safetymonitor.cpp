@@ -108,9 +108,13 @@ void SafetyMonitor::update(Meteo meteo, unsigned long measureDelay) {
 void SafetyMonitor::aReadJson(JsonObject &root) {
     AlpacaSafetyMonitor::aReadJson(root);
     if (JsonObject obj_config = root[F("Configuration")]) {
-        temp_prove = obj_config[F("Temperature_prove")] | temp_prove;
-        temp_low_limit = obj_config[F("  - low limit, °C")] | temp_low_limit;
-        temp_high_limit = obj_config[F("  - high limit, °C")] | temp_high_limit; 
+        Serial.println(obj_config[F("A_Temperature_prove")].as<String>());
+        if (obj_config[F("A_Temperature_prove")].as<String>() == String("true"))
+            temp_prove = true;
+        else
+            temp_prove = false;
+        temp_low_limit = obj_config[F("B_dash_low_limitcomma_degC")] | temp_low_limit;
+        temp_high_limit = obj_config[F("C_dash_high_limitcomma_degC")] | temp_high_limit;
         // limit_tamb = obj_config[F("Freezing_Temperature")] | limit_tamb;
         // limit_tsky = obj_config[F("Cloudy_SkyTemperature")] | limit_tsky;
         // limit_humid = obj_config[F("Humidity_limit")] | limit_humid;
@@ -125,9 +129,9 @@ void SafetyMonitor::aWriteJson(JsonObject &root) {
     AlpacaSafetyMonitor::aWriteJson(root);
     // read-only values marked with #
     JsonObject obj_config = root[F("Configuration")].to<JsonObject>();
-    obj_config[F("Temperature_prove")] = temp_prove;
-    obj_config[F("  - low limit, °C")] = temp_low_limit;
-    obj_config[F("  - high limit, °C")] = temp_high_limit;
+    obj_config[F("A_Temperature_prove")] = temp_prove;
+    obj_config[F("B_dash_low_limitcomma_degC")] = temp_low_limit;
+    obj_config[F("C_dash_high_limitcomma_degC")] = temp_high_limit;
     // obj_config[F("Freezing_Temperature")] = limit_tamb;
     // obj_config[F("Cloudy_SkyTemperature")] = limit_tsky;
     // obj_config[F("Humidity_limit")] = limit_humid;
@@ -140,7 +144,7 @@ void SafetyMonitor::aWriteJson(JsonObject &root) {
     obj_state[F("⚫ Temperature, °C")] = temperature;
     obj_state[F("⚫ Sky Temperature, °C")] = tempsky;
     obj_state[F("⚫ Humidity, %")] = humidity;
-    obj_state[F("  Dewpoint, °C")] = dewpoint;
+    obj_state[F("Dewpoint, °C")] = dewpoint;
     obj_state[F("⚫ Dewpoint Δ, °C")] = dewpoint_delta;
     // obj_state[F("Time_to_open, s")] = time2open;
     // obj_state[F("Time_to_close, s")] = time2close;

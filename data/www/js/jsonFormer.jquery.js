@@ -152,7 +152,7 @@ $.widget('jsnook.jsonFormer', {
             switch (typeof (val)) {
                 case "array":
                     box = $(self.options.arrayTemplate);
-                    $(box).find('label').text(key);
+                    $(box).find('label').text(key.asLabel());
                     innerContainer = $(box).find('.json-form-inner');
                     $(container).append(box);
                     self._recursiveFunction(key, val, innerContainer, pKey);
@@ -161,7 +161,7 @@ $.widget('jsnook.jsonFormer', {
                     if (!self._isEmpty(val)) {
                         if ($.isArray(val)) {
                             box = $(self.options.arrayTemplate);
-                            $(box).find('label').text(key);
+                            $(box).find('label').text(key.asLabel());
                             innerContainer = $(box).find('.json-form-inner');
                         } else {
                             box = $(self.options.objectTemplate);
@@ -173,7 +173,7 @@ $.widget('jsnook.jsonFormer', {
                     } else {
                         box = $(self.options.emptyObjectTemplate);
                         val = JSON.stringify(val);
-                        $(box).find('label').text(key);
+                        $(box).find('label').text(key.asLabel());
                         $(box).find('p').attr('id', pKey)
                                 .attr('value', val)
                                 .attr('type', 'plain-text')
@@ -187,7 +187,7 @@ $.widget('jsnook.jsonFormer', {
                         box = $(self.options.inlineFieldTemplate);
                     } else {
                         box = $(self.options.stringTemplate);
-                        $(box).find('label').attr('for', pKey).text(key);
+                        $(box).find('label').attr('for', pKey).text(key.asLabel());
                         $(box).find('input')
                                 .attr('id', pKey)
                                 .attr('value', val)
@@ -205,7 +205,7 @@ $.widget('jsnook.jsonFormer', {
                                 .attr('value', val);
                     } else {
                         box = $(self.options.stringTemplate);
-                        $(box).find('label').attr('for', pKey).text(key);
+                        $(box).find('label').attr('for', pKey).text(key.asLabel());
                         $(box).find('input')
                                 .attr('id', pKey)
                                 .attr('value', val)
@@ -218,7 +218,7 @@ $.widget('jsnook.jsonFormer', {
                     break;
                 case "boolean":
                     box = $(self.options.booleanTemplate);
-                    $(box).find('label').first().text(key);
+                    $(box).find('label').first().text(key.asLabel());
                     $(box).find('label').last().attr('for', pKey);
                     $(box).find('input')
                         .attr('id', pKey)
@@ -228,7 +228,7 @@ $.widget('jsnook.jsonFormer', {
                     break;
                 case "null":
                     box = $(self.options.nullTemplate);
-                    $(box).find('label').attr('id', pKey).text(key);
+                    $(box).find('label').attr('id', pKey).text(key.asLabel());
                     $(box).find('p').attr('id', pKey)
                             .attr('value', JSON.stringify(val))
                             .attr('type', 'plain-text')
@@ -251,4 +251,15 @@ $.widget('jsnook.jsonFormer', {
 String.prototype.replaceAll = function (search, replacement) {
     var target = this;
     return target.replace(new RegExp(search, 'g'), replacement);
+};
+
+String.prototype.asLabel = function () {
+    var target = this;
+    // target = target.slice(2);
+    target = target.replaceAll("^[A-Z]_", "");
+    target = target.replaceAll("dash", "-");
+    target = target.replaceAll("deg", "°");
+    target = target.replaceAll("comma", ",");
+    target = target.replaceAll("_", " ");
+    return target;
 };

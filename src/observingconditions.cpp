@@ -29,8 +29,8 @@ void ObservingConditions::update(Meteo meteo, unsigned long measureDelay) {
 void ObservingConditions::aReadJson(JsonObject &root) {
     AlpacaObservingConditions::aReadJson(root);
     if (JsonObject obj_config = root[F("Configuration")]) {
-        _avgperiod = obj_config[F("Average Period")] | _avgperiod;
-        _refresh = obj_config[F("Refresh Period")] | _refresh;
+        _avgperiod = obj_config[F("A_Average_Periodcomma_sec")] | _avgperiod;
+        _refresh = obj_config[F("B_Refresh_Periodcomma_sec")] | _refresh;
     }
 }
 
@@ -38,8 +38,8 @@ void ObservingConditions::aWriteJson(JsonObject &root) {
     AlpacaObservingConditions::aWriteJson(root);
     // read-only values marked with #
     JsonObject obj_config = root[F("Configuration")].to<JsonObject>();
-    obj_config[F("Average Period")] = _avgperiod;
-    obj_config[F("Refresh Period")] = _refresh;
+    obj_config[F("A_Average_Periodcomma_sec")] = _avgperiod;
+    obj_config[F("B_Refresh_Periodcomma_sec")] = _refresh;
 
     JsonObject obj_state = root[F("State")].to<JsonObject>();
     obj_state[F("Sensors Description")] = sensordescription;
