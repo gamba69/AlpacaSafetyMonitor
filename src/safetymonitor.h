@@ -21,38 +21,40 @@ class SafetyMonitor : public AlpacaSafetyMonitor {
     static SafetyMonitor *_safetymonitor_array[4];
     uint8_t _safetymonitor_index;
 
-    float limit_tamb = 0.;   // freezing below this
-    float limit_tsky = -15.; //-15.;   // cloudy above this
-    float limit_humid = 90.; // risk for electronics above this
-    float limit_dew = 5.;    // risk for optics with temp - dewpoint below this
-
+    // Rain
     bool rain_prove = true;
-    int rainoff_delay = 600;
+    int rain_cessation_delay = 600;
+    bool rain_safe = false;
+    // Temp
     bool temp_prove = true;
-    float temp_low_limit = -15.;
-    float temp_high_limit = -13.;
+    float temp_lower_limit = -15.;
+    float temp_upper_limit = -13.;
+    bool temp_safe = false;
+    // Humi
     bool humi_prove = true;
-    float humi_low_limit = 90.;
-    float humi_high_limit = 95.;
+    float humi_lower_limit = 90.;
+    float humi_upper_limit = 95.;
+    bool humi_safe = false;
+    // Dew Delta
     bool dewdelta_prove = true;
-    float dewdelta_low_limit = 4.;
-    float dewdelta_high_limit = 5.;
+    float dewdelta_lower_limit = 4.;
+    float dewdelta_upper_limit = 5.;
+    bool dewdelta_safe = false;
+    // Sky Temp
     bool skytemp_prove = true;
-    float skytemp_low_limit = -18.;
-    float skytemp_high_limit = -16.;
+    float skytemp_lower_limit = -18.;
+    float skytemp_upper_limit = -16.;
+    bool skytemp_safe = false;
+    // Wind
     bool wind_prove = true;
-    // WIND
-
-    float delay2open = 1200.; // waiting time before open roof after a safety close
-    float delay2close = 120.; // waiting time before close roof with continuos overall safety waring for this
-    float time2open, time2close = 0;
-
-    bool status_tamb, status_tsky, status_humid, status_dew, status_weather, instant_status, status_roof = false;
+    float wind_lower_limit = 6;
+    float wind_upper_limit = 7;
+    bool wind_safe = false;
 
     bool _issafe = false; // overall meteo safety status
 
     // acquired parameters
-    float temperature, humidity, dewpoint, dewpoint_delta, tempsky, rainrate;
+    float temperature, humidity, dewpoint, dewpoint_delta, tempsky, rainrate, windspeed;
 
   public:
     SafetyMonitor() : AlpacaSafetyMonitor() { _safetymonitor_index = _n_safetymonitors++; }

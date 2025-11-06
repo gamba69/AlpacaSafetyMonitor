@@ -177,8 +177,8 @@ void setup() {
     tcp_server->on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(LittleFS, "/www/favicon.ico", "image/x-icon");
     });
-    tcp_server->on("/ascom.jpg", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(LittleFS, "/www/ascom.jpg", "image/jpeg");
+    tcp_server->on("/ascom.webp", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(LittleFS, "/www/ascom.webp", "image/webp");
     });
     tcp_server->begin();
     // UDP Server

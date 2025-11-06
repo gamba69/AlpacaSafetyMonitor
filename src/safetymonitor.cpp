@@ -35,7 +35,6 @@ bool SafetyMonitor::begin() {
 }
 
 void SafetyMonitor::update(Meteo meteo, unsigned long measureDelay) {
-    // TODO Полностью переписать!
     //  update meteo
     temperature = (meteo.bmp_temperature + meteo.aht_temperature) / 2;
     humidity = meteo.aht_humidity;
@@ -43,110 +42,97 @@ void SafetyMonitor::update(Meteo meteo, unsigned long measureDelay) {
     dewpoint_delta = (temperature - dewpoint > 0 ? temperature - dewpoint : 0);
     tempsky = meteo.tempsky;
     rainrate = meteo.rainrate;
+    // windspeed = meteo.windspeed;
 
-    if (temperature > limit_tamb) {
-        status_tamb = true;
-    } else {
-        status_tamb = false;
-    }
-    if (humidity < limit_humid) {
-        status_humid = true;
-    } else {
-        status_humid = false;
-    }
-    if (tempsky < limit_tsky) {
-        status_tsky = true;
-    } else {
-        status_tsky = false;
-    }
-    if ((temperature - dewpoint) > limit_dew) {
-        status_dew = true;
-    } else {
-        status_dew = false;
-    }
-    if (status_tamb && status_humid && status_tsky && status_dew) {
-        instant_status = true;
-    } else {
-        instant_status = false;
-    }
-    if (instant_status == false) {
-        if (status_weather == true)
-            logMessage("[SAFEMON] Unsafe received");
-        time2open = delay2open;
-        status_weather = false;
-        if (status_roof == true) {
-            if (time2close == 0.) {
-                status_roof = false;
-                _issafe = false;
-                logMessage("[SAFEMON] Close Roofs");
-                // digitalWrite(ROOFpin, LOW);
-            }
-        }
-    }
-    if (instant_status == true) {
-        if (status_weather == false)
-            logMessage("[SAFEMON] Safe received");
-        time2close = delay2close;
-        status_weather = true;
-        if (status_roof == false) {
-            if (time2open == 0.) {
-                status_roof = true;
-                _issafe = true;
-                logMessage("[SAFEMON] Open Roofs");
-                // digitalWrite(ROOFpin, HIGH);
-            }
-        }
-    }
-    time2open -= measureDelay / 1000;
-    if (time2open < 0.)
-        time2open = 0;
-    time2close -= measureDelay / 1000;
-    if (time2close < 0.)
-        time2close = 0;
+    // TODO Rain Off Delay
+    rain_safe = (rain_prove ? (rainrate > 0 ? false : true) : true);
+    temp_safe = (temp_prove ? (temperature > temp_upper_limit ? true : (temperature <= temp_lower_limit ? false : temp_safe)) : true);
+    humi_safe = (humi_prove ? (humidity < humi_lower_limit ? true : (humidity >= humi_lower_limit ? false : humi_safe)) : true);
+    dewdelta_safe = (dewdelta_prove ? (dewpoint_delta > dewdelta_upper_limit ? true : (dewpoint_delta <= dewdelta_lower_limit ? false : dewdelta_safe)) : true);
+    skytemp_safe = (skytemp_prove ? (tempsky < skytemp_lower_limit ? true : (tempsky >= skytemp_upper_limit ? false : skytemp_safe)) : true);
+    wind_safe = (wind_prove ? (windspeed < wind_lower_limit ? true : (windspeed >= wind_upper_limit ? false : wind_safe)) : true);
+
+    _issafe = rain_safe && temp_safe && humi_safe && dewdelta_safe && skytemp_safe && wind_safe;
 };
 
 void SafetyMonitor::aReadJson(JsonObject &root) {
     AlpacaSafetyMonitor::aReadJson(root);
     if (JsonObject obj_config = root[F("Configuration")]) {
-        if (obj_config[F("A_Temperaturecomma_prove")].as<String>() == String("true"))
+        // Rain
+        if (obj_config[F("A_Rain_Ratecomma_prove")].as<String>() == String("true"))
+            rain_prove = true;
+        else
+            rain_prove = false;
+        rain_cessation_delay = obj_config[F("B___dash_cessation_delaycomma_s")] | rain_cessation_delay;
+        // Temp
+        if (obj_config[F("C_Temperaturecomma_prove")].as<String>() == String("true"))
             temp_prove = true;
         else
             temp_prove = false;
-        temp_low_limit = obj_config[F("B____dash_low_limitcomma_degC")] | temp_low_limit;
-        temp_high_limit = obj_config[F("C____dash_high_limitcomma_degC")] | temp_high_limit;
-        // limit_tamb = obj_config[F("Freezing_Temperature")] | limit_tamb;
-        // limit_tsky = obj_config[F("Cloudy_SkyTemperature")] | limit_tsky;
-        // limit_humid = obj_config[F("Humidity_limit")] | limit_humid;
-        // limit_dew = obj_config[F("Dew_delta_Temperature")] | limit_dew;
-        // delay2open = obj_config[F("Delay_to_Open")] | delay2open;
-        // delay2close = obj_config[F("Delay_to_Close")] | delay2close;
+        temp_lower_limit = obj_config[F("D___dash_lower_limitcomma_degC")] | temp_lower_limit;
+        temp_upper_limit = obj_config[F("E___dash_upper_limitcomma_degC")] | temp_upper_limit;
+        // Humi
+        if (obj_config[F("F_Humiditycomma_prove")].as<String>() == String("true"))
+            humi_prove = true;
+        else
+            humi_prove = false;
+        humi_lower_limit = obj_config[F("G___dash_lower_limitcomma_degC")] | humi_lower_limit;
+        humi_upper_limit = obj_config[F("H___dash_upper_limitcomma_degC")] | humi_upper_limit;
+        // DewDelta
+        if (obj_config[F("I_Dew_Point_deltacomma_prove")].as<String>() == String("true"))
+            dewdelta_prove = true;
+        else
+            dewdelta_prove = false;
+        dewdelta_lower_limit = obj_config[F("J___dash_lower_limitcomma_degC")] | dewdelta_lower_limit;
+        dewdelta_upper_limit = obj_config[F("K___dash_upper_limitcomma_degC")] | dewdelta_upper_limit;
+        // SkyTemp
+        if (obj_config[F("L_Sky_Tempcomma_prove")].as<String>() == String("true"))
+            skytemp_prove = true;
+        else
+            skytemp_prove = false;
+        skytemp_lower_limit = obj_config[F("M___dash_lower_limitcomma_degC")] | skytemp_lower_limit;
+        skytemp_upper_limit = obj_config[F("N___dash_upper_limitcomma_degC")] | skytemp_upper_limit;
+        // WindSpeed
+        if (obj_config[F("O_Wind_Speedcomma_prove")].as<String>() == String("true"))
+            wind_prove = true;
+        else
+            wind_prove = false;
+        wind_lower_limit = obj_config[F("P___dash_lower_limitcomma_degC")] | wind_lower_limit;
+        wind_upper_limit = obj_config[F("Q___dash_upper_limitcomma_degC")] | wind_upper_limit;
     }
-    status_roof = root[F("State")][F("Safety Monitor Status")] | status_roof;
+    // Manual for testing?
+    // status_roof = root[F("State")][F("Safety Monitor Status")] | status_roof;
 }
 
 void SafetyMonitor::aWriteJson(JsonObject &root) {
     AlpacaSafetyMonitor::aWriteJson(root);
-    // read-only values marked with #
+    // Configuration
     JsonObject obj_config = root[F("Configuration")].to<JsonObject>();
-    obj_config[F("A_Temperaturecomma_prove")] = temp_prove;
-    obj_config[F("B____dash_low_limitcomma_degC")] = temp_low_limit;
-    obj_config[F("C____dash_high_limitcomma_degC")] = temp_high_limit;
-    // obj_config[F("Freezing_Temperature")] = limit_tamb;
-    // obj_config[F("Cloudy_SkyTemperature")] = limit_tsky;
-    // obj_config[F("Humidity_limit")] = limit_humid;
-    // obj_config[F("Dew_delta_Temperature")] = limit_dew;
-    // obj_config[F("Delay_to_Open")] = delay2open;
-    // obj_config[F("Delay_to_Close")] = delay2close;
-
+    obj_config[F("A_Rain_Ratecomma_prove")] = rain_prove;
+    obj_config[F("B___dash_cessation_delaycomma_s")] = rain_cessation_delay;
+    obj_config[F("C_Temperaturecomma_prove")] = temp_prove;
+    obj_config[F("D___dash_lower_limitcomma_degC")] = temp_lower_limit;
+    obj_config[F("E___dash_upper_limitcomma_degC")] = temp_upper_limit;
+    obj_config[F("F_Humiditycomma_prove")] = humi_prove;
+    obj_config[F("G___dash_lower_limitcomma_degC")] = humi_lower_limit;
+    obj_config[F("H___dash_upper_limitcomma_degC")] = humi_upper_limit;
+    obj_config[F("I_Dew_Point_deltacomma_prove")] = dewdelta_prove;
+    obj_config[F("J___dash_lower_limitcomma_degC")] = dewdelta_lower_limit;
+    obj_config[F("K___dash_upper_limitcomma_degC")] = dewdelta_upper_limit;
+    obj_config[F("L_Sky_Tempcomma_prove")] = skytemp_prove;
+    obj_config[F("M___dash_lower_limitcomma_degC")] = skytemp_lower_limit;
+    obj_config[F("N___dash_upper_limitcomma_degC")] = skytemp_upper_limit;
+    obj_config[F("O_Wind_Speedcomma_prove")] = wind_prove;
+    obj_config[F("P___dash_lower_limitcomma_mslashs")] = wind_lower_limit;
+    obj_config[F("Q___dash_upper_limitcomma_degC")] = wind_upper_limit;
+    // State
     // 🟢 🔴 ⚫ "⠀"
     JsonObject obj_state = root[F("State")].to<JsonObject>();
-    obj_state[F("⚫_Rain_Rate,_mmslashh")] = String(temperature, 1);
-    obj_state[F("⚫_Temperature,_°C")] = String(temperature, 1);
-    obj_state[F("⚫_Humidity,_%")] = String(humidity, 0);
-    obj_state[F("___Dewpoint,_°C")] = String(dewpoint, 1);
-    obj_state[F("⚫_Dewpoint_Δ,_°C")] = String(dewpoint_delta, 1);
-    obj_state[F("⚫_Sky_Temp,_°C")] = String(tempsky, 1);
-    // obj_state[F("Time_to_open, s")] = time2open;
-    // obj_state[F("Time_to_close, s")] = time2close;
-    // obj_state[F("Safety_Monitor_status")] = status_roof;
+    obj_state[String((rain_prove ? (rain_safe ? "🟢" : "🔴") : "⚫")) + F("_Rain_Rate,_mmslashh")] = String(rainrate, 1);
+    obj_state[String((temp_prove ? (temp_safe ? "🟢" : "🔴") : "⚫")) + F("_Temperature,_°C")] = String(temperature, 1);
+    obj_state[String((humi_prove ? (humi_safe ? "🟢" : "🔴") : "⚫")) + F("_Humidity,_%")] = String(humidity, 0);
+    obj_state[F("___Dew_Point,_°C")] = String(dewpoint, 1);
+    obj_state[String((dewdelta_prove ? (dewdelta_safe ? "🟢" : "🔴") : "⚫")) + F("_Dew_Point_Δ,_°C")] = String(dewpoint_delta, 1);
+    obj_state[String((skytemp_prove ? (skytemp_safe ? "🟢" : "🔴") : "⚫")) + F("_Sky_Temp,_°C")] = String(tempsky, 1);
+    obj_state[String((wind_prove ? (wind_safe ? "🟢" : "🔴") : "⚫")) + F("_Wind_Speed,_mslashs")] = String(windspeed, 1);
 }
