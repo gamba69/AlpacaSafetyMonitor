@@ -108,13 +108,12 @@ void SafetyMonitor::update(Meteo meteo, unsigned long measureDelay) {
 void SafetyMonitor::aReadJson(JsonObject &root) {
     AlpacaSafetyMonitor::aReadJson(root);
     if (JsonObject obj_config = root[F("Configuration")]) {
-        Serial.println(obj_config[F("A_Temperature_prove")].as<String>());
-        if (obj_config[F("A_Temperature_prove")].as<String>() == String("true"))
+        if (obj_config[F("A_Temperaturecomma_prove")].as<String>() == String("true"))
             temp_prove = true;
         else
             temp_prove = false;
-        temp_low_limit = obj_config[F("B_dash_low_limitcomma_degC")] | temp_low_limit;
-        temp_high_limit = obj_config[F("C_dash_high_limitcomma_degC")] | temp_high_limit;
+        temp_low_limit = obj_config[F("B____dash_low_limitcomma_degC")] | temp_low_limit;
+        temp_high_limit = obj_config[F("C____dash_high_limitcomma_degC")] | temp_high_limit;
         // limit_tamb = obj_config[F("Freezing_Temperature")] | limit_tamb;
         // limit_tsky = obj_config[F("Cloudy_SkyTemperature")] | limit_tsky;
         // limit_humid = obj_config[F("Humidity_limit")] | limit_humid;
@@ -129,9 +128,9 @@ void SafetyMonitor::aWriteJson(JsonObject &root) {
     AlpacaSafetyMonitor::aWriteJson(root);
     // read-only values marked with #
     JsonObject obj_config = root[F("Configuration")].to<JsonObject>();
-    obj_config[F("A_Temperature_prove")] = temp_prove;
-    obj_config[F("B_dash_low_limitcomma_degC")] = temp_low_limit;
-    obj_config[F("C_dash_high_limitcomma_degC")] = temp_high_limit;
+    obj_config[F("A_Temperaturecomma_prove")] = temp_prove;
+    obj_config[F("B____dash_low_limitcomma_degC")] = temp_low_limit;
+    obj_config[F("C____dash_high_limitcomma_degC")] = temp_high_limit;
     // obj_config[F("Freezing_Temperature")] = limit_tamb;
     // obj_config[F("Cloudy_SkyTemperature")] = limit_tsky;
     // obj_config[F("Humidity_limit")] = limit_humid;
@@ -139,13 +138,14 @@ void SafetyMonitor::aWriteJson(JsonObject &root) {
     // obj_config[F("Delay_to_Open")] = delay2open;
     // obj_config[F("Delay_to_Close")] = delay2close;
 
-    // 🟢 🔴 ⚫
+    // 🟢 🔴 ⚫ "⠀"
     JsonObject obj_state = root[F("State")].to<JsonObject>();
-    obj_state[F("⚫ Temperature, °C")] = temperature;
-    obj_state[F("⚫ Sky Temperature, °C")] = tempsky;
-    obj_state[F("⚫ Humidity, %")] = humidity;
-    obj_state[F("Dewpoint, °C")] = dewpoint;
-    obj_state[F("⚫ Dewpoint Δ, °C")] = dewpoint_delta;
+    obj_state[F("⚫_Rain_Rate,_mmslashh")] = String(temperature, 1);
+    obj_state[F("⚫_Temperature,_°C")] = String(temperature, 1);
+    obj_state[F("⚫_Humidity,_%")] = String(humidity, 0);
+    obj_state[F("___Dewpoint,_°C")] = String(dewpoint, 1);
+    obj_state[F("⚫_Dewpoint_Δ,_°C")] = String(dewpoint_delta, 1);
+    obj_state[F("⚫_Sky_Temp,_°C")] = String(tempsky, 1);
     // obj_state[F("Time_to_open, s")] = time2open;
     // obj_state[F("Time_to_close, s")] = time2close;
     // obj_state[F("Safety_Monitor_status")] = status_roof;

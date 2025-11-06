@@ -257,9 +257,12 @@ String.prototype.asLabel = function () {
     var target = this;
     // target = target.slice(2);
     target = target.replaceAll("^[A-Z]_", "");
-    target = target.replaceAll("dash", "-");
-    target = target.replaceAll("deg", "°");
     target = target.replaceAll("comma", ",");
-    target = target.replaceAll("_", " ");
+    target = target.replaceAll("perc", "%");
+    target = target.replaceAll("dash", "-");
+    target = target.replaceAll("slash", "/");
+    target = target.replaceAll("deg", "°");
+    target = target.replaceAll("delta", "Δ");
+    target = target.replaceAll("_", "⠀");
     return target;
 };

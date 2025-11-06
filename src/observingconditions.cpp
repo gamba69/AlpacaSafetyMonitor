@@ -42,16 +42,16 @@ void ObservingConditions::aWriteJson(JsonObject &root) {
     obj_config[F("B_Refresh_Periodcomma_sec")] = _refresh;
 
     JsonObject obj_state = root[F("State")].to<JsonObject>();
-    obj_state[F("Sensors Description")] = sensordescription;
-    obj_state[F("Temperature, °C")] = String(temperature, 1);
-    obj_state[F("Humidity, %")] = String(humidity, 0);
-    obj_state[F("Pressure, hPa")] = String(pressure, 0);
-    obj_state[F("Rain Rate, mm/h")] = String(rainrate, 1);
-    obj_state[F("Dewpoint, °C")] = String(dewpoint, 1);
-    obj_state[F("Sky Temperature, °C")] = String(tempsky, 1);
-    obj_state[F("Cloud Cover, %")] = String(cloudcover, 0);
+    obj_state[F("Sensors_Description")] = sensordescription;
+    obj_state[F("Rain Rate,_mm/h")] = String(rainrate, 1);
+    obj_state[F("Temperature,_°C")] = String(temperature, 1);
+    obj_state[F("Humidity,_%")] = String(humidity, 0);
+    obj_state[F("Dewpoint,_°C")] = String(dewpoint, 1);
+    obj_state[F("Pressure,_hPa")] = String(pressure, 0);
+    obj_state[F("Sky_Temp,_°C")] = String(tempsky, 1);
+    obj_state[F("Cloud_Cover,_%")] = String(cloudcover, 0);
     // not exactly seeing (fwhm)
-    obj_state[F("Turbulence, dB")] = String(noise_db, 1);
+    obj_state[F("Turbulence,_dB")] = String(noise_db, 1);
     // obj_state[F("Sky Quality")] = skyquality;
     // obj_state[F("Sky Brightness")] = skybrightness;
 }
