@@ -61,6 +61,7 @@ class SafetyMonitor : public AlpacaSafetyMonitor {
 
     // Set current logger
     void setLogger(std::function<void(String)> logLineCallback = NULL, std::function<void(String)> logLinePartCallback = NULL, std::function<String()> logTimeCallback = NULL);
+    int getRainCessationDelay() { return rain_cessation_delay; }
 
     bool begin();
     void update(Meteo meteo, unsigned long measureDelay);

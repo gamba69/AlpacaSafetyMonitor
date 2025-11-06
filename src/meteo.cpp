@@ -42,6 +42,18 @@ void Meteo::begin() {
     mlx.begin(I2C_MLX_ADDR);
     bmp.begin(I2C_BMP_ADDR);
     aht.begin(&Wire, 0, I2C_AHT_ADDR);
+    // Initialization
+    if (digitalRead(RAIN_SENSOR_PIN)) {
+        rainrate = 1;
+        rainrate_prev = 1;
+        rainrate_curr = 1;
+        rainrate_state = RainRateState::WET;
+    } else {
+        rainrate = 0;
+        rainrate_prev = 0;
+        rainrate_curr = 0;
+        rainrate_state = RainRateState::DRY;
+    }
 }
 
 #define sgn(x) ((x) < 0 ? -1 : ((x) > 0 ? 1 : 0))
@@ -103,7 +115,25 @@ float cb_snr_calc() {
     return (10 * log10(s / n));
 }
 
-// Read through i2c bus
+int Meteo::getRainRateCountdown() {
+    if (rainrate_state == RainRateState::AWAIT_DRY) {
+        if (rainrate_occur == 0)
+            return 0;
+        int countdown = static_cast<int>(std::round((1000 * rainrate_dry_delay) - (millis() - rainrate_occur)));
+        if (countdown < 0)
+            return 0;
+        return countdown;
+    }
+    if (rainrate_state == RainRateState::AWAIT_WET) {
+        if (rainrate_occur == 0)
+            return 0;
+        int countdown = static_cast<int>(std::round((1000 * rainrate_wet_delay) - (millis() - rainrate_occur)));
+        if (countdown < 0)
+            return 0;
+        return countdown;
+    }
+    return 0;
+}
 
 void Meteo::update(unsigned long measureDelay) {
     logMessage(F("[METEO] Updating Meteo monitors"));
@@ -125,9 +155,28 @@ void Meteo::update(unsigned long measureDelay) {
     if (cloudcover < 0.)
         cloudcover = 0.;
     if (digitalRead(RAIN_SENSOR_PIN)) {
-        rainrate = 1;
+        rainrate_curr = 1;
     } else {
+        rainrate_curr = 0;
+    }
+    if (rainrate_curr > 0 && rainrate_prev == 0) {
+        rainrate_state = RainRateState::AWAIT_WET;
+        rainrate_occur = millis();
+    }
+    if (rainrate_curr == 0 && rainrate_prev > 0) {
+        rainrate_state = RainRateState::AWAIT_DRY;
+        rainrate_occur = millis();
+    }
+    rainrate_prev = rainrate_curr;
+    if (millis() - rainrate_occur >= rainrate_dry_delay * 1000 && rainrate_state == RainRateState::AWAIT_DRY) {
+        rainrate_occur = 0;
+        rainrate_state = RainRateState::DRY;
         rainrate = 0;
+    }
+    if (millis() - rainrate_occur >= rainrate_dry_delay && rainrate_state == RainRateState::AWAIT_WET) {
+        rainrate_occur = 0;
+        rainrate_state = RainRateState::WET;
+        rainrate = 1;
     }
     logMessage("[METEO][BMP] Temperature: " + String(bmp_temperature, 1) + " °C");
     logMessage("[METEO][BMP] Pressure: " + String(bmp_pressure, 0) + " hPa");

@@ -18,6 +18,13 @@ static float cb_rms = 0.0;
 #ifndef METEO_H
 #define METEO_H
 
+enum RainRateState {
+    WET,
+    AWAIT_WET,
+    DRY,
+    AWAIT_DRY
+};
+
 class Meteo {
   public:
     // attributes
@@ -41,23 +48,33 @@ class Meteo {
     void update(unsigned long measureDelay);
     Meteo(const std::string &newName); // constructor place
     // setters
+    void setRainRateWetDelay(int delay) { rainrate_wet_delay = delay; }
+    void setRainRateDryDelay(int delay) { rainrate_dry_delay = delay; }
     // getters
     const std::string &getName() const;
+    RainRateState getRainRateState() { return rainrate_state; }
+    int getRainRateCountdown();
     void begin();
     // Set current logger
-    void setLogger(std::function<void(String)> logLineCallback = NULL, std::function<void(String)> logLinePartCallback = NULL, std::function<String()> logTimeCallback = NULL);
+    void setLogger(std::function<void(String)> logLineCallback = nullptr, std::function<void(String)> logLinePartCallback = nullptr, std::function<String()> logTimeCallback = nullptr);
 
   private:
     // Logger println
-    std::function<void(String)> logLine = NULL;
+    std::function<void(String)> logLine = nullptr;
     // Logger print
-    std::function<void(String)> logLinePart = NULL;
+    std::function<void(String)> logLinePart = nullptr;
     // Logger time function
-    std::function<String()> logTime = NULL;
+    std::function<String()> logTime = nullptr;
     // Print a log message, can be overwritten
     virtual void logMessage(String msg, bool showtime = true);
     // Print a part of log message, can be overwritten
     virtual void logMessagePart(String msg, bool showtime = false);
+    // Rainrate countdown logic
+    float rainrate_curr, rainrate_prev;
+    unsigned long rainrate_occur = 0;
+    int rainrate_wet_delay = 0;
+    int rainrate_dry_delay = 0;
+    RainRateState rainrate_state;
 };
 
 #endif
