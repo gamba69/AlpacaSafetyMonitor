@@ -174,6 +174,9 @@ void setup() {
     OtaWebUpdater.startBackgroundTask();                    // Run the background task to check for updates
     OtaWebUpdater.attachWebServer(tcp_server);              // Attach our API to the Webserver
     OtaWebUpdater.attachUI();                               // Attach the UI to the Webserver
+    tcp_server->on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(LittleFS, "/www/favicon.ico", "image/x-icon");
+    });
     tcp_server->begin();
     // UDP Server
     udp_server.listen(ALPACA_UDP_PORT);
