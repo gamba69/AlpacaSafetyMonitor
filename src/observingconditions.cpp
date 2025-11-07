@@ -29,8 +29,8 @@ void ObservingConditions::update(Meteo meteo, unsigned long measureDelay) {
 void ObservingConditions::aReadJson(JsonObject &root) {
     AlpacaObservingConditions::aReadJson(root);
     if (JsonObject obj_config = root[F("Configuration")]) {
-        _avgperiod = obj_config[F("A_Average_Periodcomma_sec")] | _avgperiod;
-        _refresh = obj_config[F("B_Refresh_Periodcomma_sec")] | _refresh;
+        _avgperiod = obj_config[F("A_Average_Periodzc_sec")] | _avgperiod;
+        _refresh = obj_config[F("B_Refresh_Periodzc_sec")] | _refresh;
     }
 }
 
@@ -38,20 +38,20 @@ void ObservingConditions::aWriteJson(JsonObject &root) {
     AlpacaObservingConditions::aWriteJson(root);
     // read-only values marked with #
     JsonObject obj_config = root[F("Configuration")].to<JsonObject>();
-    obj_config[F("A_Average_Periodcomma_sec")] = _avgperiod;
-    obj_config[F("B_Refresh_Periodcomma_sec")] = _refresh;
+    obj_config[F("A_Average_Periodzc_sec")] = _avgperiod;
+    obj_config[F("B_Refresh_Periodzc_sec")] = _refresh;
 
     JsonObject obj_state = root[F("State")].to<JsonObject>();
-    obj_state[F("Sensors_Description")] = sensordescription;
-    obj_state[F("Rain Rate,_mm/h")] = String(rainrate, 1);
-    obj_state[F("Temperature,_°C")] = String(temperature, 1);
-    obj_state[F("Humidity,_%")] = String(humidity, 0);
-    obj_state[F("Dewpoint,_°C")] = String(dewpoint, 1);
-    obj_state[F("Pressure,_hPa")] = String(pressure, 0);
-    obj_state[F("Sky_Temp,_°C")] = String(tempsky, 1);
-    obj_state[F("Cloud_Cover,_%")] = String(cloudcover, 0);
+    obj_state[F("Sensors_Descriptionzro")] = sensordescription;
+    obj_state[F("Rain_Rate,_mm/hzro")] = String(rainrate, 1);
+    obj_state[F("Temperature,_°Czro")] = String(temperature, 1);
+    obj_state[F("Humidity,_zpzro")] = String(humidity, 0);
+    obj_state[F("Dewpoint,_°Czro")] = String(dewpoint, 1);
+    obj_state[F("Pressure,_hPazro")] = String(pressure, 0);
+    obj_state[F("Sky_Temp,_°Czro")] = String(tempsky, 1);
+    obj_state[F("Cloud_Cover,_zpzro")] = String(cloudcover, 0);
     // not exactly seeing (fwhm)
-    obj_state[F("Turbulence,_dB")] = String(noise_db, 1);
+    obj_state[F("Turbulence,_dBzro")] = String(noise_db, 1);
     // obj_state[F("Sky Quality")] = skyquality;
     // obj_state[F("Sky Brightness")] = skybrightness;
 }

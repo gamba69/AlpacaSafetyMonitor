@@ -11,6 +11,13 @@ enum RainRateState {
     AWAIT_DRY
 };
 
+enum SafeUnsafeStatus {
+    SAFE,
+    AWAIT_SAFE,
+    UNSAFE,
+    AWAIT_UNSAFE
+};
+
 class SafetyMonitor : public AlpacaSafetyMonitor {
   private:
     // Logger println
@@ -59,7 +66,9 @@ class SafetyMonitor : public AlpacaSafetyMonitor {
     float wind_upper_limit = 7;
     bool wind_safe = false;
 
-    bool _issafe = false; // overall meteo safety status
+    bool is_safe = false; // overall meteo safety status
+    int safe_delay = 0;
+    int unsafe_delay = 60;
 
     // acquired parameters
     float temperature, humidity, dewpoint, dewpoint_delta, tempsky, rainrate, windspeed;
@@ -70,6 +79,12 @@ class SafetyMonitor : public AlpacaSafetyMonitor {
     unsigned long rainrate_occur = 0;
     RainRateState rainrate_state;
 
+    // Safe countdown logic
+    bool safeunsafe_init = false;
+    float safeunsafe_curr, safeunsafe_prev;
+    unsigned long safeunsafe_occur = 0;
+    SafeUnsafeStatus safeunsafe_state;
+
   public:
     SafetyMonitor() : AlpacaSafetyMonitor() { _safetymonitor_index = _n_safetymonitors++; }
 
@@ -77,12 +92,13 @@ class SafetyMonitor : public AlpacaSafetyMonitor {
     void setLogger(std::function<void(String)> logLineCallback = NULL, std::function<void(String)> logLinePartCallback = NULL, std::function<String()> logTimeCallback = NULL);
 
     int getRainRateCountdown();
+    int getSafeUnsafeCountdown();
 
     bool begin();
     void update(Meteo meteo, unsigned long measureDelay);
 
     // alpaca getters
-    void aGetIsSafe(AsyncWebServerRequest *request) { _alpacaServer->respond(request, _issafe); }
+    void aGetIsSafe(AsyncWebServerRequest *request) { _alpacaServer->respond(request, is_safe); }
 
     // alpaca setters
 
