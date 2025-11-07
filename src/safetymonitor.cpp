@@ -161,48 +161,51 @@ void SafetyMonitor::update(Meteo meteo, unsigned long measureDelay) {
 void SafetyMonitor::aReadJson(JsonObject &root) {
     AlpacaSafetyMonitor::aReadJson(root);
     if (JsonObject obj_config = root[F("Configuration")]) {
+        // Safe Monitor
+        safe_delay = obj_config[F("B___zda_safe_delayzc_s")] | safe_delay;
+        unsafe_delay = obj_config[F("C___zda_unsafe_delayzc_s")] | unsafe_delay;
         // Rain
-        if (obj_config[F("A_Rain_Ratezc_prove")].as<String>() == String("true"))
+        if (obj_config[F("D_Rain_Ratezc_prove")].as<String>() == String("true"))
             rain_prove = true;
         else
             rain_prove = false;
-        rainrate_wet_delay = obj_config[F("B___zda_wet_delayzc_s")] | rainrate_wet_delay;
-        rainrate_dry_delay = obj_config[F("C___zda_dry_delayzc_s")] | rainrate_dry_delay;
+        rainrate_wet_delay = obj_config[F("E___zda_wet_delayzc_s")] | rainrate_wet_delay;
+        rainrate_dry_delay = obj_config[F("F___zda_dry_delayzc_s")] | rainrate_dry_delay;
         // Temp
-        if (obj_config[F("D_Temperaturezc_prove")].as<String>() == String("true"))
+        if (obj_config[F("G_Temperaturezc_prove")].as<String>() == String("true"))
             temp_prove = true;
         else
             temp_prove = false;
-        temp_lower_limit = obj_config[F("E___zda_lower_limitzc_zdgC")] | temp_lower_limit;
-        temp_upper_limit = obj_config[F("F___zda_upper_limitzc_zdgC")] | temp_upper_limit;
+        temp_lower_limit = obj_config[F("H___zda_lower_limitzc_zdgC")] | temp_lower_limit;
+        temp_upper_limit = obj_config[F("I___zda_upper_limitzc_zdgC")] | temp_upper_limit;
         // Humi
-        if (obj_config[F("G_Humidityzc_prove")].as<String>() == String("true"))
+        if (obj_config[F("J_Humidityzc_prove")].as<String>() == String("true"))
             humi_prove = true;
         else
             humi_prove = false;
-        humi_lower_limit = obj_config[F("H___zda_lower_limitzc_zdgC")] | humi_lower_limit;
-        humi_upper_limit = obj_config[F("I___zda_upper_limitzc_zdgC")] | humi_upper_limit;
+        humi_lower_limit = obj_config[F("K___zda_lower_limitzc_zdgC")] | humi_lower_limit;
+        humi_upper_limit = obj_config[F("L___zda_upper_limitzc_zdgC")] | humi_upper_limit;
         // DewDelta
-        if (obj_config[F("J_Dew_Point_zdtzc_prove")].as<String>() == String("true"))
+        if (obj_config[F("M_Dew_Point_zdtzc_prove")].as<String>() == String("true"))
             dewdelta_prove = true;
         else
             dewdelta_prove = false;
-        dewdelta_lower_limit = obj_config[F("K___zda_lower_limitzc_zdgC")] | dewdelta_lower_limit;
-        dewdelta_upper_limit = obj_config[F("L___zda_upper_limitzc_zdgC")] | dewdelta_upper_limit;
+        dewdelta_lower_limit = obj_config[F("N___zda_lower_limitzc_zdgC")] | dewdelta_lower_limit;
+        dewdelta_upper_limit = obj_config[F("O___zda_upper_limitzc_zdgC")] | dewdelta_upper_limit;
         // SkyTemp
-        if (obj_config[F("M_Sky_Tempzc_prove")].as<String>() == String("true"))
+        if (obj_config[F("P_Sky_Tempzc_prove")].as<String>() == String("true"))
             skytemp_prove = true;
         else
             skytemp_prove = false;
-        skytemp_lower_limit = obj_config[F("N___zda_lower_limitzc_zdgC")] | skytemp_lower_limit;
-        skytemp_upper_limit = obj_config[F("O___zda_upper_limitzc_zdgC")] | skytemp_upper_limit;
+        skytemp_lower_limit = obj_config[F("Q___zda_lower_limitzc_zdgC")] | skytemp_lower_limit;
+        skytemp_upper_limit = obj_config[F("R___zda_upper_limitzc_zdgC")] | skytemp_upper_limit;
         // WindSpeed
-        if (obj_config[F("P_Wind_Speedzc_prove")].as<String>() == String("true"))
+        if (obj_config[F("S_Wind_Speedzc_prove")].as<String>() == String("true"))
             wind_prove = true;
         else
             wind_prove = false;
-        wind_lower_limit = obj_config[F("Q___zda_lower_limitzc_zdgC")] | wind_lower_limit;
-        wind_upper_limit = obj_config[F("R___zda_upper_limitzc_zdgC")] | wind_upper_limit;
+        wind_lower_limit = obj_config[F("T___zda_lower_limitzc_zdgC")] | wind_lower_limit;
+        wind_upper_limit = obj_config[F("U___zda_upper_limitzc_zdgC")] | wind_upper_limit;
     }
     // Manual for testing?
     // status_roof = root[F("State")][F("Safety Monitor Status")] | status_roof;
@@ -212,24 +215,27 @@ void SafetyMonitor::aWriteJson(JsonObject &root) {
     AlpacaSafetyMonitor::aWriteJson(root);
     // Configuration
     JsonObject obj_config = root[F("Configuration")].to<JsonObject>();
-    obj_config[F("A_Rain_Ratezc_prove")] = rain_prove;
-    obj_config[F("B___zda_wet_delayzc_s")] = rainrate_wet_delay;
-    obj_config[F("C___zda_dry_delayzc_s")] = rainrate_dry_delay;
-    obj_config[F("D_Temperaturezc_prove")] = temp_prove;
-    obj_config[F("E___zda_lower_limitzc_zdgC")] = temp_lower_limit;
-    obj_config[F("F___zda_upper_limitzc_zdgC")] = temp_upper_limit;
-    obj_config[F("G_Humidityzc_prove")] = humi_prove;
-    obj_config[F("H___zda_lower_limitzc_zdgC")] = humi_lower_limit;
-    obj_config[F("I___zda_upper_limitzc_zdgC")] = humi_upper_limit;
-    obj_config[F("J_Dew_Point_zdtzc_prove")] = dewdelta_prove;
-    obj_config[F("K___zda_lower_limitzc_zdgC")] = dewdelta_lower_limit;
-    obj_config[F("L___zda_upper_limitzc_zdgC")] = dewdelta_upper_limit;
-    obj_config[F("M_Sky_Tempzc_prove")] = skytemp_prove;
-    obj_config[F("N___zda_lower_limitzc_zdgC")] = skytemp_lower_limit;
-    obj_config[F("O___zda_upper_limitzc_zdgC")] = skytemp_upper_limit;
-    obj_config[F("P_Wind_Speedzc_prove")] = wind_prove;
-    obj_config[F("Q___zda_lower_limitzc_mzss")] = wind_lower_limit;
-    obj_config[F("R___zda_upper_limitzc_zdgC")] = wind_upper_limit;
+    obj_config[F("A_Safe_Monitorzc_provezro")] = true;
+    obj_config[F("B___zda_safe_delayzc_s")] = safe_delay;
+    obj_config[F("C___zda_unsafe_delayzc_s")] = unsafe_delay;
+    obj_config[F("D_Rain_Ratezc_prove")] = rain_prove;
+    obj_config[F("E___zda_wet_delayzc_s")] = rainrate_wet_delay;
+    obj_config[F("F___zda_dry_delayzc_s")] = rainrate_dry_delay;
+    obj_config[F("G_Temperaturezc_prove")] = temp_prove;
+    obj_config[F("H___zda_lower_limitzc_zdgC")] = temp_lower_limit;
+    obj_config[F("I___zda_upper_limitzc_zdgC")] = temp_upper_limit;
+    obj_config[F("J_Humidityzc_prove")] = humi_prove;
+    obj_config[F("K___zda_lower_limitzc_zdgC")] = humi_lower_limit;
+    obj_config[F("L___zda_upper_limitzc_zdgC")] = humi_upper_limit;
+    obj_config[F("M_Dew_Point_zdtzc_prove")] = dewdelta_prove;
+    obj_config[F("N___zda_lower_limitzc_zdgC")] = dewdelta_lower_limit;
+    obj_config[F("O___zda_upper_limitzc_zdgC")] = dewdelta_upper_limit;
+    obj_config[F("P_Sky_Tempzc_prove")] = skytemp_prove;
+    obj_config[F("Q___zda_lower_limitzc_zdgC")] = skytemp_lower_limit;
+    obj_config[F("R___zda_upper_limitzc_zdgC")] = skytemp_upper_limit;
+    obj_config[F("S_Wind_Speedzc_prove")] = wind_prove;
+    obj_config[F("T___zda_lower_limitzc_mzss")] = wind_lower_limit;
+    obj_config[F("U___zda_upper_limitzc_zdgC")] = wind_upper_limit;
     // State
     // 🟢 🟡 🔵 🔴 ⚫ "⠀"
     // 🟩 🟨 🟦 🟥 ⬛
@@ -265,19 +271,20 @@ void SafetyMonitor::aWriteJson(JsonObject &root) {
     String safe_icon = "⚫";
     switch (safeunsafe_state) {
     case SafeUnsafeStatus::AWAIT_SAFE:
-        safe_icon = "🟨";
+        safe_icon = "🟡";
         break;
     case SafeUnsafeStatus::AWAIT_UNSAFE:
-        safe_icon = "🟦";
+        safe_icon = "🔵";
         break;
     case SafeUnsafeStatus::SAFE:
-        safe_icon = "🟩";
+        safe_icon = "🟢";
         break;
     case SafeUnsafeStatus::UNSAFE:
-        safe_icon = "🟥";
+        safe_icon = "🔴";
         break;
     }
-    obj_state[safe_icon + F("_Is_Safezro")] = is_safe;
+    String pre_icon = is_safe ? "🟢" : "🔴";
+    obj_state[pre_icon + safe_icon + F("_Is_Safezro")] = is_safe;
     if (getSafeUnsafeCountdown() > 0) {
         obj_state[F("Y___Countndown,_szro")] = getSafeUnsafeCountdown();
     }

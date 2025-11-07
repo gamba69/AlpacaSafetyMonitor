@@ -67,8 +67,8 @@ class SafetyMonitor : public AlpacaSafetyMonitor {
     bool wind_safe = false;
 
     bool is_safe = false; // overall meteo safety status
-    int safe_delay = 0;
-    int unsafe_delay = 60;
+    int safe_delay = 600;
+    int unsafe_delay = 0;
 
     // acquired parameters
     float temperature, humidity, dewpoint, dewpoint_delta, tempsky, rainrate, windspeed;
