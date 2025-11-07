@@ -29,6 +29,26 @@ void SafetyMonitor::setLogger(std::function<void(String)> logLineCallback, std::
     logTime = logTimeCallback;
 }
 
+int SafetyMonitor::getRainRateCountdown() {
+    if (rainrate_state == RainRateState::AWAIT_DRY) {
+        if (rainrate_occur == 0)
+            return 0;
+        int countdown = static_cast<int>(std::round(((1000. * rainrate_dry_delay) - (millis() - rainrate_occur))) / 1000.);
+        if (countdown < 0)
+            return 0;
+        return countdown;
+    }
+    if (rainrate_state == RainRateState::AWAIT_WET) {
+        if (rainrate_occur == 0)
+            return 0;
+        int countdown = static_cast<int>(std::round(((1000. * rainrate_wet_delay) - (millis() - rainrate_occur))) / 1000.);
+        if (countdown < 0)
+            return 0;
+        return countdown;
+    }
+    return 0;
+}
+
 bool SafetyMonitor::begin() {
     _safetymonitor_array[_safetymonitor_index] = this;
     return true;
@@ -41,11 +61,46 @@ void SafetyMonitor::update(Meteo meteo, unsigned long measureDelay) {
     dewpoint = meteo.dewpoint;
     dewpoint_delta = (temperature - dewpoint > 0 ? temperature - dewpoint : 0);
     tempsky = meteo.tempsky;
-    rainrate = meteo.rainrate;
     // windspeed = meteo.windspeed;
-
-    // TODO Rain Off Delay
-    rain_safe = (rain_prove ? (rainrate > 0 ? false : true) : true);
+    if (!rain_init) {
+        rainrate = meteo.rainrate;
+        if (rainrate > 0) {
+            rainrate_prev = rainrate;
+            rainrate_curr = rainrate;
+            rainrate_state = RainRateState::WET;
+        } else {
+            rainrate_prev = 0;
+            rainrate_curr = 0;
+            rainrate_state = RainRateState::DRY;
+        }
+        rain_init = true;
+    }
+    if (meteo.rainrate > 0) {
+        rainrate_curr = meteo.rainrate;
+    } else {
+        rainrate_curr = 0;
+    }
+    if (rainrate_curr > 0 && rainrate_prev == 0) {
+        rainrate_state = RainRateState::AWAIT_WET;
+        rainrate_occur = millis();
+    }
+    if (rainrate_curr == 0 && rainrate_prev > 0) {
+        rainrate_state = RainRateState::AWAIT_DRY;
+        rainrate_occur = millis();
+    }
+    rainrate_prev = rainrate_curr;
+    if (millis() - rainrate_occur >= rainrate_dry_delay * 1000 && rainrate_state == RainRateState::AWAIT_DRY) {
+        rainrate_occur = 0;
+        rainrate_state = RainRateState::DRY;
+        rainrate = 0;
+    }
+    if (millis() - rainrate_occur >= rainrate_dry_delay && rainrate_state == RainRateState::AWAIT_WET) {
+        rainrate_occur = 0;
+        rainrate_state = RainRateState::WET;
+        rainrate = rainrate_curr;
+    }
+    // Safety
+    rain_safe = (rain_prove ? (rainrate_state == RainRateState::DRY || rainrate_state == RainRateState::AWAIT_WET ? true : false) : true);
     temp_safe = (temp_prove ? (temperature > temp_upper_limit ? true : (temperature <= temp_lower_limit ? false : temp_safe)) : true);
     humi_safe = (humi_prove ? (humidity < humi_lower_limit ? true : (humidity >= humi_lower_limit ? false : humi_safe)) : true);
     dewdelta_safe = (dewdelta_prove ? (dewpoint_delta > dewdelta_upper_limit ? true : (dewpoint_delta <= dewdelta_lower_limit ? false : dewdelta_safe)) : true);
@@ -53,6 +108,8 @@ void SafetyMonitor::update(Meteo meteo, unsigned long measureDelay) {
     wind_safe = (wind_prove ? (windspeed < wind_lower_limit ? true : (windspeed >= wind_upper_limit ? false : wind_safe)) : true);
 
     _issafe = rain_safe && temp_safe && humi_safe && dewdelta_safe && skytemp_safe && wind_safe;
+
+    // TODO Safe-Unsafe delays
 };
 
 void SafetyMonitor::aReadJson(JsonObject &root) {
@@ -63,7 +120,8 @@ void SafetyMonitor::aReadJson(JsonObject &root) {
             rain_prove = true;
         else
             rain_prove = false;
-        rain_cessation_delay = obj_config[F("B___dash_cessation_delaycomma_s")] | rain_cessation_delay;
+        rainrate_wet_delay = obj_config[F("B___dash_wet_delaycomma_s")] | rainrate_wet_delay;
+        rainrate_dry_delay = obj_config[F("B___dash_dry_delaycomma_s")] | rainrate_dry_delay;
         // Temp
         if (obj_config[F("C_Temperaturecomma_prove")].as<String>() == String("true"))
             temp_prove = true;
@@ -109,7 +167,8 @@ void SafetyMonitor::aWriteJson(JsonObject &root) {
     // Configuration
     JsonObject obj_config = root[F("Configuration")].to<JsonObject>();
     obj_config[F("A_Rain_Ratecomma_prove")] = rain_prove;
-    obj_config[F("B___dash_cessation_delaycomma_s")] = rain_cessation_delay;
+    obj_config[F("B___dash_wet_delaycomma_s")] = rainrate_wet_delay;
+    obj_config[F("B___dash_dry_delaycomma_s")] = rainrate_dry_delay;
     obj_config[F("C_Temperaturecomma_prove")] = temp_prove;
     obj_config[F("D___dash_lower_limitcomma_degC")] = temp_lower_limit;
     obj_config[F("E___dash_upper_limitcomma_degC")] = temp_upper_limit;
@@ -126,9 +185,29 @@ void SafetyMonitor::aWriteJson(JsonObject &root) {
     obj_config[F("P___dash_lower_limitcomma_mslashs")] = wind_lower_limit;
     obj_config[F("Q___dash_upper_limitcomma_degC")] = wind_upper_limit;
     // State
-    // 🟢 🔴 ⚫ "⠀"
+    // 🟢 🟡 🔵 🔴 ⚫ "⠀"
     JsonObject obj_state = root[F("State")].to<JsonObject>();
-    obj_state[String((rain_prove ? (rain_safe ? "🟢" : "🔴") : "⚫")) + F("_Rain_Rate,_mmslashh")] = String(rainrate, 1);
+    String rain_icon = "⚫";
+    if (rain_prove) {
+        switch (rainrate_state) {
+        case RainRateState::AWAIT_DRY:
+            rain_icon = "🟡";
+            break;
+        case RainRateState::AWAIT_WET:
+            rain_icon = "🔵";
+            break;
+        case RainRateState::DRY:
+            rain_icon = "🟢";
+            break;
+        case RainRateState::WET:
+            rain_icon = "🔴";
+            break;
+        }
+    }
+    obj_state[rain_icon + F("_Rain_Rate,_mmslashh")] = String(rainrate, 1);
+    if (getRainRateCountdown() > 0) {
+        obj_state[F("___Countndown,_s")] = getRainRateCountdown();
+    }
     obj_state[String((temp_prove ? (temp_safe ? "🟢" : "🔴") : "⚫")) + F("_Temperature,_°C")] = String(temperature, 1);
     obj_state[String((humi_prove ? (humi_safe ? "🟢" : "🔴") : "⚫")) + F("_Humidity,_%")] = String(humidity, 0);
     obj_state[F("___Dew_Point,_°C")] = String(dewpoint, 1);

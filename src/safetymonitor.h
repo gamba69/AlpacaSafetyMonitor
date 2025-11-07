@@ -4,6 +4,13 @@
 #include "meteo.h"
 #include <Arduino.h>
 
+enum RainRateState {
+    WET,
+    AWAIT_WET,
+    DRY,
+    AWAIT_DRY
+};
+
 class SafetyMonitor : public AlpacaSafetyMonitor {
   private:
     // Logger println
@@ -23,7 +30,8 @@ class SafetyMonitor : public AlpacaSafetyMonitor {
 
     // Rain
     bool rain_prove = true;
-    int rain_cessation_delay = 600;
+    int rainrate_wet_delay = 0;
+    int rainrate_dry_delay = 60;
     bool rain_safe = false;
     // Temp
     bool temp_prove = true;
@@ -56,12 +64,19 @@ class SafetyMonitor : public AlpacaSafetyMonitor {
     // acquired parameters
     float temperature, humidity, dewpoint, dewpoint_delta, tempsky, rainrate, windspeed;
 
+    // Rainrate countdown logic
+    bool rain_init = false;
+    float rainrate_curr, rainrate_prev;
+    unsigned long rainrate_occur = 0;
+    RainRateState rainrate_state;
+
   public:
     SafetyMonitor() : AlpacaSafetyMonitor() { _safetymonitor_index = _n_safetymonitors++; }
 
     // Set current logger
     void setLogger(std::function<void(String)> logLineCallback = NULL, std::function<void(String)> logLinePartCallback = NULL, std::function<String()> logTimeCallback = NULL);
-    int getRainCessationDelay() { return rain_cessation_delay; }
+
+    int getRainRateCountdown();
 
     bool begin();
     void update(Meteo meteo, unsigned long measureDelay);
