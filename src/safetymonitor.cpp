@@ -121,42 +121,42 @@ void SafetyMonitor::aReadJson(JsonObject &root) {
         else
             rain_prove = false;
         rainrate_wet_delay = obj_config[F("B___dash_wet_delaycomma_s")] | rainrate_wet_delay;
-        rainrate_dry_delay = obj_config[F("B___dash_dry_delaycomma_s")] | rainrate_dry_delay;
+        rainrate_dry_delay = obj_config[F("C___dash_dry_delaycomma_s")] | rainrate_dry_delay;
         // Temp
-        if (obj_config[F("C_Temperaturecomma_prove")].as<String>() == String("true"))
+        if (obj_config[F("D_Temperaturecomma_prove")].as<String>() == String("true"))
             temp_prove = true;
         else
             temp_prove = false;
-        temp_lower_limit = obj_config[F("D___dash_lower_limitcomma_degC")] | temp_lower_limit;
-        temp_upper_limit = obj_config[F("E___dash_upper_limitcomma_degC")] | temp_upper_limit;
+        temp_lower_limit = obj_config[F("E___dash_lower_limitcomma_degC")] | temp_lower_limit;
+        temp_upper_limit = obj_config[F("F___dash_upper_limitcomma_degC")] | temp_upper_limit;
         // Humi
-        if (obj_config[F("F_Humiditycomma_prove")].as<String>() == String("true"))
+        if (obj_config[F("G_Humiditycomma_prove")].as<String>() == String("true"))
             humi_prove = true;
         else
             humi_prove = false;
-        humi_lower_limit = obj_config[F("G___dash_lower_limitcomma_degC")] | humi_lower_limit;
-        humi_upper_limit = obj_config[F("H___dash_upper_limitcomma_degC")] | humi_upper_limit;
+        humi_lower_limit = obj_config[F("H___dash_lower_limitcomma_degC")] | humi_lower_limit;
+        humi_upper_limit = obj_config[F("I___dash_upper_limitcomma_degC")] | humi_upper_limit;
         // DewDelta
-        if (obj_config[F("I_Dew_Point_deltacomma_prove")].as<String>() == String("true"))
+        if (obj_config[F("J_Dew_Point_deltacomma_prove")].as<String>() == String("true"))
             dewdelta_prove = true;
         else
             dewdelta_prove = false;
-        dewdelta_lower_limit = obj_config[F("J___dash_lower_limitcomma_degC")] | dewdelta_lower_limit;
-        dewdelta_upper_limit = obj_config[F("K___dash_upper_limitcomma_degC")] | dewdelta_upper_limit;
+        dewdelta_lower_limit = obj_config[F("K___dash_lower_limitcomma_degC")] | dewdelta_lower_limit;
+        dewdelta_upper_limit = obj_config[F("L___dash_upper_limitcomma_degC")] | dewdelta_upper_limit;
         // SkyTemp
-        if (obj_config[F("L_Sky_Tempcomma_prove")].as<String>() == String("true"))
+        if (obj_config[F("M_Sky_Tempcomma_prove")].as<String>() == String("true"))
             skytemp_prove = true;
         else
             skytemp_prove = false;
-        skytemp_lower_limit = obj_config[F("M___dash_lower_limitcomma_degC")] | skytemp_lower_limit;
-        skytemp_upper_limit = obj_config[F("N___dash_upper_limitcomma_degC")] | skytemp_upper_limit;
+        skytemp_lower_limit = obj_config[F("N___dash_lower_limitcomma_degC")] | skytemp_lower_limit;
+        skytemp_upper_limit = obj_config[F("O___dash_upper_limitcomma_degC")] | skytemp_upper_limit;
         // WindSpeed
-        if (obj_config[F("O_Wind_Speedcomma_prove")].as<String>() == String("true"))
+        if (obj_config[F("P_Wind_Speedcomma_prove")].as<String>() == String("true"))
             wind_prove = true;
         else
             wind_prove = false;
-        wind_lower_limit = obj_config[F("P___dash_lower_limitcomma_degC")] | wind_lower_limit;
-        wind_upper_limit = obj_config[F("Q___dash_upper_limitcomma_degC")] | wind_upper_limit;
+        wind_lower_limit = obj_config[F("Q___dash_lower_limitcomma_degC")] | wind_lower_limit;
+        wind_upper_limit = obj_config[F("R___dash_upper_limitcomma_degC")] | wind_upper_limit;
     }
     // Manual for testing?
     // status_roof = root[F("State")][F("Safety Monitor Status")] | status_roof;
@@ -168,22 +168,22 @@ void SafetyMonitor::aWriteJson(JsonObject &root) {
     JsonObject obj_config = root[F("Configuration")].to<JsonObject>();
     obj_config[F("A_Rain_Ratecomma_prove")] = rain_prove;
     obj_config[F("B___dash_wet_delaycomma_s")] = rainrate_wet_delay;
-    obj_config[F("B___dash_dry_delaycomma_s")] = rainrate_dry_delay;
-    obj_config[F("C_Temperaturecomma_prove")] = temp_prove;
-    obj_config[F("D___dash_lower_limitcomma_degC")] = temp_lower_limit;
-    obj_config[F("E___dash_upper_limitcomma_degC")] = temp_upper_limit;
-    obj_config[F("F_Humiditycomma_prove")] = humi_prove;
-    obj_config[F("G___dash_lower_limitcomma_degC")] = humi_lower_limit;
-    obj_config[F("H___dash_upper_limitcomma_degC")] = humi_upper_limit;
-    obj_config[F("I_Dew_Point_deltacomma_prove")] = dewdelta_prove;
-    obj_config[F("J___dash_lower_limitcomma_degC")] = dewdelta_lower_limit;
-    obj_config[F("K___dash_upper_limitcomma_degC")] = dewdelta_upper_limit;
-    obj_config[F("L_Sky_Tempcomma_prove")] = skytemp_prove;
-    obj_config[F("M___dash_lower_limitcomma_degC")] = skytemp_lower_limit;
-    obj_config[F("N___dash_upper_limitcomma_degC")] = skytemp_upper_limit;
-    obj_config[F("O_Wind_Speedcomma_prove")] = wind_prove;
-    obj_config[F("P___dash_lower_limitcomma_mslashs")] = wind_lower_limit;
-    obj_config[F("Q___dash_upper_limitcomma_degC")] = wind_upper_limit;
+    obj_config[F("C___dash_dry_delaycomma_s")] = rainrate_dry_delay;
+    obj_config[F("D_Temperaturecomma_prove")] = temp_prove;
+    obj_config[F("E___dash_lower_limitcomma_degC")] = temp_lower_limit;
+    obj_config[F("F___dash_upper_limitcomma_degC")] = temp_upper_limit;
+    obj_config[F("G_Humiditycomma_prove")] = humi_prove;
+    obj_config[F("H___dash_lower_limitcomma_degC")] = humi_lower_limit;
+    obj_config[F("I___dash_upper_limitcomma_degC")] = humi_upper_limit;
+    obj_config[F("J_Dew_Point_deltacomma_prove")] = dewdelta_prove;
+    obj_config[F("K___dash_lower_limitcomma_degC")] = dewdelta_lower_limit;
+    obj_config[F("L___dash_upper_limitcomma_degC")] = dewdelta_upper_limit;
+    obj_config[F("M_Sky_Tempcomma_prove")] = skytemp_prove;
+    obj_config[F("N___dash_lower_limitcomma_degC")] = skytemp_lower_limit;
+    obj_config[F("O___dash_upper_limitcomma_degC")] = skytemp_upper_limit;
+    obj_config[F("P_Wind_Speedcomma_prove")] = wind_prove;
+    obj_config[F("Q___dash_lower_limitcomma_mslashs")] = wind_lower_limit;
+    obj_config[F("R___dash_upper_limitcomma_degC")] = wind_upper_limit;
     // State
     // 🟢 🟡 🔵 🔴 ⚫ "⠀"
     JsonObject obj_state = root[F("State")].to<JsonObject>();
