@@ -181,11 +181,9 @@ void setup() {
         request->send(LittleFS, "/www/ascom.webp", "image/webp");
     });
     tcp_server->begin();
-    // UDP Server
-    udp_server.listen(ALPACA_UDP_PORT);
-    // ALPACA Server
+    // ALPACA Tcp Server
     alpacaServer.setLogger(logLine, logLinePart, logTime);
-    alpacaServer.begin(&udp_server, ALPACA_UDP_PORT, tcp_server, ALPACA_TCP_PORT);
+    alpacaServer.beginTcp(tcp_server, ALPACA_TCP_PORT);
     // Observing Conditions
     alpacaServer.addDevice(&observingconditions);
     // Safety Monitor
@@ -206,16 +204,21 @@ void loop() {
     static int prevWifiStatus = WL_DISCONNECTED;
     static int mqttStatusDelay = MQTT_STATUS_DELAY;
     static int lastMqttStatus = 0;
-    // Do not continue regular operation as long as a OTA is running
-    // Reason: Background workload can cause upgrade issues that we want to avoid!
+    // do not continue regular operation as long as a OTA is running
+    // reason: background workload can cause upgrade issues that we want to avoid!
     if (OtaWebUpdater.otaIsRunning) {
         yield();
         delay(50);
         return;
     };
-    // MQTT Initialization
-    if (WiFi.status() == WL_CONNECTED && prevWifiStatus != WL_CONNECTED)
+    // wifi (re)connected
+    if (WiFi.status() == WL_CONNECTED && prevWifiStatus != WL_CONNECTED) {
+        // ALPACA Tcp Server
+        // udp_server.listen(ALPACA_UDP_PORT);
+        alpacaServer.beginUdp(ALPACA_UDP_PORT);
+        // initialize mqtt
         setupMqtt();
+        }
     prevWifiStatus = WiFi.status();
     if (mqttClient)
         mqttClient->loop();
