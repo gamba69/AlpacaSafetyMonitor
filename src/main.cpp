@@ -13,7 +13,6 @@ WIFIMANAGER WifiManager;
 OTAWEBUPDATER OtaWebUpdater;
 
 AsyncWebServer *tcp_server;
-AsyncUDP udp_server;
 
 AlpacaServer alpacaServer("Alpaca_ESP32");
 
@@ -214,7 +213,6 @@ void loop() {
     // wifi (re)connected
     if (WiFi.status() == WL_CONNECTED && prevWifiStatus != WL_CONNECTED) {
         // ALPACA Tcp Server
-        // udp_server.listen(ALPACA_UDP_PORT);
         alpacaServer.beginUdp(ALPACA_UDP_PORT);
         // initialize mqtt
         setupMqtt();
