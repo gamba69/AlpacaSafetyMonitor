@@ -35,8 +35,8 @@ void ObservingConditions::update(Meteo meteo) {
 };
 
 void ObservingConditions::aGetTimeSinceLastUpdate(AsyncWebServerRequest *request) {
-    float time_since_last_update = (millis() - this->timelastupdate) / 1000;
-    _alpacaServer->respond(request, time_since_last_update);
+    float seconds = (millis() - timelastupdate) / 1000;
+    _alpacaServer->respond(request, seconds);
 }
 
 void ObservingConditions::aReadJson(JsonObject &root) {
