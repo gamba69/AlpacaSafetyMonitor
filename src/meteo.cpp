@@ -4,7 +4,7 @@ Adafruit_BMP280 bmp;
 Adafruit_MLX90614 mlx = Adafruit_MLX90614();
 Adafruit_AHTX0 aht;
 
-Meteo::Meteo(const std::string &newName) : Name(newName) {}
+// Meteo::Meteo(const std::string &newName) : Name(newName) {}
 
 void Meteo::logMessage(String msg, bool showtime) {
     if (logLine && logLinePart) {
@@ -30,9 +30,9 @@ void Meteo::setLogger(std::function<void(String)> logLineCallback, std::function
     logTime = logTimeCallback;
 }
 
-const std::string &Meteo::getName() const {
-    return Name;
-}
+// const std::string &Meteo::getName() const {
+//     return Name;
+// }
 
 void Meteo::begin() {
     pinMode(RAIN_SENSOR_PIN, INPUT_PULLDOWN);
@@ -109,7 +109,7 @@ float cb_snr_calc() {
     return (10 * log10(s / n));
 }
 
-void Meteo::update(unsigned long measureDelay) {
+void Meteo::update() {
     logMessage(F("[METEO] Updating Meteo monitors"));
     bmp_temperature = bmp.readTemperature();
     bmp_pressure = bmp.readPressure() / 100.0F;

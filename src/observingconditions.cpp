@@ -12,7 +12,7 @@ bool ObservingConditions::begin() {
     return true;
 }
 
-void ObservingConditions::update(Meteo meteo, unsigned long measureDelay) {
+void ObservingConditions::update(Meteo meteo) {
     //  update meteo
     temperature = (meteo.bmp_temperature + meteo.aht_temperature) / 2;
     humidity = meteo.aht_humidity;

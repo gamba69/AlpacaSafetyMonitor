@@ -95,7 +95,7 @@ class SafetyMonitor : public AlpacaSafetyMonitor {
     int getSafeUnsafeCountdown();
 
     bool begin();
-    void update(Meteo meteo, unsigned long measureDelay);
+    void update(Meteo meteo);
 
     // alpaca getters
     void aGetIsSafe(AsyncWebServerRequest *request) { _alpacaServer->respond(request, is_safe); }

@@ -38,11 +38,11 @@ class Meteo {
         rainrate;
     // sensors
     // methods
-    void update(unsigned long measureDelay);
-    Meteo(const std::string &newName); // constructor place
+    void update();
+    //Meteo(const std::string &newName); // constructor place
     // setters
     // getters
-    const std::string &getName() const;
+    //const std::string &getName() const;
     void begin();
     // Set current logger
     void setLogger(std::function<void(String)> logLineCallback = nullptr, std::function<void(String)> logLinePartCallback = nullptr, std::function<String()> logTimeCallback = nullptr);

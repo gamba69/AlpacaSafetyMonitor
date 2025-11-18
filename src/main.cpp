@@ -19,7 +19,7 @@ AlpacaServer alpacaServer("Alpaca_ESP32");
 SafetyMonitor safetymonitor = SafetyMonitor();
 ObservingConditions observingconditions = ObservingConditions();
 
-Meteo meteo("AlpacaESP32");
+Meteo meteo = Meteo();
 
 volatile bool immediateUpdate = false;
 
@@ -196,9 +196,10 @@ void setup() {
 }
 
 void loop() {
-    // weather sensors loop delay
-    static unsigned long meteoMeasureDelay = METEO_MEASURE_DELAY;
-    static unsigned long meteoLastTimeRan = 0;
+    // weather update last ran millis
+    static unsigned long meteoLastRan = 0;
+    static unsigned long safetyMonitorLastRan = 0;
+    static unsigned long observingConditionsLastRan = 0;
     // mqtt status loop delay
     static int prevWifiStatus = WL_DISCONNECTED;
     static int mqttStatusDelay = MQTT_STATUS_DELAY;
@@ -225,12 +226,19 @@ void loop() {
         logMqttStatus();
         lastMqttStatus = millis();
     }
-    // Actual Load
-    if (immediateUpdate || (millis() > meteoLastTimeRan + meteoMeasureDelay)) { // read every measureDelay without blocking Webserver
-        meteo.update(meteoMeasureDelay);
-        safetymonitor.update(meteo, meteoMeasureDelay);
-        observingconditions.update(meteo, meteoMeasureDelay);
-        meteoLastTimeRan = millis();
+    // Meteo Update
+    if (immediateUpdate || (millis() > meteoLastRan + METEO_MEASURE_DELAY)) { // read every measureDelay without blocking Webserver
+        meteo.update();
+        meteoLastRan = millis();
+    }
+    // Safety Monitor Update
+    if (immediateUpdate || (millis() > safetyMonitorLastRan + SAFETY_MONITOR_DELAY)) { // read every measureDelay without blocking Webserver
+        safetymonitor.update(meteo);
+        safetyMonitorLastRan = millis();
+    }
+    if (immediateUpdate || (millis() > observingConditionsLastRan + observingconditions.getRefresh())) { // read every measureDelay without blocking Webserver
+        observingconditions.update(meteo);
+        observingConditionsLastRan = millis();
     }
     immediateUpdate = false;
     delay(50);

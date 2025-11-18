@@ -18,7 +18,11 @@ class ObservingConditions : public AlpacaObservingConditions {
   public:
     ObservingConditions() : AlpacaObservingConditions() { _observingconditions_index = _n_observingconditionss++; }
     bool begin();
-    void update(Meteo meteo, unsigned long measureDelay);
+    void update(Meteo meteo);
+
+    // getters
+    int getRefresh() { return _refresh; }
+    int getAveragePeriod() { return _avgperiod; }
 
     // alpaca getters
     void aGetDewPoint(AsyncWebServerRequest *request) { _alpacaServer->respond(request, dewpoint); }

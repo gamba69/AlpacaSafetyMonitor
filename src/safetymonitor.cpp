@@ -74,7 +74,7 @@ bool SafetyMonitor::begin() {
     return true;
 }
 
-void SafetyMonitor::update(Meteo meteo, unsigned long measureDelay) {
+void SafetyMonitor::update(Meteo meteo) {
     //  update meteo
     temperature = (meteo.bmp_temperature + meteo.aht_temperature) / 2;
     humidity = meteo.aht_humidity;
