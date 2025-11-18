@@ -221,22 +221,23 @@ void loop() {
     prevWifiStatus = WiFi.status();
     if (mqttClient)
         mqttClient->loop();
-    // MQTT Status
-    if (millis() > lastMqttStatus + mqttStatusDelay) { // read every measureDelay without blocking Webserver
+    // log mqtt status without blocking webserver
+    if (millis() > lastMqttStatus + mqttStatusDelay) { 
         logMqttStatus();
         lastMqttStatus = millis();
     }
-    // Meteo Update
-    if (immediateUpdate || (millis() > meteoLastRan + METEO_MEASURE_DELAY)) { // read every measureDelay without blocking Webserver
+    // update meteo every METEO_MEASURE_DELAY without blocking webserver
+    if (immediateUpdate || (millis() > meteoLastRan + METEO_MEASURE_DELAY)) { 
         meteo.update();
         meteoLastRan = millis();
     }
-    // Safety Monitor Update
-    if (immediateUpdate || (millis() > safetyMonitorLastRan + SAFETY_MONITOR_DELAY)) { // read every measureDelay without blocking Webserver
+    // update safetymonitor every METEO_MEASURE_DELAY without blocking webserver
+    if (immediateUpdate || (millis() > safetyMonitorLastRan + SAFETY_MONITOR_DELAY)) { 
         safetymonitor.update(meteo);
         safetyMonitorLastRan = millis();
     }
-    if (immediateUpdate || (millis() > observingConditionsLastRan + observingconditions.getRefresh())) { // read every measureDelay without blocking Webserver
+    // update observingconditions every refresh without blocking webserver
+    if (immediateUpdate || (millis() > observingConditionsLastRan + (1000 * observingconditions.getRefresh()))) { 
         observingconditions.update(meteo);
         observingConditionsLastRan = millis();
     }

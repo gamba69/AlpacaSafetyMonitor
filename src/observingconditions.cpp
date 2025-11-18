@@ -6,25 +6,38 @@ uint8_t ObservingConditions::_n_observingconditionss = 0;
 ObservingConditions *ObservingConditions::_observingconditions_array[4] = {nullptr, nullptr, nullptr, nullptr};
 
 bool ObservingConditions::begin() {
-
-    // done
     _observingconditions_array[_observingconditions_index] = this;
     return true;
 }
 
 void ObservingConditions::update(Meteo meteo) {
-    //  update meteo
     temperature = (meteo.bmp_temperature + meteo.aht_temperature) / 2;
     humidity = meteo.aht_humidity;
     pressure = meteo.bmp_pressure;
     rainrate = meteo.rainrate;
     dewpoint = meteo.dewpoint;
     tempsky = meteo.tempsky;
-    noise_db = meteo.noise_db;
+    noisedb = meteo.noise_db;
     cloudcover = meteo.cloudcover;
     skyquality = meteo.skyquality;
     skybrightness = meteo.skybrightness;
+    temperature_ra.add(temperature);
+    humidity_ra.add(humidity);
+    pressure_ra.add(pressure);
+    rainrate_ra.add(rainrate);
+    dewpoint_ra.add(dewpoint);
+    tempsky_ra.add(tempsky);
+    noisedb_ra.add(noisedb);
+    cloudcover_ra.add(cloudcover);
+    skyquality_ra.add(skyquality);
+    skybrightness_ra.add(skybrightness);
+    timelastupdate = millis();
 };
+
+void ObservingConditions::aGetTimeSinceLastUpdate(AsyncWebServerRequest *request) {
+    float time_since_last_update = (millis() - this->timelastupdate) / 1000;
+    _alpacaServer->respond(request, time_since_last_update);
+}
 
 void ObservingConditions::aReadJson(JsonObject &root) {
     AlpacaObservingConditions::aReadJson(root);
@@ -51,7 +64,7 @@ void ObservingConditions::aWriteJson(JsonObject &root) {
     obj_state[F("Sky_Temp,_°Czro")] = String(tempsky, 1);
     obj_state[F("Cloud_Cover,_zpzro")] = String(cloudcover, 0);
     // not exactly seeing (fwhm)
-    obj_state[F("Turbulence,_dBzro")] = String(noise_db, 1);
+    obj_state[F("Turbulence,_dBzro")] = String(noisedb, 1);
     // obj_state[F("Sky Quality")] = skyquality;
     // obj_state[F("Sky Brightness")] = skybrightness;
 }
