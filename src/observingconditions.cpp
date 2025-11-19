@@ -60,8 +60,8 @@ void ObservingConditions::aWriteJson(JsonObject &root) {
     obj_config[F("B_Refresh_Periodzc_sec")] = _refresh;
     obj_config[F("Sensors_Descriptionzro")] = sensordescription;
 
-    // instance
-    JsonObject obj_instant_state = root[F("Instant State (LAST)")].to<JsonObject>();
+    // instant
+    JsonObject obj_instant_state = root[F("Instant State (Latest)")].to<JsonObject>();
     obj_instant_state[F("Rain_Rate,_mm/hzro")] = String(rainrate, 1);
     obj_instant_state[F("Temperature,_°Czro")] = String(temperature, 1);
     obj_instant_state[F("Humidity,_zpzro")] = String(humidity, 0);
