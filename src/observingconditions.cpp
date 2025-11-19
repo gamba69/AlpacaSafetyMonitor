@@ -39,6 +39,11 @@ void ObservingConditions::aGetTimeSinceLastUpdate(AsyncWebServerRequest *request
     _alpacaServer->respond(request, seconds);
 }
 
+void ObservingConditions::aGetAveragePeriod(AsyncWebServerRequest *request) { 
+    // TODO ASCOM required hours unit!
+    _alpacaServer->respond(request, _avgperiod); 
+}
+
 void ObservingConditions::aReadJson(JsonObject &root) {
     AlpacaObservingConditions::aReadJson(root);
     if (JsonObject obj_config = root[F("Configuration")]) {
@@ -65,6 +70,7 @@ void ObservingConditions::aWriteJson(JsonObject &root) {
     obj_state[F("Cloud_Cover,_zpzro")] = String(cloudcover, 0);
     // not exactly seeing (fwhm)
     obj_state[F("Turbulence,_dBzro")] = String(noisedb, 1);
+    obj_state[F("Last_Updated,_secs_agozro")] = String((millis() - timelastupdate) / 1000, 1);
     // obj_state[F("Sky Quality")] = skyquality;
     // obj_state[F("Sky Brightness")] = skybrightness;
 }

@@ -63,14 +63,15 @@ class ObservingConditions : public AlpacaObservingConditions {
     void aGetWindGust(AsyncWebServerRequest *request) { _alpacaServer->respond(request, windgust); }
     void aGetWindSpeed(AsyncWebServerRequest *request) { _alpacaServer->respond(request, windspeed); }
     void aGetSensorDescription(AsyncWebServerRequest *request) { _alpacaServer->respond(request, sensordescription); }
-    void aGetAveragePeriod(AsyncWebServerRequest *request) { _alpacaServer->respond(request, _avgperiod); }
     void aGetRainRate(AsyncWebServerRequest *request) { _alpacaServer->respond(request, rainrate); }
     void aGetCloudCover(AsyncWebServerRequest *request) { _alpacaServer->respond(request, cloudcover); }
 
+    void aGetAveragePeriod(AsyncWebServerRequest *request);
     void aGetTimeSinceLastUpdate(AsyncWebServerRequest *request);
 
     // alpaca setters
     void aPutAveragePeriod(AsyncWebServerRequest *request) {
+        // TODO ASCOM required hours unit!
         _alpacaServer->getParam(request, "averageperiod", _avgperiod);
         _alpacaServer->respond(request, nullptr);
     }
