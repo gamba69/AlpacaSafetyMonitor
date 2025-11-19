@@ -39,9 +39,9 @@ void ObservingConditions::aGetTimeSinceLastUpdate(AsyncWebServerRequest *request
     _alpacaServer->respond(request, seconds);
 }
 
-void ObservingConditions::aGetAveragePeriod(AsyncWebServerRequest *request) { 
+void ObservingConditions::aGetAveragePeriod(AsyncWebServerRequest *request) {
     // TODO ASCOM required hours unit!
-    _alpacaServer->respond(request, _avgperiod); 
+    _alpacaServer->respond(request, _avgperiod);
 }
 
 void ObservingConditions::aReadJson(JsonObject &root) {
@@ -58,19 +58,70 @@ void ObservingConditions::aWriteJson(JsonObject &root) {
     JsonObject obj_config = root[F("Configuration")].to<JsonObject>();
     obj_config[F("A_Average_Periodzc_sec")] = _avgperiod;
     obj_config[F("B_Refresh_Periodzc_sec")] = _refresh;
+    obj_config[F("Sensors_Descriptionzro")] = sensordescription;
 
-    JsonObject obj_state = root[F("State")].to<JsonObject>();
-    obj_state[F("Sensors_Descriptionzro")] = sensordescription;
-    obj_state[F("Rain_Rate,_mm/hzro")] = String(rainrate, 1);
-    obj_state[F("Temperature,_°Czro")] = String(temperature, 1);
-    obj_state[F("Humidity,_zpzro")] = String(humidity, 0);
-    obj_state[F("Dewpoint,_°Czro")] = String(dewpoint, 1);
-    obj_state[F("Pressure,_hPazro")] = String(pressure, 0);
-    obj_state[F("Sky_Temp,_°Czro")] = String(tempsky, 1);
-    obj_state[F("Cloud_Cover,_zpzro")] = String(cloudcover, 0);
+    // instance
+    JsonObject obj_instant_state = root[F("Instant State (LAST)")].to<JsonObject>();
+    obj_instant_state[F("Rain_Rate,_mm/hzro")] = String(rainrate, 1);
+    obj_instant_state[F("Temperature,_°Czro")] = String(temperature, 1);
+    obj_instant_state[F("Humidity,_zpzro")] = String(humidity, 0);
+    obj_instant_state[F("Dewpoint,_°Czro")] = String(dewpoint, 1);
+    obj_instant_state[F("Pressure,_hPazro")] = String(pressure, 0);
+    obj_instant_state[F("Sky_Temp,_°Czro")] = String(tempsky, 1);
+    obj_instant_state[F("Cloud_Cover,_zpzro")] = String(cloudcover, 0);
     // not exactly seeing (fwhm)
-    obj_state[F("Turbulence,_dBzro")] = String(noisedb, 1);
-    obj_state[F("Last_Updated,_secs_agozro")] = String((millis() - timelastupdate) / 1000, 1);
-    // obj_state[F("Sky Quality")] = skyquality;
-    // obj_state[F("Sky Brightness")] = skybrightness;
+    obj_instant_state[F("Turbulence,_dBzro")] = String(noisedb, 1);
+    // obj_instant_state[F("Sky Quality")] = skyquality;
+    // obj_instant_state[F("Sky Brightness")] = skybrightness;
+    obj_instant_state[F("Updated,_secs/agozro")] = String(
+        ((float)millis() - (float)timelastupdate) / 1000., 1);
+
+    // averaged
+    int averaging = _avgperiod / _refresh;
+    if (averaging == 0)
+        averaging = 1;
+    JsonObject obj_averaged_state = root[F("Averaged State (ASCOM)")].to<JsonObject>();
+    obj_averaged_state[F("Rain_Rate,_mm/hzro")] = String(
+        rainrate_ra.getAverageLast(
+            averaging > rainrate_ra.getCount() ? rainrate_ra.getCount() : averaging),
+        1);
+    obj_averaged_state[F("Temperature,_°Czro")] = String(
+        temperature_ra.getAverageLast(
+            averaging > temperature_ra.getCount() ? temperature_ra.getCount() : averaging),
+        1);
+    obj_averaged_state[F("Humidity,_zpzro")] = String(
+        humidity_ra.getAverageLast(
+            averaging > humidity_ra.getCount() ? humidity_ra.getCount() : averaging),
+        0);
+    obj_averaged_state[F("Dewpoint,_°Czro")] = String(
+        dewpoint_ra.getAverageLast(
+            averaging > dewpoint_ra.getCount() ? dewpoint_ra.getCount() : averaging),
+        1);
+    obj_averaged_state[F("Pressure,_hPazro")] = String(
+        pressure_ra.getAverageLast(
+            averaging > pressure_ra.getCount() ? pressure_ra.getCount() : averaging),
+        0);
+    obj_averaged_state[F("Sky_Temp,_°Czro")] = String(
+        tempsky_ra.getAverageLast(
+            averaging > tempsky_ra.getCount() ? tempsky_ra.getCount() : averaging),
+        1);
+    obj_averaged_state[F("Cloud_Cover,_zpzro")] = String(
+        cloudcover_ra.getAverageLast(
+            averaging > cloudcover_ra.getCount() ? cloudcover_ra.getCount() : averaging),
+        0);
+    // not exactly seeing (fwhm)
+    obj_averaged_state[F("Turbulence,_dBzro")] = String(
+        noisedb_ra.getAverageLast(
+            averaging > noisedb_ra.getCount() ? noisedb_ra.getCount() : averaging),
+        1);
+    // obj_averaged_state[F("Sky Quality")] = String(
+    //     skyquality_ra.getAverageLast(
+    //         averaging > skyquality_ra.getCount() ? skyquality_ra.getCount() : averaging),
+    //     1);
+    // obj_averaged_state[F("Sky Brightness")] = String(
+    //     skybrightness_ra.getAverageLast(
+    //         averaging > skybrightness_ra.getCount() ? skybrightness_ra.getCount() : averaging),
+    //     1);
+    obj_averaged_state[F("Updated,_secs/agozro")] = String(
+        ((float)millis() - (float)timelastupdate) / 1000., 1);
 }

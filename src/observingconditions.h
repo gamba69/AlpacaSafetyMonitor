@@ -38,7 +38,7 @@ class ObservingConditions : public AlpacaObservingConditions {
                    winddir_ra = RunningAverage(1200);
     unsigned long timelastupdate;
     const char *sensordescription = "Xiao Seeed ESP32S3/BMP280/AHT20/MLX90614";
-    float _avgperiod = 30;
+    int _avgperiod = 30;
     int _refresh = 3;
 
   public:
