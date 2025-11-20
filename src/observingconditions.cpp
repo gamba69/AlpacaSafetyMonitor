@@ -48,6 +48,94 @@ void ObservingConditions::aGetAveragePeriod(AsyncWebServerRequest *request) {
     _alpacaServer->respond(request, _avgperiod);
 }
 
+void ObservingConditions::aGetRainRate(AsyncWebServerRequest *request) {
+    // averaged
+    int averaging = _avgperiod / _refresh;
+    if (averaging == 0)
+        averaging = 1;
+    float value = rainrate_ra.getAverageLast(
+        averaging > rainrate_ra.getCount() ? rainrate_ra.getCount() : averaging);
+    value = round(10. * value) / 10.;
+    _alpacaServer->respond(request, value);
+}
+
+void ObservingConditions::aGetTemperature(AsyncWebServerRequest *request) {
+    // averaged
+    int averaging = _avgperiod / _refresh;
+    if (averaging == 0)
+        averaging = 1;
+    float value = temperature_ra.getAverageLast(
+        averaging > temperature_ra.getCount() ? temperature_ra.getCount() : averaging);
+    value = round(10. * value) / 10.;
+    _alpacaServer->respond(request, value);
+}
+
+void ObservingConditions::aGetHumidity(AsyncWebServerRequest *request) {
+    // averaged
+    int averaging = _avgperiod / _refresh;
+    if (averaging == 0)
+        averaging = 1;
+    float value = humidity_ra.getAverageLast(
+        averaging > humidity_ra.getCount() ? humidity_ra.getCount() : averaging);
+    value = round(1. * value) / 1.;
+    _alpacaServer->respond(request, value);
+}
+
+void ObservingConditions::aGetDewPoint(AsyncWebServerRequest *request) {
+    // averaged
+    int averaging = _avgperiod / _refresh;
+    if (averaging == 0)
+        averaging = 1;
+    float value = dewpoint_ra.getAverageLast(
+        averaging > dewpoint_ra.getCount() ? dewpoint_ra.getCount() : averaging);
+    value = round(10. * value) / 10.;
+    _alpacaServer->respond(request, value);
+}
+
+void ObservingConditions::aGetPressure(AsyncWebServerRequest *request) {
+    // averaged
+    int averaging = _avgperiod / _refresh;
+    if (averaging == 0)
+        averaging = 1;
+    float value = pressure_ra.getAverageLast(
+        averaging > pressure_ra.getCount() ? pressure_ra.getCount() : averaging);
+    value = round(1. * value) / 1.;
+    _alpacaServer->respond(request, value);
+}
+
+void ObservingConditions::aGetSkyTemperature(AsyncWebServerRequest *request) {
+    // averaged
+    int averaging = _avgperiod / _refresh;
+    if (averaging == 0)
+        averaging = 1;
+    float value = tempsky_ra.getAverageLast(
+        averaging > temperature_ra.getCount() ? tempsky_ra.getCount() : averaging);
+    value = round(10. * value) / 10.;
+    _alpacaServer->respond(request, value);
+}
+
+void ObservingConditions::aGetCloudCover(AsyncWebServerRequest *request) {
+    // averaged
+    int averaging = _avgperiod / _refresh;
+    if (averaging == 0)
+        averaging = 1;
+    float value = cloudcover_ra.getAverageLast(
+        averaging > cloudcover_ra.getCount() ? cloudcover_ra.getCount() : averaging);
+    value = round(1. * value) / 1.;
+    _alpacaServer->respond(request, value);
+}
+
+void ObservingConditions::aGetStarFwhm(AsyncWebServerRequest *request) {
+    // averaged
+    int averaging = _avgperiod / _refresh;
+    if (averaging == 0)
+        averaging = 1;
+    float value = noisedb_ra.getAverageLast(
+        averaging > noisedb_ra.getCount() ? noisedb_ra.getCount() : averaging);
+    value = round(10. * value) / 10.;
+    _alpacaServer->respond(request, value);
+}
+
 void ObservingConditions::aReadJson(JsonObject &root) {
     AlpacaObservingConditions::aReadJson(root);
     if (JsonObject obj_config = root[F("Configuration")]) {

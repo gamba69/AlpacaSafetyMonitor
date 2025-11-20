@@ -54,20 +54,20 @@ class ObservingConditions : public AlpacaObservingConditions {
     int getAveragePeriod() { return _avgperiod; }
 
     // alpaca getters
-    void aGetDewPoint(AsyncWebServerRequest *request) { _alpacaServer->respond(request, dewpoint); }
-    void aGetHumidity(AsyncWebServerRequest *request) { _alpacaServer->respond(request, humidity); }
-    void aGetPressure(AsyncWebServerRequest *request) { _alpacaServer->respond(request, pressure); }
+    void aGetRainRate(AsyncWebServerRequest *request);
+    void aGetTemperature(AsyncWebServerRequest *request);
+    void aGetHumidity(AsyncWebServerRequest *request);
+    void aGetDewPoint(AsyncWebServerRequest *request);
+    void aGetPressure(AsyncWebServerRequest *request);
+    void aGetSkyTemperature(AsyncWebServerRequest *request);
+    void aGetCloudCover(AsyncWebServerRequest *request);
+    void aGetStarFwhm(AsyncWebServerRequest *request);
     void aGetSkyBrightness(AsyncWebServerRequest *request) { _alpacaServer->respond(request, skybrightness); }
-    void aGetSkyTemperature(AsyncWebServerRequest *request) { _alpacaServer->respond(request, tempsky); }
     void aGetSkyQuality(AsyncWebServerRequest *request) { _alpacaServer->respond(request, skyquality); }
-    void aGetStarFwhm(AsyncWebServerRequest *request) { _alpacaServer->respond(request, noisedb); }
-    void aGetTemperature(AsyncWebServerRequest *request) { _alpacaServer->respond(request, temperature); }
     void aGetWindDirection(AsyncWebServerRequest *request) { _alpacaServer->respond(request, winddir); }
     void aGetWindGust(AsyncWebServerRequest *request) { _alpacaServer->respond(request, windgust); }
     void aGetWindSpeed(AsyncWebServerRequest *request) { _alpacaServer->respond(request, windspeed); }
     void aGetSensorDescription(AsyncWebServerRequest *request) { _alpacaServer->respond(request, sensordescription); }
-    void aGetRainRate(AsyncWebServerRequest *request) { _alpacaServer->respond(request, rainrate); }
-    void aGetCloudCover(AsyncWebServerRequest *request) { _alpacaServer->respond(request, cloudcover); }
 
     void aGetAveragePeriod(AsyncWebServerRequest *request);
     void aGetTimeSinceLastUpdate(AsyncWebServerRequest *request);
