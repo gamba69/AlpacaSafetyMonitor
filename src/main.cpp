@@ -14,7 +14,7 @@ OTAWEBUPDATER OtaWebUpdater;
 
 AsyncWebServer *tcp_server;
 
-AlpacaServer alpacaServer("Alpaca_ESP32");
+AlpacaServer alpacaServer("Alpaca_ESP32", (VERSION + String(" Build ") + BUILD_NUMBER).c_str(), BUILD_DATE);
 
 SafetyMonitor safetymonitor = SafetyMonitor();
 ObservingConditions observingconditions = ObservingConditions();
@@ -168,11 +168,11 @@ void setup() {
     WifiManager.attachUI();
     // OTA Manager
     // OtaWebUpdater.setBaseUrl(OTA_BASE_URL);    // Set the OTA Base URL for automatic updates
-    OtaWebUpdater.setLogger(logLine, logLinePart, logTime); // Set message logger
-    OtaWebUpdater.setFirmware(BUILD_DATE, VERSION);         // Set the current firmware version
-    OtaWebUpdater.startBackgroundTask();                    // Run the background task to check for updates
-    OtaWebUpdater.attachWebServer(tcp_server);              // Attach our API to the Webserver
-    OtaWebUpdater.attachUI();                               // Attach the UI to the Webserver
+    OtaWebUpdater.setLogger(logLine, logLinePart, logTime);                                    // Set message logger
+    OtaWebUpdater.setFirmware(BUILD_DATE, String(VERSION) + " Build " + String(BUILD_NUMBER)); // Set the current firmware version
+    OtaWebUpdater.startBackgroundTask();                                                       // Run the background task to check for updates
+    OtaWebUpdater.attachWebServer(tcp_server);                                                 // Attach our API to the Webserver
+    OtaWebUpdater.attachUI();                                                                  // Attach the UI to the Webserver
     tcp_server->on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(LittleFS, "/www/favicon.ico", "image/x-icon");
     });
@@ -218,27 +218,27 @@ void loop() {
         alpacaServer.beginUdp(ALPACA_UDP_PORT);
         // initialize mqtt
         setupMqtt();
-        }
+    }
     prevWifiStatus = WiFi.status();
     if (mqttClient)
         mqttClient->loop();
     // log mqtt status without blocking webserver
-    if (millis() > lastMqttStatus + mqttStatusDelay) { 
+    if (millis() > lastMqttStatus + mqttStatusDelay) {
         logMqttStatus();
         lastMqttStatus = millis();
     }
     // update meteo every METEO_MEASURE_DELAY without blocking webserver
-    if (immediateUpdate || (millis() > meteoLastRan + METEO_MEASURE_DELAY)) { 
+    if (immediateUpdate || (millis() > meteoLastRan + METEO_MEASURE_DELAY)) {
         meteo.update();
         meteoLastRan = millis();
     }
     // update safetymonitor every METEO_MEASURE_DELAY without blocking webserver
-    if (immediateUpdate || (millis() > safetyMonitorLastRan + SAFETY_MONITOR_DELAY)) { 
+    if (immediateUpdate || (millis() > safetyMonitorLastRan + SAFETY_MONITOR_DELAY)) {
         safetymonitor.update(meteo);
         safetyMonitorLastRan = millis();
     }
     // update observingconditions every refresh without blocking webserver
-    if (immediateUpdate || (millis() > observingConditionsLastRan + (1000 * observingconditions.getRefresh()))) { 
+    if (immediateUpdate || (millis() > observingConditionsLastRan + (1000 * observingconditions.getRefresh()))) {
         observingconditions.update(meteo);
         observingConditionsLastRan = millis();
     }
