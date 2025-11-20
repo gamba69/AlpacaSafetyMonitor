@@ -44,8 +44,9 @@ void ObservingConditions::aGetTimeSinceLastUpdate(AsyncWebServerRequest *request
 }
 
 void ObservingConditions::aGetAveragePeriod(AsyncWebServerRequest *request) {
-    // TODO ASCOM required hours unit!
-    _alpacaServer->respond(request, _avgperiod);
+    // ASCOM required hours
+    float value = (float)_avgperiod / 3600.;
+    _alpacaServer->respond(request, value);
 }
 
 void ObservingConditions::aGetRainRate(AsyncWebServerRequest *request) {

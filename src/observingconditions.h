@@ -74,8 +74,10 @@ class ObservingConditions : public AlpacaObservingConditions {
 
     // alpaca setters
     void aPutAveragePeriod(AsyncWebServerRequest *request) {
-        // TODO ASCOM required hours unit!
-        _alpacaServer->getParam(request, "averageperiod", _avgperiod);
+        // ASCOM required hours
+        float value;
+        _alpacaServer->getParam(request, "averageperiod", value);
+        _avgperiod = (int)round(3600. * value);
         _alpacaServer->respond(request, nullptr);
     }
     void aPutRefresh(AsyncWebServerRequest *request) {
