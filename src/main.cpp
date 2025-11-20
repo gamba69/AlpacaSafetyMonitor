@@ -184,6 +184,7 @@ void setup() {
     alpacaServer.setLogger(logLine, logLinePart, logTime);
     alpacaServer.beginTcp(tcp_server, ALPACA_TCP_PORT);
     // Observing Conditions
+    observingconditions.setImmediateUpdate(immediateMeteoUpdate);
     alpacaServer.addDevice(&observingconditions);
     // Safety Monitor
     safetymonitor.setLogger(logLine, logLinePart, logTime);

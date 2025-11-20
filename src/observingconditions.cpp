@@ -5,6 +5,10 @@
 uint8_t ObservingConditions::_n_observingconditionss = 0;
 ObservingConditions *ObservingConditions::_observingconditions_array[4] = {nullptr, nullptr, nullptr, nullptr};
 
+void ObservingConditions::setImmediateUpdate(std::function<void()> immediateUpdateCallcback) {
+    immediateUpdate = immediateUpdateCallcback;
+}
+
 bool ObservingConditions::begin() {
     _observingconditions_array[_observingconditions_index] = this;
     return true;

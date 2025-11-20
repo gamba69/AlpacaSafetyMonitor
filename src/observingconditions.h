@@ -41,6 +41,9 @@ class ObservingConditions : public AlpacaObservingConditions {
     int _avgperiod = 30;
     int _refresh = 3;
 
+    // immediate update
+    std::function<void()> immediateUpdate = nullptr;
+
   public:
     ObservingConditions() : AlpacaObservingConditions() { _observingconditions_index = _n_observingconditionss++; }
     bool begin();
@@ -76,11 +79,16 @@ class ObservingConditions : public AlpacaObservingConditions {
         _alpacaServer->respond(request, nullptr);
     }
     void aPutRefresh(AsyncWebServerRequest *request) {
-        _alpacaServer->getParam(request, "refresh", _refresh);
+        // _alpacaServer->getParam(request, "refresh", _refresh);
+        if (immediateUpdate)
+            immediateUpdate();
         _alpacaServer->respond(request, nullptr);
     }
 
     // alpaca json
     void aReadJson(JsonObject &root);
     void aWriteJson(JsonObject &root);
+
+    // Set current logger
+    void setImmediateUpdate(std::function<void()> immediateUpdateCallback = nullptr);
 };
