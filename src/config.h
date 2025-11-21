@@ -26,8 +26,6 @@
 #define METEO_MEASURE_DELAY 3000
 #define SAFETY_MONITOR_DELAY 3000
 
-// TODO Configurable OC & SM updates
-
 // RAIN
 #define RAIN_SENSOR_PIN 8
 

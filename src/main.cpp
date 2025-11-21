@@ -170,16 +170,23 @@ void setup() {
     WifiManager.attachUI();
     // OTA Manager
     // OtaWebUpdater.setBaseUrl(OTA_BASE_URL);    // Set the OTA Base URL for automatic updates
-    OtaWebUpdater.setLogger(logLine, logLinePart, logTime);                                    // Set message logger
+    OtaWebUpdater.setLogger(logLine, logLinePart, logTime);                                     // Set message logger
     OtaWebUpdater.setFirmware(BUILD_DATE, String(VERSION) + ", build " + String(BUILD_NUMBER)); // Set the current firmware version
-    OtaWebUpdater.startBackgroundTask();                                                       // Run the background task to check for updates
-    OtaWebUpdater.attachWebServer(tcp_server);                                                 // Attach our API to the Webserver
-    OtaWebUpdater.attachUI();                                                                  // Attach the UI to the Webserver
+    OtaWebUpdater.startBackgroundTask();                                                        // Run the background task to check for updates
+    OtaWebUpdater.attachWebServer(tcp_server);                                                  // Attach our API to the Webserver
+    OtaWebUpdater.attachUI();                                                                   // Attach the UI to the Webserver
     tcp_server->on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(LittleFS, "/www/favicon.ico", "image/x-icon");
     });
     tcp_server->on("/ascom.webp", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(LittleFS, "/www/ascom.webp", "image/webp");
+    });
+    // Redirects for settings from client
+    tcp_server->on("/setup/v1/observingconditions/0/setup", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->redirect("/api/v1/observingconditions/0/setup");
+    });
+        tcp_server->on("/setup/v1/safetymonitor/0/setup", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->redirect("/api/v1/safetymonitor/0/setup");
     });
     tcp_server->begin();
     // ALPACA Tcp Server

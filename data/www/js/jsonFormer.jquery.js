@@ -275,7 +275,7 @@ String.prototype.asLabel = function () {
     target = target.replaceAll("zs", "/");
     target = target.replaceAll("zdg", "°");
     target = target.replaceAll("zdt", "Δ");
-    target = target.replaceAll("_", "⠀");
+    target = target.replaceAll("_", " ");
     return target;
 };
 
