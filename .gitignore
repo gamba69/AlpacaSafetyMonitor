@@ -2,10 +2,6 @@
 .vscode/*
 src/secrets.h
 src/version.h
-docs/api
-data/www/jsondata.device
-data/www/jsondata.server
-data/www/links.json
 data/www/js/jquery-ui.min.js
 data/www/js/jquery.min.js
 data/www/js/bootstrap.min.js
