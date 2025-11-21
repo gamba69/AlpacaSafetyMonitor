@@ -1,9 +1,10 @@
 #pragma once
+#include <Arduino.h>
 #include "AlpacaObservingConditions.h"
 #include "RunningAverage.h"
 #include "config.h"
 #include "meteo.h"
-#include <Arduino.h>
+#include "version.h"
 
 class ObservingConditions : public AlpacaObservingConditions {
   private:
@@ -40,6 +41,7 @@ class ObservingConditions : public AlpacaObservingConditions {
     const char *sensordescription = "Xiao Seeed ESP32S3/BMP280/AHT20/MLX90614";
     int _avgperiod = 30;
     int _refresh = 3;
+    bool _noise_as_fwhm = true;
 
     // immediate update
     std::function<void()> immediateUpdate = nullptr;
@@ -54,6 +56,10 @@ class ObservingConditions : public AlpacaObservingConditions {
     int getAveragePeriod() { return _avgperiod; }
 
     // alpaca getters
+    void aGetDescription(AsyncWebServerRequest *request) override;
+    void aGetDriverInfo(AsyncWebServerRequest *request) override;
+    void aGetDriverVersion(AsyncWebServerRequest *request) override;
+    void aGetSensorDescription(AsyncWebServerRequest *request) { _alpacaServer->respond(request, sensordescription); }
     void aGetRainRate(AsyncWebServerRequest *request);
     void aGetTemperature(AsyncWebServerRequest *request);
     void aGetHumidity(AsyncWebServerRequest *request);
@@ -62,12 +68,11 @@ class ObservingConditions : public AlpacaObservingConditions {
     void aGetSkyTemperature(AsyncWebServerRequest *request);
     void aGetCloudCover(AsyncWebServerRequest *request);
     void aGetStarFwhm(AsyncWebServerRequest *request);
-    void aGetSkyBrightness(AsyncWebServerRequest *request) { _alpacaServer->respond(request, skybrightness); }
-    void aGetSkyQuality(AsyncWebServerRequest *request) { _alpacaServer->respond(request, skyquality); }
-    void aGetWindDirection(AsyncWebServerRequest *request) { _alpacaServer->respond(request, winddir); }
-    void aGetWindGust(AsyncWebServerRequest *request) { _alpacaServer->respond(request, windgust); }
-    void aGetWindSpeed(AsyncWebServerRequest *request) { _alpacaServer->respond(request, windspeed); }
-    void aGetSensorDescription(AsyncWebServerRequest *request) { _alpacaServer->respond(request, sensordescription); }
+    void aGetSkyBrightness(AsyncWebServerRequest *request) { _alpacaServer->respond(request, nullptr, AlpacaNotImplementedException, "Not Implemented"); }
+    void aGetSkyQuality(AsyncWebServerRequest *request) { _alpacaServer->respond(request, nullptr, AlpacaNotImplementedException, "Not Implemented"); }
+    void aGetWindDirection(AsyncWebServerRequest *request) { _alpacaServer->respond(request, nullptr, AlpacaNotImplementedException, "Not Implemented"); }
+    void aGetWindGust(AsyncWebServerRequest *request) { _alpacaServer->respond(request, nullptr, AlpacaNotImplementedException, "Not Implemented"); }
+    void aGetWindSpeed(AsyncWebServerRequest *request) { _alpacaServer->respond(request, nullptr, AlpacaNotImplementedException, "Not Implemented"); }
 
     void aGetAveragePeriod(AsyncWebServerRequest *request);
     void aGetTimeSinceLastUpdate(AsyncWebServerRequest *request);

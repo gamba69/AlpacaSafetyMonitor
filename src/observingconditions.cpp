@@ -38,6 +38,22 @@ void ObservingConditions::update(Meteo meteo) {
     timelastupdate = millis();
 };
 
+void ObservingConditions::aGetDescription(AsyncWebServerRequest *request) {
+    String description = "DreamSky Observing Conditions Monitor";
+    _alpacaServer->respond(request, description.c_str());
+}
+
+void ObservingConditions::aGetDriverVersion(AsyncWebServerRequest *request) {
+    String version = "​" + String(VERSION) + ", build " + String(BUILD_NUMBER);
+    _alpacaServer->respond(request, version.c_str());
+};
+
+void ObservingConditions::aGetDriverInfo(AsyncWebServerRequest *request) {
+    String year = String(BUILD_DATE).substring(0, 4);
+    String info = "©" + year + " DreamSky Observatory";
+    _alpacaServer->respond(request, info.c_str());
+};
+
 void ObservingConditions::aGetTimeSinceLastUpdate(AsyncWebServerRequest *request) {
     float seconds = (millis() - timelastupdate) / 1000;
     _alpacaServer->respond(request, seconds);
@@ -127,14 +143,18 @@ void ObservingConditions::aGetCloudCover(AsyncWebServerRequest *request) {
 }
 
 void ObservingConditions::aGetStarFwhm(AsyncWebServerRequest *request) {
-    // averaged
-    int averaging = _avgperiod / _refresh;
-    if (averaging == 0)
-        averaging = 1;
-    float value = noisedb_ra.getAverageLast(
-        averaging > noisedb_ra.getCount() ? noisedb_ra.getCount() : averaging);
-    value = round(10. * value) / 10.;
-    _alpacaServer->respond(request, value);
+    if (_noise_as_fwhm) {
+        // averaged
+        int averaging = _avgperiod / _refresh;
+        if (averaging == 0)
+            averaging = 1;
+        float value = noisedb_ra.getAverageLast(
+            averaging > noisedb_ra.getCount() ? noisedb_ra.getCount() : averaging);
+        value = round(10. * value) / 10.;
+        _alpacaServer->respond(request, value);
+    } else {
+        _alpacaServer->respond(request, nullptr, AlpacaNotImplementedException, "Not Implemented");
+    }
 }
 
 void ObservingConditions::aReadJson(JsonObject &root) {
@@ -142,6 +162,10 @@ void ObservingConditions::aReadJson(JsonObject &root) {
     if (JsonObject obj_config = root[F("Configuration")]) {
         _avgperiod = obj_config[F("A_Average_Periodzc_sec")] | _avgperiod;
         _refresh = obj_config[F("B_Refresh_Periodzc_sec")] | _refresh;
+        if (obj_config[F("C_Turbulence_as_FWHM")].as<String>() == String("true"))
+            _noise_as_fwhm = true;
+        else
+            _noise_as_fwhm = false;
     }
 }
 
@@ -151,6 +175,7 @@ void ObservingConditions::aWriteJson(JsonObject &root) {
     JsonObject obj_config = root[F("Configuration")].to<JsonObject>();
     obj_config[F("A_Average_Periodzc_sec")] = _avgperiod;
     obj_config[F("B_Refresh_Periodzc_sec")] = _refresh;
+    obj_config[F("C_Turbulence_as_FWHM")] = _noise_as_fwhm;
     obj_config[F("Sensors_Descriptionzro")] = sensordescription;
 
     // instant

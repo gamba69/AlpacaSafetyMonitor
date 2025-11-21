@@ -14,7 +14,7 @@ OTAWEBUPDATER OtaWebUpdater;
 
 AsyncWebServer *tcp_server;
 
-AlpacaServer alpacaServer("Alpaca_ESP32", (VERSION + String(" Build ") + BUILD_NUMBER).c_str(), BUILD_DATE);
+AlpacaServer alpacaServer("Alpaca_ESP32", (VERSION + String(", build ") + BUILD_NUMBER).c_str(), BUILD_DATE);
 
 SafetyMonitor safetymonitor = SafetyMonitor();
 ObservingConditions observingconditions = ObservingConditions();
@@ -110,7 +110,9 @@ void setup() {
     // Setup serial
     Serial.begin(115200);
     while (!Serial) {
+        delay(50);
     }
+    Serial.println("");
     // System Timezone
     setenv("TZ", RTC_TIMEZONE, 1);
     tzset();
@@ -169,7 +171,7 @@ void setup() {
     // OTA Manager
     // OtaWebUpdater.setBaseUrl(OTA_BASE_URL);    // Set the OTA Base URL for automatic updates
     OtaWebUpdater.setLogger(logLine, logLinePart, logTime);                                    // Set message logger
-    OtaWebUpdater.setFirmware(BUILD_DATE, String(VERSION) + " Build " + String(BUILD_NUMBER)); // Set the current firmware version
+    OtaWebUpdater.setFirmware(BUILD_DATE, String(VERSION) + ", build " + String(BUILD_NUMBER)); // Set the current firmware version
     OtaWebUpdater.startBackgroundTask();                                                       // Run the background task to check for updates
     OtaWebUpdater.attachWebServer(tcp_server);                                                 // Attach our API to the Webserver
     OtaWebUpdater.attachUI();                                                                  // Attach the UI to the Webserver

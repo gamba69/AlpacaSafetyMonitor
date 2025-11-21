@@ -158,6 +158,22 @@ void SafetyMonitor::update(Meteo meteo) {
     is_safe = (safeunsafe_state == SafeUnsafeStatus::AWAIT_UNSAFE || safeunsafe_state == SafeUnsafeStatus::SAFE);
 };
 
+void SafetyMonitor::aGetDescription(AsyncWebServerRequest *request) {
+    String description = "DreamSky Safety Conditions Monitor";
+    _alpacaServer->respond(request, description.c_str());
+}
+
+void SafetyMonitor::aGetDriverVersion(AsyncWebServerRequest *request) {
+    String version = "​" + String(VERSION) + ", build " + String(BUILD_NUMBER);
+    _alpacaServer->respond(request, version.c_str());
+};
+
+void SafetyMonitor::aGetDriverInfo(AsyncWebServerRequest *request) {
+    String year = String(BUILD_DATE).substring(0, 4);
+    String info = "©" + year + " DreamSky Observatory";
+    _alpacaServer->respond(request, info.c_str());
+};
+
 void SafetyMonitor::aReadJson(JsonObject &root) {
     AlpacaSafetyMonitor::aReadJson(root);
     if (JsonObject obj_config = root[F("Configuration")]) {

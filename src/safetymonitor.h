@@ -1,8 +1,9 @@
 #pragma once
+#include <Arduino.h>
 #include "AlpacaSafetyMonitor.h"
 #include "config.h"
 #include "meteo.h"
-#include <Arduino.h>
+#include "version.h"
 
 enum RainRateState {
     WET,
@@ -98,6 +99,9 @@ class SafetyMonitor : public AlpacaSafetyMonitor {
     void update(Meteo meteo);
 
     // alpaca getters
+    void aGetDescription(AsyncWebServerRequest *request) override;
+    void aGetDriverInfo(AsyncWebServerRequest *request) override;
+    void aGetDriverVersion(AsyncWebServerRequest *request) override;
     void aGetIsSafe(AsyncWebServerRequest *request) { _alpacaServer->respond(request, is_safe); }
 
     // alpaca setters
