@@ -173,6 +173,18 @@ void IRAM_ATTR immediateMeteoUpdate() {
     immediateUpdate = true;
 }
 
+void IRAM_ATTR consoleCommand(const std::string &msg) {
+    if (msg == "help") {
+        logMessage("[HELP] Available console commands:");
+        logMessage("[HELP] reboot - restart esp32 Safety Monitor");
+    }
+    if (msg == "reboot") {
+        logMessage("[CONSOLE] Immediate reboot requested!");
+        ESP.restart();
+    }
+    // meteo off on
+}
+
 void setup() {
     // Setup serial
     Serial.begin(115200);
@@ -195,7 +207,7 @@ void setup() {
     tv.tv_sec = rtcNow.unixtime();
     tv.tv_usec = 0;
     settimeofday(&tv, NULL);
-    // TODO Fixed WiFI settings with reconnect
+    // TODO Fixed WiFi settings with reconnect
     // setup_wifi();
     // NTP
     NTP.onNTPSyncEvent([](NTPEvent_t event) {
@@ -226,9 +238,7 @@ void setup() {
     // TCP server
     tcp_server = new AsyncWebServer(ALPACA_TCP_PORT);
     // Web Serial
-    webSerial.onMessage([](const std::string &msg) {
-        Serial.println(msg.c_str());
-    });
+    webSerial.onMessage(consoleCommand);
     webSerial.setBuffer(100);
     webSerial.begin(tcp_server);
     // WiFi Manager
@@ -263,7 +273,7 @@ void setup() {
     meteo.begin();
     attachInterrupt(digitalPinToInterrupt(RAIN_SENSOR_PIN), immediateMeteoUpdate, CHANGE);
     // Watchdog
-    int watchdogCountdown = Watchdog.enable(4000);
+    int watchdogCountdown = Watchdog.enable(WATCHDOG_COUNTDOWN);
     logMessage("[WATCHDOG] Enabled with " + String(watchdogCountdown) + "ms countdown.");
 }
 

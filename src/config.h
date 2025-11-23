@@ -36,5 +36,5 @@
 // LEDS
 #define PIN_WIFI_LED 21
 
-// ROOF PINOUT
-// #define ROOFpin 4
+// WATCHDOG
+#define WATCHDOG_COUNTDOWN 5000
