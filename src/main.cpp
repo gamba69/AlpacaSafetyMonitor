@@ -39,32 +39,136 @@ String logTime() {
     return String(strftime_buf);
 }
 
-String mqttLogBuffer = "";
+Preferences logPrefs;
 
-void logLine(String line) {
-    Serial.println(line);
-    webSerial.println(line);
-    if (mqttClient)
-        mqttClient->publish(MQTT_LOG_TOPIC, mqttLogBuffer + line);
-    mqttLogBuffer = "";
+enum LogSource {
+    LogMain = 0,
+    LogMeteo = 1,
+    LogAlpaca = 2,
+    LogObservingConsitions = 3,
+    LogSafetyMonitor = 4,
+    LogWifi = 5,
+    LogOta = 6,
+    LogConsole = 7
+};
+
+bool logEnabled[32];
+
+void loadLogPrefs() {
+    if (logPrefs.isKey("logging"))
+        logPrefs.getBytes("logging", logEnabled, sizeof(logEnabled));
 }
 
-void logLinePart(String line) {
-    Serial.print(line);
-    webSerial.print(line);
-    mqttLogBuffer = mqttLogBuffer + line;
+void saveLogPrefs() {
+    logPrefs.putBytes("logging", logEnabled, sizeof(logEnabled));
+}
+
+String mqttLogBuffer = "";
+
+void logLine(String line, LogSource source) {
+    if (logEnabled[source] || source == LogConsole) {
+        Serial.println(line);
+        webSerial.println(line);
+        if (mqttClient)
+            mqttClient->publish(MQTT_LOG_TOPIC, mqttLogBuffer + line);
+        mqttLogBuffer = "";
+    }
+}
+
+void logLinePart(String line, LogSource source) {
+    if (logEnabled[source] || source == LogConsole) {
+        Serial.print(line);
+        webSerial.print(line);
+        mqttLogBuffer = mqttLogBuffer + line;
+    }
+}
+
+void logLineConsole(String line) {
+    logLine(line, LogConsole);
+}
+
+void logLinePartConsole(String line) {
+    logLinePart(line, LogConsole);
+}
+
+void logLineMain(String line) {
+    logLine(line, LogMain);
+}
+
+void logLinePartMain(String line) {
+    logLinePart(line, LogMain);
+}
+
+void logLineMeteo(String line) {
+    logLine(line, LogMeteo);
+}
+
+void logLinePartMeteo(String line) {
+    logLinePart(line, LogMeteo);
+}
+
+void logLineAlpaca(String line) {
+    logLine(line, LogAlpaca);
+}
+
+void logLinePartAlpaca(String line) {
+    logLinePart(line, LogAlpaca);
+}
+
+void logLineOC(String line) {
+    logLine(line, LogObservingConsitions);
+}
+
+void logLinePartOC(String line) {
+    logLinePart(line, LogObservingConsitions);
+}
+
+void logLineSM(String line) {
+    logLine(line, LogSafetyMonitor);
+}
+
+void logLinePartSM(String line) {
+    logLinePart(line, LogSafetyMonitor);
+}
+
+void logLineWifi(String line) {
+    logLine(line, LogWifi);
+}
+
+void logLinePartWifi(String line) {
+    logLinePart(line, LogWifi);
+}
+
+void logLineOta(String line) {
+    logLine(line, LogOta);
+}
+
+void logLinePartOta(String line) {
+    logLinePart(line, LogOta);
 }
 
 void logMessage(String msg, bool showtime = true) {
     if (showtime)
-        logLinePart(logTime() + " ");
-    logLine(msg);
+        logLinePartMain(logTime() + " ");
+    logLineMain(msg);
 }
 
 void logMessagePart(String msg, bool showtime = false) {
     if (showtime)
-        logLinePart(logTime() + " ");
-    logLinePart(msg);
+        logLinePartMain(logTime() + " ");
+    logLinePartMain(msg);
+}
+
+void logMessageConsole(String msg, bool showtime = true) {
+    if (showtime)
+        logLinePartConsole(logTime() + " ");
+    logLineConsole(msg);
+}
+
+void logMessagePartConsole(String msg, bool showtime = false) {
+    if (showtime)
+        logLinePartConsole(logTime() + " ");
+    logLinePartConsole(msg);
 }
 
 void logMqttStatus(String special = "") {
@@ -174,15 +278,98 @@ void IRAM_ATTR immediateMeteoUpdate() {
 }
 
 void IRAM_ATTR consoleCommand(const std::string &msg) {
-    if (msg == "help") {
-        logMessage("[HELP] Available console commands:");
-        logMessage("[HELP] reboot - restart esp32 Safety Monitor");
+    std::string cmd;
+    cmd.resize(msg.size());
+    std::transform(msg.begin(), msg.end(), cmd.begin(),
+                   [](unsigned char c) { return std::tolower(c); });
+    if (cmd == "help") {
+        logMessageConsole("[HELP] Available console commands:");
+        logMessageConsole("[HELP] reboot - restart esp32");
     }
-    if (msg == "reboot") {
-        logMessage("[CONSOLE] Immediate reboot requested!");
+    if (cmd == "reboot") {
+        logMessageConsole("[CONSOLE] Immediate reboot requested!");
         ESP.restart();
     }
-    // meteo off on
+    if (cmd == "main on") {
+        logMessageConsole("[CONSOLE] Main logging enabled");
+        logEnabled[LogMain] = true;
+        saveLogPrefs();
+    }
+    if (cmd == "main off") {
+        logMessageConsole("[CONSOLE] Main logging disabled");
+        logEnabled[LogMain] = false;
+        saveLogPrefs();
+    }
+    if (cmd == "meteo on") {
+        logMessageConsole("[CONSOLE] Meteo logging enabled");
+        logEnabled[LogMeteo] = true;
+        saveLogPrefs();
+    }
+    if (cmd == "meteo off") {
+        logMessageConsole("[CONSOLE] Meteo logging disabled");
+        logEnabled[LogMeteo] = false;
+        saveLogPrefs();
+    }
+    if (cmd == "alpaca on") {
+        logMessageConsole("[CONSOLE] Alpaca logging enabled");
+        logEnabled[LogAlpaca] = true;
+        saveLogPrefs();
+    }
+    if (cmd == "alpaca off") {
+        logMessageConsole("[CONSOLE] Alpaca logging disabled");
+        logEnabled[LogAlpaca] = false;
+        saveLogPrefs();
+    }
+    if (cmd == "oc on") {
+        logMessageConsole("[CONSOLE] Observing conditions logging enabled");
+        logEnabled[LogObservingConsitions] = true;
+        saveLogPrefs();
+    }
+    if (cmd == "oc off") {
+        logMessageConsole("[CONSOLE] Observing conditions logging disabled");
+        logEnabled[LogObservingConsitions] = false;
+        saveLogPrefs();
+    }
+    if (cmd == "sm on") {
+        logMessageConsole("[CONSOLE] Safety monitor logging enabled");
+        logEnabled[LogSafetyMonitor] = true;
+        saveLogPrefs();
+    }
+    if (cmd == "sm off") {
+        logMessageConsole("[CONSOLE] Safety monitor logging disabled");
+        logEnabled[LogSafetyMonitor] = false;
+        saveLogPrefs();
+    }
+    if (cmd == "wifi on") {
+        logMessageConsole("[CONSOLE] WiFi logging enabled");
+        logEnabled[LogWifi] = true;
+        saveLogPrefs();
+    }
+    if (cmd == "wifi off") {
+        logMessageConsole("[CONSOLE] WiFi logging disabled");
+        logEnabled[LogWifi] = false;
+        saveLogPrefs();
+    }
+    if (cmd == "ota on") {
+        logMessageConsole("[CONSOLE] OTA logging enabled");
+        logEnabled[LogOta] = true;
+        saveLogPrefs();
+    }
+    if (cmd == "ota off") {
+        logMessageConsole("[CONSOLE] OTA logging disabled");
+        logEnabled[LogOta] = false;
+        saveLogPrefs();
+    }
+    if (cmd == "log on") {
+        logMessageConsole("[CONSOLE] All logging enabled");
+        std::fill(std::begin(logEnabled), std::end(logEnabled), true);
+        saveLogPrefs();
+    }
+    if (cmd == "log off") {
+        logMessageConsole("[CONSOLE] All logging disabled");
+        std::fill(std::begin(logEnabled), std::end(logEnabled), false);
+        saveLogPrefs();
+    }
 }
 
 void setup() {
@@ -192,6 +379,10 @@ void setup() {
         delay(50);
     }
     Serial.println("");
+    // Logging preferences
+    logPrefs.begin("logPrefs", false);
+    std::fill(std::begin(logEnabled), std::end(logEnabled), true);
+    loadLogPrefs();
     // System Timezone
     setenv("TZ", RTC_TIMEZONE, 1);
     tzset();
@@ -242,14 +433,14 @@ void setup() {
     webSerial.setBuffer(100);
     webSerial.begin(tcp_server);
     // WiFi Manager
-    WifiManager.setLogger(logLine, logLinePart, logTime); // Set message logger
-    WifiManager.startBackgroundTask();                    // Run the background task to take care of our Wifi
-    WifiManager.fallbackToSoftAp(true);                   // Run a SoftAP if no known AP can be reached
-    WifiManager.attachWebServer(tcp_server);              // Attach our API to the HTTP Webserver
+    WifiManager.setLogger(logLineWifi, logLinePartWifi, logTime); // Set message logger
+    WifiManager.startBackgroundTask();                            // Run the background task to take care of our Wifi
+    WifiManager.fallbackToSoftAp(true);                           // Run a SoftAP if no known AP can be reached
+    WifiManager.attachWebServer(tcp_server);                      // Attach our API to the HTTP Webserver
     WifiManager.attachUI();
     // OTA Manager
     // OtaWebUpdater.setBaseUrl(OTA_BASE_URL);    // Set the OTA Base URL for automatic updates
-    OtaWebUpdater.setLogger(logLine, logLinePart, logTime);                                     // Set message logger
+    OtaWebUpdater.setLogger(logLineOta, logLinePartOta, logTime);                               // Set message logger
     OtaWebUpdater.setFirmware(BUILD_DATE, String(VERSION) + ", build " + String(BUILD_NUMBER)); // Set the current firmware version
     OtaWebUpdater.startBackgroundTask();                                                        // Run the background task to check for updates
     OtaWebUpdater.attachWebServer(tcp_server);                                                  // Attach our API to the Webserver
@@ -259,17 +450,17 @@ void setup() {
     setupWebRedirects(tcp_server);
     tcp_server->begin();
     // ALPACA Tcp Server
-    alpacaServer.setLogger(logLine, logLinePart, logTime);
+    alpacaServer.setLogger(logLineAlpaca, logLinePartAlpaca, logTime);
     alpacaServer.beginTcp(tcp_server, ALPACA_TCP_PORT);
     // Observing Conditions
     observingconditions.setImmediateUpdate(immediateMeteoUpdate);
     alpacaServer.addDevice(&observingconditions);
     // Safety Monitor
-    safetymonitor.setLogger(logLine, logLinePart, logTime);
+    safetymonitor.setLogger(logLineSM, logLinePartSM, logTime);
     alpacaServer.addDevice(&safetymonitor);
     alpacaServer.loadSettings();
     // Meteo sensors
-    meteo.setLogger(logLine, logLinePart, logTime);
+    meteo.setLogger(logLineMeteo, logLinePartMeteo, logTime);
     meteo.begin();
     attachInterrupt(digitalPinToInterrupt(RAIN_SENSOR_PIN), immediateMeteoUpdate, CHANGE);
     // Watchdog
