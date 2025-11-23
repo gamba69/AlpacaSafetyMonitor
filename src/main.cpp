@@ -1,6 +1,7 @@
 #include "main.h"
 #include "secrets.h"
 #include "version.h"
+#include <Adafruit_SleepyDog.h>
 #include <ESPNtpClient.h>
 #include <MycilaWebSerial.h>
 #include <PicoMQTT.h>
@@ -102,6 +103,72 @@ void setupMqtt() {
     }
 }
 
+void setupWebImages(AsyncWebServer *webServer) {
+    // Web Images
+    webServer->on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(LittleFS, "/www/favicon.ico", "image/x-icon");
+    });
+    webServer->on("/ascom.webp", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(LittleFS, "/www/ascom.webp", "image/webp");
+    });
+    webServer->on("/alpaca.webp", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(LittleFS, "/www/alpaca.webp", "image/webp");
+    });
+    webServer->on("/console.webp", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(LittleFS, "/www/console.webp", "image/webp");
+    });
+    webServer->on("/ota.webp", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(LittleFS, "/www/ota.webp", "image/webp");
+    });
+    webServer->on("/wifi.webp", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(LittleFS, "/www/wifi.webp", "image/webp");
+    });
+}
+
+void setupWebMainPage(AsyncWebServer *webServer) {
+    // Web Main Page
+    webServer->on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(LittleFS, "/www/root.html", "text/html");
+    });
+    webServer->on("/version", HTTP_GET, [](AsyncWebServerRequest *request) {
+        String data = "©" + String(BUILD_DATE).substring(0, 4) + " DreamSky Observatory v." + String(VERSION) + " Build " + String(BUILD_NUMBER);
+        String mime = "text/plain; charset=UTF-8";
+        request->send(200, mime, data);
+    });
+    webServer->on("/uptime", HTTP_GET, [](AsyncWebServerRequest *request) {
+        unsigned long uptimeMillis = millis();
+        unsigned long totalSeconds = uptimeMillis / 1000;
+        int days = totalSeconds / (24 * 3600);
+        totalSeconds %= (24 * 3600);
+        int hours = totalSeconds / 3600;
+        totalSeconds %= 3600;
+        int minutes = totalSeconds / 60;
+        int seconds = totalSeconds % 60;
+        String data = "";
+        char buffer[10];
+        sprintf(buffer, "%d", days);
+        data += buffer + String("ᵈ");
+        sprintf(buffer, "%02d", hours);
+        data += buffer + String("ʰ");
+        sprintf(buffer, "%02d", minutes);
+        data += buffer + String("ᵐ");
+        sprintf(buffer, "%02d", seconds);
+        data += buffer + String("ˢ");
+        String mime = "text/plain; charset=UTF-8";
+        request->send(200, mime, data);
+    });
+}
+
+void setupWebRedirects(AsyncWebServer *webServer) {
+    // Web Redirects
+    webServer->on("/setup/v1/observingconditions/0/setup", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->redirect("/api/v1/observingconditions/0/setup");
+    });
+    webServer->on("/setup/v1/safetymonitor/0/setup", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->redirect("/api/v1/safetymonitor/0/setup");
+    });
+}
+
 void IRAM_ATTR immediateMeteoUpdate() {
     immediateUpdate = true;
 }
@@ -159,7 +226,9 @@ void setup() {
     // TCP server
     tcp_server = new AsyncWebServer(ALPACA_TCP_PORT);
     // Web Serial
-    webSerial.onMessage([](const std::string &msg) { Serial.println(msg.c_str()); });
+    webSerial.onMessage([](const std::string &msg) {
+        Serial.println(msg.c_str());
+    });
     webSerial.setBuffer(100);
     webSerial.begin(tcp_server);
     // WiFi Manager
@@ -175,63 +244,9 @@ void setup() {
     OtaWebUpdater.startBackgroundTask();                                                        // Run the background task to check for updates
     OtaWebUpdater.attachWebServer(tcp_server);                                                  // Attach our API to the Webserver
     OtaWebUpdater.attachUI();                                                                   // Attach the UI to the Webserver
-    // General images
-    tcp_server->on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(LittleFS, "/www/favicon.ico", "image/x-icon");
-    });
-    tcp_server->on("/ascom.webp", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(LittleFS, "/www/ascom.webp", "image/webp");
-    });
-    // Root page
-    tcp_server->on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(LittleFS, "/www/root.html", "text/html");
-    });
-    tcp_server->on("/version", HTTP_GET, [](AsyncWebServerRequest *request) {
-        String data = "©" + String(BUILD_DATE).substring(0, 4) + " DreamSky Observatory v." + String(VERSION) + " Build " + String(BUILD_NUMBER);
-        String mime = "text/plain; charset=UTF-8";
-        request->send(200, mime, data);
-    });
-    tcp_server->on("/uptime", HTTP_GET, [](AsyncWebServerRequest *request) {
-        unsigned long uptimeMillis = millis();
-        unsigned long totalSeconds = uptimeMillis / 1000;
-        int days = totalSeconds / (24 * 3600);
-        totalSeconds %= (24 * 3600);
-        int hours = totalSeconds / 3600;
-        totalSeconds %= 3600;
-        int minutes = totalSeconds / 60;
-        int seconds = totalSeconds % 60;
-        String data = "";
-        char buffer[10];
-        sprintf(buffer, "%d", days);
-        data += buffer + String("ᵈ");
-        sprintf(buffer, "%02d", hours);
-        data += buffer + String("ʰ");
-        sprintf(buffer, "%02d", minutes);
-        data += buffer + String("ᵐ");
-        sprintf(buffer, "%02d", seconds);
-        data += buffer + String("ˢ");
-        String mime = "text/plain; charset=UTF-8";
-        request->send(200, mime, data);
-    });
-    tcp_server->on("/alpaca.webp", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(LittleFS, "/www/alpaca.webp", "image/webp");
-    });
-    tcp_server->on("/console.webp", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(LittleFS, "/www/console.webp", "image/webp");
-    });
-    tcp_server->on("/ota.webp", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(LittleFS, "/www/ota.webp", "image/webp");
-    });
-    tcp_server->on("/wifi.webp", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(LittleFS, "/www/wifi.webp", "image/webp");
-    });
-    // Redirects
-    tcp_server->on("/setup/v1/observingconditions/0/setup", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->redirect("/api/v1/observingconditions/0/setup");
-    });
-    tcp_server->on("/setup/v1/safetymonitor/0/setup", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->redirect("/api/v1/safetymonitor/0/setup");
-    });
+    setupWebImages(tcp_server);
+    setupWebMainPage(tcp_server);
+    setupWebRedirects(tcp_server);
     tcp_server->begin();
     // ALPACA Tcp Server
     alpacaServer.setLogger(logLine, logLinePart, logTime);
@@ -247,6 +262,9 @@ void setup() {
     meteo.setLogger(logLine, logLinePart, logTime);
     meteo.begin();
     attachInterrupt(digitalPinToInterrupt(RAIN_SENSOR_PIN), immediateMeteoUpdate, CHANGE);
+    // Watchdog
+    int watchdogCountdown = Watchdog.enable(4000);
+    logMessage("[WATCHDOG] Enabled with " + String(watchdogCountdown) + "ms countdown.");
 }
 
 void loop() {
@@ -296,6 +314,7 @@ void loop() {
         observingConditionsLastRan = millis();
     }
     immediateUpdate = false;
+    Watchdog.reset();
     delay(50);
 }
 
