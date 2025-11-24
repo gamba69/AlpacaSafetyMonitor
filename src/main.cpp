@@ -1,14 +1,13 @@
 #include "main.h"
 #include "secrets.h"
 #include "version.h"
-#include <Adafruit_SleepyDog.h>
-#include <ESPNtpClient.h>
-#include <MycilaWebSerial.h>
-#include <PicoMQTT.h>
-#include <otawebupdater.h>
-#include <wifimanager.h>
+#include "log.h"
+#include "console.h"
 
 RTC_DS3231 rtc;
+
+WebSerial webSerial;
+PicoMQTT::Client *mqttClient = nullptr;
 
 WIFIMANAGER WifiManager;
 OTAWEBUPDATER OtaWebUpdater;
@@ -23,170 +22,6 @@ ObservingConditions observingconditions = ObservingConditions();
 Meteo meteo = Meteo();
 
 volatile bool immediateUpdate = false;
-
-WebSerial webSerial;
-
-PicoMQTT::Client *mqttClient = nullptr;
-
-String logTime() {
-    time_t now;
-    struct tm timeinfo;
-    time(&now);
-    localtime_r(&now, &timeinfo);
-    // gmtime_r(&now, &timeinfo);
-    char strftime_buf[64]; // Ensure buffer is large enough
-    strftime(strftime_buf, sizeof(strftime_buf), "%Y-%m-%d %H:%M:%S", &timeinfo);
-    return String(strftime_buf);
-}
-
-Preferences logPrefs;
-
-enum LogSource {
-    LogMain = 0,
-    LogMeteo = 1,
-    LogAlpaca = 2,
-    LogObservingConsitions = 3,
-    LogSafetyMonitor = 4,
-    LogWifi = 5,
-    LogOta = 6,
-    LogConsole = 7
-};
-
-bool logEnabled[32];
-
-void loadLogPrefs() {
-    if (logPrefs.isKey("logging"))
-        logPrefs.getBytes("logging", logEnabled, sizeof(logEnabled));
-}
-
-void saveLogPrefs() {
-    logPrefs.putBytes("logging", logEnabled, sizeof(logEnabled));
-}
-
-String mqttLogBuffer = "";
-
-void logLine(String line, LogSource source) {
-    if (logEnabled[source] || source == LogConsole) {
-        Serial.println(line);
-        webSerial.println(line);
-        if (mqttClient)
-            mqttClient->publish(MQTT_LOG_TOPIC, mqttLogBuffer + line);
-        mqttLogBuffer = "";
-    }
-}
-
-void logLinePart(String line, LogSource source) {
-    if (logEnabled[source] || source == LogConsole) {
-        Serial.print(line);
-        webSerial.print(line);
-        mqttLogBuffer = mqttLogBuffer + line;
-    }
-}
-
-void logLineConsole(String line) {
-    logLine(line, LogConsole);
-}
-
-void logLinePartConsole(String line) {
-    logLinePart(line, LogConsole);
-}
-
-void logLineMain(String line) {
-    logLine(line, LogMain);
-}
-
-void logLinePartMain(String line) {
-    logLinePart(line, LogMain);
-}
-
-void logLineMeteo(String line) {
-    logLine(line, LogMeteo);
-}
-
-void logLinePartMeteo(String line) {
-    logLinePart(line, LogMeteo);
-}
-
-void logLineAlpaca(String line) {
-    logLine(line, LogAlpaca);
-}
-
-void logLinePartAlpaca(String line) {
-    logLinePart(line, LogAlpaca);
-}
-
-void logLineOC(String line) {
-    logLine(line, LogObservingConsitions);
-}
-
-void logLinePartOC(String line) {
-    logLinePart(line, LogObservingConsitions);
-}
-
-void logLineSM(String line) {
-    logLine(line, LogSafetyMonitor);
-}
-
-void logLinePartSM(String line) {
-    logLinePart(line, LogSafetyMonitor);
-}
-
-void logLineWifi(String line) {
-    logLine(line, LogWifi);
-}
-
-void logLinePartWifi(String line) {
-    logLinePart(line, LogWifi);
-}
-
-void logLineOta(String line) {
-    logLine(line, LogOta);
-}
-
-void logLinePartOta(String line) {
-    logLinePart(line, LogOta);
-}
-
-void logMessage(String msg, bool showtime = true) {
-    if (showtime)
-        logLinePartMain(logTime() + " ");
-    logLineMain(msg);
-}
-
-void logMessagePart(String msg, bool showtime = false) {
-    if (showtime)
-        logLinePartMain(logTime() + " ");
-    logLinePartMain(msg);
-}
-
-void logMessageConsole(String msg, bool showtime = true) {
-    if (showtime)
-        logLinePartConsole(logTime() + " ");
-    logLineConsole(msg);
-}
-
-void logMessagePartConsole(String msg, bool showtime = false) {
-    if (showtime)
-        logLinePartConsole(logTime() + " ");
-    logLinePartConsole(msg);
-}
-
-void logMqttStatus(String special = "") {
-    if (special.length() > 0) {
-        logMessage(special);
-        return;
-    }
-    String mqttServer = WifiManager.getSettings("mqtt");
-    if (!mqttClient) {
-        logMessage("[MQTT][STATUS] Not configured");
-    } else {
-        if (mqttClient->connected()) {
-            logMessage("[MQTT][STATUS] Connected to: " + mqttServer);
-        } else {
-            logMessage("[MQTT][STATUS] Disconnected from: " + mqttServer);
-        }
-    }
-}
 
 void setupMqtt() {
     if (mqttClient) {
@@ -277,101 +112,6 @@ void IRAM_ATTR immediateMeteoUpdate() {
     immediateUpdate = true;
 }
 
-void IRAM_ATTR consoleCommand(const std::string &msg) {
-    std::string cmd;
-    cmd.resize(msg.size());
-    std::transform(msg.begin(), msg.end(), cmd.begin(),
-                   [](unsigned char c) { return std::tolower(c); });
-    if (cmd == "help") {
-        logMessageConsole("[HELP] Available console commands:");
-        logMessageConsole("[HELP] reboot - restart esp32");
-    }
-    if (cmd == "reboot") {
-        logMessageConsole("[CONSOLE] Immediate reboot requested!");
-        ESP.restart();
-    }
-    if (cmd == "main on") {
-        logMessageConsole("[CONSOLE] Main logging enabled");
-        logEnabled[LogMain] = true;
-        saveLogPrefs();
-    }
-    if (cmd == "main off") {
-        logMessageConsole("[CONSOLE] Main logging disabled");
-        logEnabled[LogMain] = false;
-        saveLogPrefs();
-    }
-    if (cmd == "meteo on") {
-        logMessageConsole("[CONSOLE] Meteo logging enabled");
-        logEnabled[LogMeteo] = true;
-        saveLogPrefs();
-    }
-    if (cmd == "meteo off") {
-        logMessageConsole("[CONSOLE] Meteo logging disabled");
-        logEnabled[LogMeteo] = false;
-        saveLogPrefs();
-    }
-    if (cmd == "alpaca on") {
-        logMessageConsole("[CONSOLE] Alpaca logging enabled");
-        logEnabled[LogAlpaca] = true;
-        saveLogPrefs();
-    }
-    if (cmd == "alpaca off") {
-        logMessageConsole("[CONSOLE] Alpaca logging disabled");
-        logEnabled[LogAlpaca] = false;
-        saveLogPrefs();
-    }
-    if (cmd == "oc on") {
-        logMessageConsole("[CONSOLE] Observing conditions logging enabled");
-        logEnabled[LogObservingConsitions] = true;
-        saveLogPrefs();
-    }
-    if (cmd == "oc off") {
-        logMessageConsole("[CONSOLE] Observing conditions logging disabled");
-        logEnabled[LogObservingConsitions] = false;
-        saveLogPrefs();
-    }
-    if (cmd == "sm on") {
-        logMessageConsole("[CONSOLE] Safety monitor logging enabled");
-        logEnabled[LogSafetyMonitor] = true;
-        saveLogPrefs();
-    }
-    if (cmd == "sm off") {
-        logMessageConsole("[CONSOLE] Safety monitor logging disabled");
-        logEnabled[LogSafetyMonitor] = false;
-        saveLogPrefs();
-    }
-    if (cmd == "wifi on") {
-        logMessageConsole("[CONSOLE] WiFi logging enabled");
-        logEnabled[LogWifi] = true;
-        saveLogPrefs();
-    }
-    if (cmd == "wifi off") {
-        logMessageConsole("[CONSOLE] WiFi logging disabled");
-        logEnabled[LogWifi] = false;
-        saveLogPrefs();
-    }
-    if (cmd == "ota on") {
-        logMessageConsole("[CONSOLE] OTA logging enabled");
-        logEnabled[LogOta] = true;
-        saveLogPrefs();
-    }
-    if (cmd == "ota off") {
-        logMessageConsole("[CONSOLE] OTA logging disabled");
-        logEnabled[LogOta] = false;
-        saveLogPrefs();
-    }
-    if (cmd == "log on") {
-        logMessageConsole("[CONSOLE] All logging enabled");
-        std::fill(std::begin(logEnabled), std::end(logEnabled), true);
-        saveLogPrefs();
-    }
-    if (cmd == "log off") {
-        logMessageConsole("[CONSOLE] All logging disabled");
-        std::fill(std::begin(logEnabled), std::end(logEnabled), false);
-        saveLogPrefs();
-    }
-}
-
 void setup() {
     // Setup serial
     Serial.begin(115200);
@@ -380,9 +120,7 @@ void setup() {
     }
     Serial.println("");
     // Logging preferences
-    logPrefs.begin("logPrefs", false);
-    std::fill(std::begin(logEnabled), std::end(logEnabled), true);
-    loadLogPrefs();
+    initLogPrefs();
     // System Timezone
     setenv("TZ", RTC_TIMEZONE, 1);
     tzset();
@@ -429,7 +167,7 @@ void setup() {
     // TCP server
     tcp_server = new AsyncWebServer(ALPACA_TCP_PORT);
     // Web Serial
-    webSerial.onMessage(consoleCommand);
+    webSerial.onMessage(processConsoleCommand);
     webSerial.setBuffer(100);
     webSerial.begin(tcp_server);
     // WiFi Manager
