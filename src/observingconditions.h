@@ -1,7 +1,8 @@
 #pragma once
+
+#include <AlpacaObservingConditions.h>
 #include <Arduino.h>
-#include "AlpacaObservingConditions.h"
-#include "RunningAverage.h"
+#include <RunningAverage.h>
 #include "config.h"
 #include "meteo.h"
 #include "version.h"

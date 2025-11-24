@@ -1,11 +1,11 @@
 #pragma once
-#include "config.h"
-#include <Arduino.h>
-// I2C Sensors
+
 #include <Adafruit_AHTX0.h>
 #include <Adafruit_BMP280.h>
 #include <Adafruit_MLX90614.h>
+#include <Arduino.h>
 #include <Wire.h>
+#include "config.h"
 
 // Circular buffer functions
 #define CB_SIZE 40

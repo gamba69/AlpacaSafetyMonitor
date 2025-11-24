@@ -1,16 +1,15 @@
 #pragma once
 
-#include <Arduino.h>
-#include <AlpacaServer.h>
-#include <WiFi.h>
-#include <RTClib.h>
 #include <Adafruit_SleepyDog.h>
+#include <AlpacaServer.h>
+#include <Arduino.h>
 #include <ESPNtpClient.h>
 #include <MycilaWebSerial.h>
 #include <PicoMQTT.h>
+#include <RTClib.h>
+#include <WiFi.h>
 #include <otawebupdater.h>
 #include <wifimanager.h>
-
 #include "config.h"
 #include "meteo.h"
 #include "observingconditions.h"

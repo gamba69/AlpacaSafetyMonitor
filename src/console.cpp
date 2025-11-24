@@ -1,8 +1,8 @@
-#include "console.h"
-#include "log.h"
 #include <Arduino.h>
 #include <iterator>
 #include <map>
+#include "console.h"
+#include "log.h"
 
 std::map<std::string, std::function<void()>> console_commands;
 

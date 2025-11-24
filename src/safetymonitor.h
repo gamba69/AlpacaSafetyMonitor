@@ -1,6 +1,7 @@
 #pragma once
+
+#include <AlpacaSafetyMonitor.h>
 #include <Arduino.h>
-#include "AlpacaSafetyMonitor.h"
 #include "config.h"
 #include "meteo.h"
 #include "version.h"
