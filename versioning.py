@@ -4,7 +4,7 @@ FILENAME_BUILDNO = "buildno"
 FILENAME_PATCHNO = "patchno"
 
 FILENAME_VERSION_H = "src/version.h"
-version = "2.0"  # Your desired major.minor version
+version = "2.1"  # Your desired major.minor version
 
 try:
     with open(FILENAME_BUILDNO) as f:

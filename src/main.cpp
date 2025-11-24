@@ -167,6 +167,7 @@ void setup() {
     // TCP server
     tcp_server = new AsyncWebServer(ALPACA_TCP_PORT);
     // Web Serial
+    initConsoleCommands();
     webSerial.onMessage(processConsoleCommand);
     webSerial.setBuffer(100);
     webSerial.begin(tcp_server);
