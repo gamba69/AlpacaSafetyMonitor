@@ -1,8 +1,8 @@
 #include "main.h"
+#include "console.h"
+#include "log.h"
 #include "secrets.h"
 #include "version.h"
-#include "log.h"
-#include "console.h"
 
 RTC_DS3231 rtc;
 
@@ -105,6 +105,9 @@ void setupWebRedirects(AsyncWebServer *webServer) {
     });
     webServer->on("/setup/v1/safetymonitor/0/setup", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->redirect("/api/v1/safetymonitor/0/setup");
+    });
+    webServer->on("//wifi", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->redirect("/wifi");
     });
 }
 

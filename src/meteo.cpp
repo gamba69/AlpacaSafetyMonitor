@@ -133,15 +133,28 @@ void Meteo::update() {
     } else {
         rainrate = 0;
     }
-    logMessage("[METEO][BMP] Temperature: " + String(bmp_temperature, 1) + " °C");
-    logMessage("[METEO][BMP] Pressure: " + String(bmp_pressure, 0) + " hPa");
-    logMessage("[METEO][AHT] Temperature: " + String(aht_temperature, 1) + " °C");
-    logMessage("[METEO][AHT] Humidity: " + String(aht_humidity, 0) + " %");
-    logMessage("[METEO][MLX] Ambient: " + String(mlx_tempamb, 1) + " °C");
-    logMessage("[METEO][MLX] Object: " + String(mlx_tempobj, 1) + " °C");
-    logMessage("[METEO][CALC] Dewpoint: " + String(dewpoint, 1) + " °C");
-    logMessage("[METEO][CALC] Sky temperature: " + String(tempsky, 1) + " °C");
-    logMessage("[METEO][CALC] Cloud cover: " + String(cloudcover, 0) + " %");
-    logMessage("[METEO][CALC] Turbulence: " + String(noise_db, 1) + " dB");
-    logMessage("[METEO][RAIN] Rain rate: " + String(rainrate, 1) + " mm/h");
+        // logMessage("[METEO][BMP] Temperature: " + String(bmp_temperature, 1) + " °C");
+        // logMessage("[METEO][BMP] Pressure: " + String(bmp_pressure, 0) + " hPa");
+        // logMessage("[METEO][AHT] Temperature: " + String(aht_temperature, 1) + " °C");
+        // logMessage("[METEO][AHT] Humidity: " + String(aht_humidity, 0) + " %");
+        // logMessage("[METEO][MLX] Ambient: " + String(mlx_tempamb, 1) + " °C");
+        // logMessage("[METEO][MLX] Object: " + String(mlx_tempobj, 1) + " °C");
+        // logMessage("[METEO][CALC] Dewpoint: " + String(dewpoint, 1) + " °C");
+        // logMessage("[METEO][CALC] Sky temperature: " + String(tempsky, 1) + " °C");
+        // logMessage("[METEO][CALC] Cloud cover: " + String(cloudcover, 0) + " %");
+        // logMessage("[METEO][CALC] Turbulence: " + String(noise_db, 1) + " dB");
+        // logMessage("[METEO][RAIN] Rain rate: " + String(rainrate, 1) + " mm/h");
+    String message = "[METEO][DATA]";
+    message += " TB:" + String(bmp_temperature, 1);
+    message += " PB:" + String(bmp_pressure, 0);
+    message += " TA:" + String(aht_temperature, 1);
+    message += " HA:" + String(aht_humidity, 0);
+    message += " MA:" + String(mlx_tempamb, 1);
+    message += " MO:" + String(mlx_tempobj, 1);
+    message += " DP:" + String(dewpoint, 1);
+    message += " ST:" + String(tempsky, 1);
+    message += " CC:" + String(cloudcover, 0);
+    message += " TB:" + String(noise_db, 1);
+    message += " RR:" + String(rainrate, 1);
+    logMessage(message);
 }
