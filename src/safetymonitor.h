@@ -22,6 +22,10 @@ enum SafeUnsafeStatus {
 
 class SafetyMonitor : public AlpacaSafetyMonitor {
   private:
+    static uint8_t _n_safetymonitors;
+    static SafetyMonitor *_safetymonitor_array[4];
+    uint8_t _safetymonitor_index;
+
     // Logger println
     std::function<void(String)> logLine = NULL;
     // Logger print
@@ -31,11 +35,7 @@ class SafetyMonitor : public AlpacaSafetyMonitor {
     // Print a log message, can be overwritten
     virtual void logMessage(String msg, bool showtime = true);
     // Print a part of log message, can be overwritten
-    virtual void logMessagePart(String msg, bool showtime = false);
-
-    static uint8_t _n_safetymonitors;
-    static SafetyMonitor *_safetymonitor_array[4];
-    uint8_t _safetymonitor_index;
+    virtual void logMessagePart(String msg, bool showtime = false);    
 
     // Rain
     bool rain_prove = true;

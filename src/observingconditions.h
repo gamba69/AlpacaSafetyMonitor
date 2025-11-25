@@ -12,6 +12,18 @@ class ObservingConditions : public AlpacaObservingConditions {
     static uint8_t _n_observingconditionss;
     static ObservingConditions *_observingconditions_array[4];
     uint8_t _observingconditions_index;
+
+    // Logger println
+    std::function<void(String)> logLine = NULL;
+    // Logger print
+    std::function<void(String)> logLinePart = NULL;
+    // Logger time function
+    std::function<String()> logTime = NULL;
+    // Print a log message, can be overwritten
+    virtual void logMessage(String msg, bool showtime = true);
+    // Print a part of log message, can be overwritten
+    virtual void logMessagePart(String msg, bool showtime = false);
+
     float temperature,
         humidity,
         pressure,
@@ -49,6 +61,10 @@ class ObservingConditions : public AlpacaObservingConditions {
 
   public:
     ObservingConditions() : AlpacaObservingConditions() { _observingconditions_index = _n_observingconditionss++; }
+
+    // Set current logger
+    void setLogger(std::function<void(String)> logLineCallback = NULL, std::function<void(String)> logLinePartCallback = NULL, std::function<String()> logTimeCallback = NULL);
+
     bool begin();
     void update(Meteo meteo);
 

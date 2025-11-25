@@ -5,6 +5,30 @@
 uint8_t ObservingConditions::_n_observingconditionss = 0;
 ObservingConditions *ObservingConditions::_observingconditions_array[4] = {nullptr, nullptr, nullptr, nullptr};
 
+void ObservingConditions::logMessage(String msg, bool showtime) {
+    if (logLine && logLinePart) {
+        if (logTime && showtime) {
+            logLinePart(logTime() + " ");
+        }
+        logLine(msg);
+    }
+}
+
+void ObservingConditions::logMessagePart(String msg, bool showtime) {
+    if (logLinePart) {
+        if (logTime && showtime) {
+            logLinePart(logTime() + " ");
+        }
+        logLinePart(msg);
+    }
+}
+
+void ObservingConditions::setLogger(std::function<void(String)> logLineCallback, std::function<void(String)> logLinePartCallback, std::function<String()> logTimeCallback) {
+    logLine = logLineCallback;
+    logLinePart = logLinePartCallback;
+    logTime = logTimeCallback;
+}
+
 void ObservingConditions::setImmediateUpdate(std::function<void()> immediateUpdateCallcback) {
     immediateUpdate = immediateUpdateCallcback;
 }
