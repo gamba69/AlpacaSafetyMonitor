@@ -3,8 +3,10 @@
 #include <Arduino.h>
 
 void commandHelp();
-void commandLogState();
+
 void commandReboot();
+
+void commandLogState();
 
 void commandLogMainOn();
 void commandLogMainOff();
@@ -29,6 +31,32 @@ void commandLogOtaOff();
 
 void commandLogOn();
 void commandLogOff();
+
+void commandHardwareState();
+
+void commandAlpacaOcOn();
+void commandAlpacaOcOff();
+
+void commandAlpacaSmOn();
+void commandAlpacaSmOff();
+
+void commandHwBmp280On();
+void commandHwBmp280Off();
+
+void commandHwAht20On();
+void commandHwAht20Off();
+
+void commandHwMlx90614On();
+void commandHwMlx90614Off();
+
+void commandHwTsl2591On();
+void commandHwTsl2591Off();
+
+void commandHwUicpalOn();
+void commandHwUicpalOff();
+
+void commandHwRg15On();
+void commandHwRg15Off();
 
 void initConsoleCommands();
 void IRAM_ATTR processConsoleCommand(const std::string &msg);

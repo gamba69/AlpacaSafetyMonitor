@@ -1,5 +1,6 @@
 #include "main.h"
 #include "console.h"
+#include "hardware.h"
 #include "log.h"
 #include "secrets.h"
 #include "version.h"
@@ -124,6 +125,8 @@ void setup() {
     Serial.println("");
     // Logging preferences
     initLogPrefs();
+    //
+    initHwPrefs();
     // System Timezone
     setenv("TZ", RTC_TIMEZONE, 1);
     tzset();
@@ -195,13 +198,17 @@ void setup() {
     alpacaServer.setLogger(logLineAlpaca, logLinePartAlpaca, logTime);
     alpacaServer.beginTcp(tcp_server, ALPACA_TCP_PORT);
     // Observing Conditions
-    observingconditions.setImmediateUpdate(immediateMeteoUpdate);
-    observingconditions.setLogger(logLineOC, logLinePartOC, logTime);
-    alpacaServer.addDevice(&observingconditions);
+    if (hwEnabled[alpacaOc]) {
+        observingconditions.setImmediateUpdate(immediateMeteoUpdate);
+        observingconditions.setLogger(logLineOC, logLinePartOC, logTime);
+        alpacaServer.addDevice(&observingconditions);
+    }
     // Safety Monitor
-    safetymonitor.setLogger(logLineSM, logLinePartSM, logTime);
-    alpacaServer.addDevice(&safetymonitor);
-    alpacaServer.loadSettings();
+    if (hwEnabled[alpacaSm]) {
+        safetymonitor.setLogger(logLineSM, logLinePartSM, logTime);
+        alpacaServer.addDevice(&safetymonitor);
+        alpacaServer.loadSettings();
+    }
     // Meteo sensors
     meteo.setLogger(logLineMeteo, logLinePartMeteo, logTime);
     meteo.begin();
@@ -247,15 +254,19 @@ void loop() {
         meteo.update();
         meteoLastRan = millis();
     }
-    // update safetymonitor every METEO_MEASURE_DELAY without blocking webserver
-    if (immediateUpdate || (millis() > safetyMonitorLastRan + SAFETY_MONITOR_DELAY)) {
-        safetymonitor.update(meteo);
-        safetyMonitorLastRan = millis();
+        // update observingconditions every refresh without blocking webserver
+    if (hwEnabled[alpacaOc]) {
+        if (immediateUpdate || (millis() > observingConditionsLastRan + (1000 * observingconditions.getRefresh()))) {
+            observingconditions.update(meteo);
+            observingConditionsLastRan = millis();
+        }
     }
-    // update observingconditions every refresh without blocking webserver
-    if (immediateUpdate || (millis() > observingConditionsLastRan + (1000 * observingconditions.getRefresh()))) {
-        observingconditions.update(meteo);
-        observingConditionsLastRan = millis();
+    // update safetymonitor every METEO_MEASURE_DELAY without blocking webserver
+    if (hwEnabled[alpacaSm]) {
+        if (immediateUpdate || (millis() > safetyMonitorLastRan + SAFETY_MONITOR_DELAY)) {
+            safetymonitor.update(meteo);
+            safetyMonitorLastRan = millis();
+        }
     }
     immediateUpdate = false;
     Watchdog.reset();

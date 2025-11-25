@@ -4,8 +4,6 @@ Adafruit_BMP280 bmp;
 Adafruit_MLX90614 mlx = Adafruit_MLX90614();
 Adafruit_AHTX0 aht;
 
-// Meteo::Meteo(const std::string &newName) : Name(newName) {}
-
 void Meteo::logMessage(String msg, bool showtime) {
     if (logLine && logLinePart) {
         if (logTime && showtime) {
@@ -29,10 +27,6 @@ void Meteo::setLogger(std::function<void(String)> logLineCallback, std::function
     logLinePart = logLinePartCallback;
     logTime = logTimeCallback;
 }
-
-// const std::string &Meteo::getName() const {
-//     return Name;
-// }
 
 void Meteo::begin() {
     pinMode(RAIN_SENSOR_PIN, INPUT_PULLDOWN);
@@ -110,51 +104,51 @@ float cb_snr_calc() {
 }
 
 void Meteo::update() {
-    logMessage(F("[METEO] Updating Meteo monitors"));
-    bmp_temperature = bmp.readTemperature();
-    bmp_pressure = bmp.readPressure() / 100.0F;
-    sensors_event_t aht_sensor_humidity, aht_sensor_temp;
-    aht.getEvent(&aht_sensor_humidity, &aht_sensor_temp);
-    aht_temperature = aht_sensor_temp.temperature;
-    aht_humidity = aht_sensor_humidity.relative_humidity;
-    mlx_tempamb = mlx.readAmbientTempC();
-    mlx_tempobj = mlx.readObjectTempC();
-    dewpoint = aht_temperature - (100 - aht_humidity) / 5.;
-    tempsky = tsky_calc(mlx_tempobj, mlx_tempamb);
-    cb_add(tempsky); // add tempsky value to circular buffer and calculate  Turbulence (noise dB) / Seeing estimation
-    noise_db = cb_noise_db_calc();
-    cloudcover = 100. + (tempsky * 6.);
-    if (cloudcover > 100.)
-        cloudcover = 100.;
-    if (cloudcover < 0.)
-        cloudcover = 0.;
+    String message = "[METEO][DATA]";
     if (digitalRead(RAIN_SENSOR_PIN)) {
         rainrate = 1;
     } else {
         rainrate = 0;
     }
-        // logMessage("[METEO][BMP] Temperature: " + String(bmp_temperature, 1) + " °C");
-        // logMessage("[METEO][BMP] Pressure: " + String(bmp_pressure, 0) + " hPa");
-        // logMessage("[METEO][AHT] Temperature: " + String(aht_temperature, 1) + " °C");
-        // logMessage("[METEO][AHT] Humidity: " + String(aht_humidity, 0) + " %");
-        // logMessage("[METEO][MLX] Ambient: " + String(mlx_tempamb, 1) + " °C");
-        // logMessage("[METEO][MLX] Object: " + String(mlx_tempobj, 1) + " °C");
-        // logMessage("[METEO][CALC] Dewpoint: " + String(dewpoint, 1) + " °C");
-        // logMessage("[METEO][CALC] Sky temperature: " + String(tempsky, 1) + " °C");
-        // logMessage("[METEO][CALC] Cloud cover: " + String(cloudcover, 0) + " %");
-        // logMessage("[METEO][CALC] Turbulence: " + String(noise_db, 1) + " dB");
-        // logMessage("[METEO][RAIN] Rain rate: " + String(rainrate, 1) + " mm/h");
-    String message = "[METEO][DATA]";
-    message += " TB:" + String(bmp_temperature, 1);
-    message += " PB:" + String(bmp_pressure, 0);
-    message += " TA:" + String(aht_temperature, 1);
-    message += " HA:" + String(aht_humidity, 0);
-    message += " MA:" + String(mlx_tempamb, 1);
-    message += " MO:" + String(mlx_tempobj, 1);
-    message += " DP:" + String(dewpoint, 1);
-    message += " ST:" + String(tempsky, 1);
-    message += " CC:" + String(cloudcover, 0);
-    message += " TB:" + String(noise_db, 1);
     message += " RR:" + String(rainrate, 1);
+
+    bmp_temperature = bmp.readTemperature();
+    message += " TB:" + String(bmp_temperature, 1);
+
+    bmp_pressure = bmp.readPressure() / 100.0F;
+    message += " PB:" + String(bmp_pressure, 0);
+
+    sensors_event_t aht_sensor_humidity, aht_sensor_temp;
+    aht.getEvent(&aht_sensor_humidity, &aht_sensor_temp);
+    aht_temperature = aht_sensor_temp.temperature;
+    message += " TA:" + String(aht_temperature, 1);
+
+    aht_humidity = aht_sensor_humidity.relative_humidity;
+    message += " HA:" + String(aht_humidity, 0);
+
+    dewpoint = aht_temperature - (100 - aht_humidity) / 5.;
+    message += " DP:" + String(dewpoint, 1);
+
+    mlx_tempamb = mlx.readAmbientTempC();
+    message += " MA:" + String(mlx_tempamb, 1);
+
+    mlx_tempobj = mlx.readObjectTempC();
+    message += " MO:" + String(mlx_tempobj, 1);
+
+    tempsky = tsky_calc(mlx_tempobj, mlx_tempamb);
+    message += " ST:" + String(tempsky, 1);
+
+    // add tempsky value to circular buffer and calculate  
+    // Turbulence (noise dB) / Seeing estimation
+    cb_add(tempsky); 
+    noise_db = cb_noise_db_calc();
+    message += " TR:" + String(noise_db, 1);
+
+    cloudcover = 100. + (tempsky * 6.);
+    if (cloudcover > 100.)
+        cloudcover = 100.;
+    if (cloudcover < 0.)
+        cloudcover = 0.;
+    message += " CC:" + String(cloudcover, 0);
     logMessage(message);
 }
