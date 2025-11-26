@@ -153,7 +153,7 @@ void SafetyMonitor::update(Meteo meteo) {
     }
     if (millis() - safeunsafe_occur >= unsafe_delay * 1000 && safeunsafe_state == SafeUnsafeStatus::AWAIT_UNSAFE) {
         safeunsafe_occur = 0;
-        safeunsafe_state = SafeUnsafeStatus::AWAIT_UNSAFE;
+        safeunsafe_state = SafeUnsafeStatus::UNSAFE;
     }
     is_safe = (safeunsafe_state == SafeUnsafeStatus::AWAIT_UNSAFE || safeunsafe_state == SafeUnsafeStatus::SAFE);
 };
