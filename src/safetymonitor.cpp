@@ -256,24 +256,24 @@ void SafetyMonitor::aWriteJson(JsonObject &root) {
     // 🟢 🟡 🔵 🔴 ⚫ "⠀"
     // 🟩 🟨 🟦 🟥 ⬛
     JsonObject obj_state = root[F("State")].to<JsonObject>();
-    String rain_icon = "⚫";
+    String rain_state_icon = "⚫";
     if (rain_prove) {
         switch (rainrate_state) {
         case RainRateState::AWAIT_DRY:
-            rain_icon = "🟡";
+            rain_state_icon = "🔴🟡";
             break;
         case RainRateState::AWAIT_WET:
-            rain_icon = "🔵";
+            rain_state_icon = "🟢🟡";
             break;
         case RainRateState::DRY:
-            rain_icon = "🟢";
+            rain_state_icon = "🟢";
             break;
         case RainRateState::WET:
-            rain_icon = "🔴";
+            rain_state_icon = "🔴";
             break;
         }
     }
-    obj_state[rain_icon + F("_Rainzro")] = !rain_safe;
+    obj_state[rain_state_icon + ("_Rainzro")] = !rain_safe;
     obj_state[F("___Rate,_mmzshzro")] = String(rainrate, 1);
     if (getRainRateCountdown() > 0) {
         obj_state[F("X___Countndown,_szro")] = getRainRateCountdown();
@@ -284,23 +284,22 @@ void SafetyMonitor::aWriteJson(JsonObject &root) {
     obj_state[String((dewdelta_prove ? (dewdelta_safe ? "🟢" : "🔴") : "⚫")) + F("_Dew_Point_Δ,_°Czro")] = String(dewpoint_delta, 1);
     obj_state[String((skytemp_prove ? (skytemp_safe ? "🟢" : "🔴") : "⚫")) + F("_Sky_Temp,_°Czro")] = String(tempsky, 1);
     obj_state[String((wind_prove ? (wind_safe ? "🟢" : "🔴") : "⚫")) + F("_Wind_Speed,_mzsszro")] = String(windspeed, 1);
-    String safe_icon = "⚫";
+    String safe_state_icon = "⚫";
     switch (safeunsafe_state) {
     case SafeUnsafeStatus::AWAIT_SAFE:
-        safe_icon = "🟡";
+        safe_state_icon = "🔴🟡";
         break;
     case SafeUnsafeStatus::AWAIT_UNSAFE:
-        safe_icon = "🔵";
+        safe_state_icon = "🟢🟡";
         break;
     case SafeUnsafeStatus::SAFE:
-        safe_icon = "🟢";
+        safe_state_icon = "🟢";
         break;
     case SafeUnsafeStatus::UNSAFE:
-        safe_icon = "🔴";
+        safe_state_icon = "🔴";
         break;
     }
-    String pre_icon = is_safe ? "🟢" : "🔴";
-    obj_state[pre_icon + safe_icon + F("_Is_Safezro")] = is_safe;
+    obj_state[safe_state_icon + F("_Is_Safezro")] = is_safe;
     if (getSafeUnsafeCountdown() > 0) {
         obj_state[F("Y___Countndown,_szro")] = getSafeUnsafeCountdown();
     }
