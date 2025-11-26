@@ -125,34 +125,38 @@ void setup() {
     Serial.println("");
     // Logging preferences
     initLogPrefs();
-    //
+    // Hardware preferences
     initHwPrefs();
     // System Timezone
     setenv("TZ", RTC_TIMEZONE, 1);
     tzset();
     // RTC
-    if (!rtc.begin())
-        logMessage("[TIME][RTC] Couldn't find RTC", false);
-    if (rtc.lostPower()) {
-        logMessage("[TIME][RTC] RTC lost power, let's set the time!", false);
-        rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+    if (hwEnabled[hwDs3231]) {
+        if (!rtc.begin())
+            logMessage("[TIME][RTC] Couldn't find RTC", false);
+        if (rtc.lostPower()) {
+            logMessage("[TIME][RTC] RTC lost power, let's set the time!", false);
+            rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+        }
+        DateTime rtcNow = rtc.now();
+        struct timeval tv;
+        tv.tv_sec = rtcNow.unixtime();
+        tv.tv_usec = 0;
+        settimeofday(&tv, NULL);
     }
-    DateTime rtcNow = rtc.now();
-    struct timeval tv;
-    tv.tv_sec = rtcNow.unixtime();
-    tv.tv_usec = 0;
-    settimeofday(&tv, NULL);
     // TODO Fixed WiFi settings with reconnect
     // setup_wifi();
     // NTP
     NTP.onNTPSyncEvent([](NTPEvent_t event) {
         switch (event.event) {
         case timeSyncd: {
-            struct timeval now;
-            gettimeofday(&now, NULL);
-            time_t t = now.tv_sec;
-            rtc.adjust(DateTime(t));
-            logMessage("[TIME][RTC] Synced");
+            if (hwEnabled[hwDs3231]) {
+                struct timeval now;
+                gettimeofday(&now, NULL);
+                time_t t = now.tv_sec;
+                rtc.adjust(DateTime(t));
+                logMessage("[TIME][RTC] Synced");
+            }
             logMessage("[TIME][NTP] " + String(NTP.ntpEvent2str(event)));
         } break;
         case partlySync:
@@ -206,7 +210,7 @@ void setup() {
     // Safety Monitor
     if (hwEnabled[alpacaSm]) {
         safetymonitor.setLogger(logLineSM, logLinePartSM, logTime);
-        alpacaServer.addDevice(&safetymonitor);        
+        alpacaServer.addDevice(&safetymonitor);
     }
     alpacaServer.loadSettings();
     // Meteo sensors
@@ -254,7 +258,7 @@ void loop() {
         meteo.update();
         meteoLastRan = millis();
     }
-        // update observingconditions every refresh without blocking webserver
+    // update observingconditions every refresh without blocking webserver
     if (hwEnabled[alpacaOc]) {
         if (immediateUpdate || (millis() > observingConditionsLastRan + (1000 * observingconditions.getRefresh()))) {
             observingconditions.update(meteo);

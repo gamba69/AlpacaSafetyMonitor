@@ -17,6 +17,7 @@ enum Hardware {
     hwUicpal = 4,
     hwAnemo4403 = 5,
     hwRg15 = 6,
+    hwDs3231 = 7,
 
     alpacaOc = 10,
     alpacaSm = 11,

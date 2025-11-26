@@ -40,6 +40,9 @@ void commandAlpacaOcOff();
 void commandAlpacaSmOn();
 void commandAlpacaSmOff();
 
+void commandHwDs3231On();
+void commandHwDs3231Off();
+
 void commandHwBmp280On();
 void commandHwBmp280Off();
 

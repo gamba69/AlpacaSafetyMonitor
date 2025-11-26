@@ -21,7 +21,7 @@ void calcHwPrefs() {
     hwEnabled[ocWindDirection] = false;
     hwEnabled[ocWindSpeed] = hwEnabled[hwAnemo4403];
     hwEnabled[ocWindGust] = hwEnabled[hwAnemo4403];
-    
+
     hwEnabled[smRainRate] = hwEnabled[hwUicpal] || hwEnabled[hwRg15];
     hwEnabled[smTemperature] = hwEnabled[hwBmp280] || hwEnabled[hwAht20];
     hwEnabled[smHumidity] = hwEnabled[hwAht20];
@@ -34,6 +34,7 @@ void initHwPrefs() {
     hwPrefs.begin("hwPrefs", false);
     // Default values for current firmware
     std::fill(std::begin(hwEnabled), std::end(hwEnabled), false);
+    hwEnabled[hwDs3231] = HARDWARE_DS3231;
     hwEnabled[hwBmp280] = HARDWARE_BMP280;
     hwEnabled[hwAht20] = HARDWARE_AHT20;
     hwEnabled[hwMlx90614] = HARDWARE_MLX90614;

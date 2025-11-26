@@ -54,6 +54,7 @@ void commandHardwareState() {
     logMessageConsole("[INFO] Firmware supported hardware");
     logMessageConsole("[INFO] ---------------------------");
     logMessageConsole("[INFO] Sensors:");
+    logMessageConsole("[INFO]   DS3231   - " + String(hwEnabled[hwDs3231] ? "enabled " : "disabled") + " (realtime clock)");
     logMessageConsole("[INFO]   BMP280   - " + String(hwEnabled[hwBmp280] ? "enabled " : "disabled") + " (temperature and pressure)");
     logMessageConsole("[INFO]   AHT20    - " + String(hwEnabled[hwAht20] ? "enabled " : "disabled") + " (temperature and humidity)");
     logMessageConsole("[INFO]   MLX90614 - " + String(hwEnabled[hwMlx90614] ? "enabled " : "disabled") + " (sky temperature)");
@@ -213,6 +214,18 @@ void commandAlpacaSmOff() {
     saveHwPrefs();
 }
 
+void commandHwDs3231On() {
+    logMessageConsole("[CONSOLE] DS3231 enabled");
+    hwEnabled[hwDs3231] = true;
+    saveHwPrefs();
+}
+
+void commandHwDs3231Off() {
+    logMessageConsole("[CONSOLE] DS3231 disabled");
+    hwEnabled[hwDs3231] = false;
+    saveHwPrefs();
+}
+
 void commandHwBmp280On() {
     logMessageConsole("[CONSOLE] BMP280 enabled");
     hwEnabled[hwBmp280] = true;
@@ -339,6 +352,9 @@ void initConsoleCommands() {
 
     console_commands["alpacasmon"] = commandAlpacaSmOn;
     console_commands["alpacasmoff"] = commandAlpacaSmOff;
+
+    console_commands["hwds3231on"] = commandHwDs3231On;
+    console_commands["hwds3231off"] = commandHwDs3231Off;
 
     console_commands["hwbmp280on"] = commandHwBmp280On;
     console_commands["hwbmp280off"] = commandHwBmp280Off;
