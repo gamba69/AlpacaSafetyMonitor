@@ -1,10 +1,10 @@
 #pragma once
 
-#include <AlpacaSafetyMonitor.h>
-#include <Arduino.h>
 #include "config.h"
 #include "meteo.h"
 #include "version.h"
+#include <AlpacaSafetyMonitor.h>
+#include <Arduino.h>
 
 enum RainRateState {
     WET,
@@ -35,7 +35,7 @@ class SafetyMonitor : public AlpacaSafetyMonitor {
     // Print a log message, can be overwritten
     virtual void logMessage(String msg, bool showtime = true);
     // Print a part of log message, can be overwritten
-    virtual void logMessagePart(String msg, bool showtime = false);    
+    virtual void logMessagePart(String msg, bool showtime = false);
 
     // Rain
     bool rain_prove = true;
@@ -73,7 +73,7 @@ class SafetyMonitor : public AlpacaSafetyMonitor {
     int unsafe_delay = 0;
 
     // acquired parameters
-    float temperature, humidity, dewpoint, dewpoint_delta, tempsky, rainrate, windspeed;
+    float rainrate, temperature, humidity, dewpoint, dewpoint_delta, skytemp, windspeed;
 
     // Rainrate countdown logic
     bool rain_init = false;

@@ -1,4 +1,5 @@
 #include "safetymonitor.h"
+#include "hardware.h"
 #include "meteo.h"
 
 // cannot call member functions directly from interrupt, so need these helpers for up to 1 SafetyMonitor
@@ -75,59 +76,116 @@ bool SafetyMonitor::begin() {
 }
 
 void SafetyMonitor::update(Meteo meteo) {
-    //  update meteo
-    temperature = (meteo.bmp_temperature + meteo.aht_temperature) / 2;
-    humidity = meteo.aht_humidity;
-    dewpoint = meteo.dew_point;
-    dewpoint_delta = (temperature - dewpoint > 0 ? temperature - dewpoint : 0);
-    tempsky = meteo.sky_temperature;
-    // windspeed = meteo.windspeed;
-    if (!rain_init) {
-        rainrate = meteo.rain_rate;
-        if (rainrate > 0) {
-            rainrate_prev = rainrate;
-            rainrate_curr = rainrate;
-            rainrate_state = RainRateState::WET;
-        } else {
-            rainrate_prev = 0;
-            rainrate_curr = 0;
-            rainrate_state = RainRateState::DRY;
+    String message = "[SAFETY]";
+    // Rain
+    if (hwEnabled[smRainRate]) {
+        if (!rain_init) {
+            rainrate = meteo.rain_rate;
+            if (rainrate > 0) {
+                rainrate_prev = rainrate;
+                rainrate_curr = rainrate;
+                rainrate_state = RainRateState::WET;
+            } else {
+                rainrate_prev = 0;
+                rainrate_curr = 0;
+                rainrate_state = RainRateState::DRY;
+            }
+            rain_init = true;
         }
-        rain_init = true;
-    }
-    if (meteo.rain_rate > 0) {
-        rainrate_curr = meteo.rain_rate;
+        if (meteo.rain_rate > 0) {
+            rainrate_curr = meteo.rain_rate;
+        } else {
+            rainrate_curr = 0;
+        }
+        if (rainrate_curr > 0 && rainrate_prev == 0) {
+            rainrate_state = RainRateState::AWAIT_WET;
+            rainrate_occur = millis();
+            logMessage("[SAFETY] R:AWAIT_WET");
+        }
+        if (rainrate_curr == 0 && rainrate_prev > 0) {
+            rainrate_state = RainRateState::AWAIT_DRY;
+            rainrate_occur = millis();
+            logMessage("[SAFETY] R:AWAIT_DRY");
+        }
+        rainrate_prev = rainrate_curr;
+        if (millis() - rainrate_occur >= rainrate_dry_delay * 1000 && rainrate_state == RainRateState::AWAIT_DRY) {
+            rainrate_occur = 0;
+            rainrate_state = RainRateState::DRY;
+            rainrate = 0;
+            logMessage("[SAFETY] R:DRY");
+        }
+        if (millis() - rainrate_occur >= rainrate_wet_delay * 1000 && rainrate_state == RainRateState::AWAIT_WET) {
+            rainrate_occur = 0;
+            rainrate_state = RainRateState::WET;
+            rainrate = rainrate_curr;
+            logMessage("[SAFETY] R:WET");
+        }
+        rain_safe = (rain_prove ? (rainrate_state == RainRateState::DRY || rainrate_state == RainRateState::AWAIT_WET ? true : false) : true);
+        message += " R:" + String(rainrate, 1) + "/" + (rain_safe ? "S" : "U");
     } else {
-        rainrate_curr = 0;
-    }
-    if (rainrate_curr > 0 && rainrate_prev == 0) {
-        rainrate_state = RainRateState::AWAIT_WET;
-        rainrate_occur = millis();
-    }
-    if (rainrate_curr == 0 && rainrate_prev > 0) {
-        rainrate_state = RainRateState::AWAIT_DRY;
-        rainrate_occur = millis();
-    }
-    rainrate_prev = rainrate_curr;
-    if (millis() - rainrate_occur >= rainrate_dry_delay * 1000 && rainrate_state == RainRateState::AWAIT_DRY) {
-        rainrate_occur = 0;
-        rainrate_state = RainRateState::DRY;
         rainrate = 0;
+        rain_safe = true;
+        message += " R:-";
     }
-    if (millis() - rainrate_occur >= rainrate_wet_delay * 1000 && rainrate_state == RainRateState::AWAIT_WET) {
-        rainrate_occur = 0;
-        rainrate_state = RainRateState::WET;
-        rainrate = rainrate_curr;
-    }
-    // Safety
-    rain_safe = (rain_prove ? (rainrate_state == RainRateState::DRY || rainrate_state == RainRateState::AWAIT_WET ? true : false) : true);
-    temp_safe = (temp_prove ? (temperature > temp_upper_limit ? true : (temperature <= temp_lower_limit ? false : temp_safe)) : true);
-    humi_safe = (humi_prove ? (humidity < humi_lower_limit ? true : (humidity >= humi_lower_limit ? false : humi_safe)) : true);
-    dewdelta_safe = (dewdelta_prove ? (dewpoint_delta > dewdelta_upper_limit ? true : (dewpoint_delta <= dewdelta_lower_limit ? false : dewdelta_safe)) : true);
-    skytemp_safe = (skytemp_prove ? (tempsky < skytemp_lower_limit ? true : (tempsky >= skytemp_upper_limit ? false : skytemp_safe)) : true);
-    wind_safe = (wind_prove ? (windspeed < wind_lower_limit ? true : (windspeed >= wind_upper_limit ? false : wind_safe)) : true);
 
-    // is_safe = rain_safe && temp_safe && humi_safe && dewdelta_safe && skytemp_safe && wind_safe;
+    // Temperature
+    if (hwEnabled[smTemperature]) {
+        temperature = meteo.amb_temperature;
+        temp_safe = (temp_prove ? (temperature > temp_upper_limit ? true : (temperature <= temp_lower_limit ? false : temp_safe)) : true);
+        message += " T:" + String(temperature, 1) + "/" + (temp_safe ? "S" : "U");
+    } else {
+        temperature = 0;
+        temp_safe = true;
+        message += " T:-";
+    }
+
+    // Humidity
+    if (hwEnabled[smHumidity]) {
+        humidity = meteo.aht_humidity;
+        humi_safe = (humi_prove ? (humidity < humi_lower_limit ? true : (humidity >= humi_lower_limit ? false : humi_safe)) : true);
+        message += " H:" + String(humidity, 1) + "/" + (humi_safe ? "S" : "U");
+    } else {
+        humidity = 0;
+        humi_safe = true;
+        message += " H:-";
+    }
+
+    // Dew Point Delta
+    if (hwEnabled[smHumidity]) {
+        dewpoint = meteo.dew_point;
+        dewpoint_delta = (temperature - dewpoint > 0 ? temperature - dewpoint : 0);
+        dewdelta_safe = (dewdelta_prove ? (dewpoint_delta > dewdelta_upper_limit ? true : (dewpoint_delta <= dewdelta_lower_limit ? false : dewdelta_safe)) : true);
+        message += " D:" + String(dewpoint_delta, 1) + "/" + (dewdelta_safe ? "S" : "U");
+    } else {
+        dewpoint = 0;
+        dewpoint_delta = 0;
+        dewdelta_safe = true;
+        message += " D:-";
+    }
+
+    // Sky Temperature
+    if (hwEnabled[smSkyTemp]) {
+        skytemp = meteo.sky_temperature;
+        skytemp_safe = (skytemp_prove ? (skytemp < skytemp_lower_limit ? true : (skytemp >= skytemp_upper_limit ? false : skytemp_safe)) : true);
+        message += " S:" + String(skytemp, 1) + "/" + (skytemp_safe ? "S" : "U");
+    } else {
+        skytemp = 0;
+        skytemp_safe = true;
+        message += " S:-";
+    }
+
+    // Wind Speed
+    if (hwEnabled[smWindSpeed]) {
+        windspeed = meteo.wind_speed;
+        wind_safe = (wind_prove ? (windspeed < wind_lower_limit ? true : (windspeed >= wind_upper_limit ? false : wind_safe)) : true);
+        message += " W:" + String(windspeed, 1) + "/" + (wind_safe ? "S" : "U");
+    } else {
+        windspeed = 0;
+        wind_safe = true;
+        message += " W:-";
+    }
+
+    // IsSafe Monitor
     safeunsafe_curr = rain_safe && temp_safe && humi_safe && dewdelta_safe && skytemp_safe && wind_safe;
     if (!safeunsafe_init) {
         safeunsafe_prev = safeunsafe_curr;
@@ -141,21 +199,27 @@ void SafetyMonitor::update(Meteo meteo) {
     if (safeunsafe_curr && !safeunsafe_prev) {
         safeunsafe_state = SafeUnsafeStatus::AWAIT_SAFE;
         safeunsafe_occur = millis();
+        logMessage("[SAFETY] S:AWAIT_SAFE");
     }
     if (!safeunsafe_curr && safeunsafe_prev) {
         safeunsafe_state = SafeUnsafeStatus::AWAIT_UNSAFE;
         safeunsafe_occur = millis();
+        logMessage("[SAFETY] S:AWAIT_UNSAFE");
     }
     safeunsafe_prev = safeunsafe_curr;
     if (millis() - safeunsafe_occur >= safe_delay * 1000 && safeunsafe_state == SafeUnsafeStatus::AWAIT_SAFE) {
         safeunsafe_occur = 0;
         safeunsafe_state = SafeUnsafeStatus::SAFE;
+        logMessage("[SAFETY] S:SAFE");
     }
     if (millis() - safeunsafe_occur >= unsafe_delay * 1000 && safeunsafe_state == SafeUnsafeStatus::AWAIT_UNSAFE) {
         safeunsafe_occur = 0;
         safeunsafe_state = SafeUnsafeStatus::UNSAFE;
+        logMessage("[SAFETY] S:UNSAFE");
     }
     is_safe = (safeunsafe_state == SafeUnsafeStatus::AWAIT_UNSAFE || safeunsafe_state == SafeUnsafeStatus::SAFE);
+    message += is_safe ? " SAFE" : " UNSAFE";
+    logMessage(message);
 };
 
 void SafetyMonitor::aGetDescription(AsyncWebServerRequest *request) {
@@ -287,7 +351,7 @@ void SafetyMonitor::aWriteJson(JsonObject &root) {
     obj_state[String((humi_prove ? (humi_safe ? "🟢" : "🔴") : "⚫")) + F("_Humidity,_%zro")] = String(humidity, 0);
     obj_state[indent + "_Dew_Point,_°Czro"] = String(dewpoint, 1);
     obj_state[String((dewdelta_prove ? (dewdelta_safe ? "🟢" : "🔴") : "⚫")) + F("_Dew_Point_Δ,_°Czro")] = String(dewpoint_delta, 1);
-    obj_state[String((skytemp_prove ? (skytemp_safe ? "🟢" : "🔴") : "⚫")) + F("_Sky_Temp,_°Czro")] = String(tempsky, 1);
+    obj_state[String((skytemp_prove ? (skytemp_safe ? "🟢" : "🔴") : "⚫")) + F("_Sky_Temp,_°Czro")] = String(skytemp, 1);
     obj_state[String((wind_prove ? (wind_safe ? "🟢" : "🔴") : "⚫")) + F("_Wind_Speed,_mzsszro")] = String(windspeed, 1);
     String safe_state_icon = "⚫";
     switch (safeunsafe_state) {

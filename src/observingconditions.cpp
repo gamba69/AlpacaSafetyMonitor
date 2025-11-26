@@ -53,7 +53,7 @@ void ObservingConditions::update(Meteo meteo) {
     } else {
         rainrate = 0;
         rainrate_ra.add(rainrate);
-        message += " RR:n/a";
+        message += " RR:-";
     }
 
     if (hwEnabled[ocTemperature]) {
@@ -63,7 +63,7 @@ void ObservingConditions::update(Meteo meteo) {
     } else {
         temperature = 0;
         temperature_ra.add(temperature);
-        message += " T:n/a";
+        message += " T:-";
     }
 
     if (hwEnabled[ocHumidity]) {
@@ -73,7 +73,7 @@ void ObservingConditions::update(Meteo meteo) {
     } else {
         humidity = 0;
         humidity_ra.add(humidity);
-        message += " H:n/a";
+        message += " H:-";
     }
 
     if (hwEnabled[ocHumidity]) {
@@ -83,7 +83,7 @@ void ObservingConditions::update(Meteo meteo) {
     } else {
         pressure = 0;
         pressure_ra.add(pressure);
-        message += " P:n/a";
+        message += " P:-";
     }
 
     if (hwEnabled[ocDewPoint]) {
@@ -93,7 +93,7 @@ void ObservingConditions::update(Meteo meteo) {
     } else {
         dewpoint = 0;
         dewpoint_ra.add(dewpoint);
-        message += " DP:n/a";
+        message += " DP:-";
     }
 
     if (hwEnabled[ocSkyTemp]) {
@@ -103,7 +103,7 @@ void ObservingConditions::update(Meteo meteo) {
     } else {
         skytemp = 0;
         skytemp_ra.add(skytemp);
-        message += " ST:n/a";
+        message += " ST:-";
     }
 
     if (hwEnabled[ocFwhm]) {
@@ -113,7 +113,7 @@ void ObservingConditions::update(Meteo meteo) {
     } else {
         noisedb = 0;
         noisedb_ra.add(noisedb);
-        message += " TR:n/a";
+        message += " TR:-";
     }
 
     if (hwEnabled[ocCloudCover]) {
@@ -123,7 +123,7 @@ void ObservingConditions::update(Meteo meteo) {
     } else {
         cloudcover = 0;
         cloudcover_ra.add(cloudcover);
-        message += " CC:n/a";
+        message += " CC:-";
     }
 
     if (hwEnabled[ocSkyQuality]) {
@@ -133,7 +133,7 @@ void ObservingConditions::update(Meteo meteo) {
     } else {
         skyquality = 0;
         skyquality_ra.add(skyquality);
-        message += " SQ:n/a";
+        message += " SQ:-";
     }
 
     if (hwEnabled[ocSkyBrightness]) {
@@ -143,7 +143,7 @@ void ObservingConditions::update(Meteo meteo) {
     } else {
         skybrightness = 0;
         skybrightness_ra.add(skybrightness);
-        message += " SB:n/a";
+        message += " SB:-";
     }
 
     if (hwEnabled[ocWindDirection]) {
@@ -153,7 +153,7 @@ void ObservingConditions::update(Meteo meteo) {
     } else {
         winddir = 0;
         winddir_ra.add(winddir);
-        message += " WD:n/a";
+        message += " WD:-";
     }
 
     if (hwEnabled[ocWindSpeed]) {
@@ -163,7 +163,7 @@ void ObservingConditions::update(Meteo meteo) {
     } else {
         windspeed = 0;
         windspeed_ra.add(windspeed);
-        message += " WS:n/a";
+        message += " WS:-";
     }
 
     if (hwEnabled[ocWindGust]) {
@@ -173,7 +173,7 @@ void ObservingConditions::update(Meteo meteo) {
     } else {
         windgust = 0;
         windgust_ra.add(windgust);
-        message += " WG:n/a";
+        message += " WG:-";
     }
 
     timelastupdate = millis();
