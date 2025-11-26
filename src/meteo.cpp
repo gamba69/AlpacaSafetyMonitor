@@ -187,6 +187,10 @@ void Meteo::update() {
         cloud_cover = 0;
         message += " MA:n/a MO:n/a ST:n/a TR:n/a CC:n/a";
     }
+
+    // TODO TSL2591
+
+    // TODO ANEMO4403
     
     logMessage(message);
 }

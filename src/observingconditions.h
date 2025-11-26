@@ -86,11 +86,11 @@ class ObservingConditions : public AlpacaObservingConditions {
     void aGetSkyTemperature(AsyncWebServerRequest *request);
     void aGetCloudCover(AsyncWebServerRequest *request);
     void aGetStarFwhm(AsyncWebServerRequest *request);
-    void aGetSkyBrightness(AsyncWebServerRequest *request) { _alpacaServer->respond(request, nullptr, AlpacaNotImplementedException, "Not Implemented"); }
-    void aGetSkyQuality(AsyncWebServerRequest *request) { _alpacaServer->respond(request, nullptr, AlpacaNotImplementedException, "Not Implemented"); }
-    void aGetWindDirection(AsyncWebServerRequest *request) { _alpacaServer->respond(request, nullptr, AlpacaNotImplementedException, "Not Implemented"); }
-    void aGetWindGust(AsyncWebServerRequest *request) { _alpacaServer->respond(request, nullptr, AlpacaNotImplementedException, "Not Implemented"); }
-    void aGetWindSpeed(AsyncWebServerRequest *request) { _alpacaServer->respond(request, nullptr, AlpacaNotImplementedException, "Not Implemented"); }
+    void aGetSkyBrightness(AsyncWebServerRequest *request);
+    void aGetSkyQuality(AsyncWebServerRequest *request);
+    void aGetWindDirection(AsyncWebServerRequest *request);
+    void aGetWindGust(AsyncWebServerRequest *request);
+    void aGetWindSpeed(AsyncWebServerRequest *request);
 
     void aGetAveragePeriod(AsyncWebServerRequest *request);
     void aGetTimeSinceLastUpdate(AsyncWebServerRequest *request);

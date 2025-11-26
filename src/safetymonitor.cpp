@@ -257,30 +257,35 @@ void SafetyMonitor::aWriteJson(JsonObject &root) {
     // 🟩 🟨 🟦 🟥 ⬛
     JsonObject obj_state = root[F("State")].to<JsonObject>();
     String rain_state_icon = "⚫";
+    String indent = "";
     if (rain_prove) {
         switch (rainrate_state) {
         case RainRateState::AWAIT_DRY:
             rain_state_icon = "🔴🟡";
+            indent = "⠀⠀⠀⠀";
             break;
         case RainRateState::AWAIT_WET:
             rain_state_icon = "🟢🟡";
+            indent = "⠀⠀⠀⠀";
             break;
         case RainRateState::DRY:
             rain_state_icon = "🟢";
+            indent = "⠀⠀";
             break;
         case RainRateState::WET:
             rain_state_icon = "🔴";
+            indent = "⠀⠀";
             break;
         }
     }
     obj_state[rain_state_icon + ("_Rainzro")] = !rain_safe;
-    obj_state[F("___Rate,_mmzshzro")] = String(rainrate, 1);
+    obj_state[indent + "_Rate,_mmzshzro"] = String(rainrate, 1);
     if (getRainRateCountdown() > 0) {
-        obj_state[F("X___Countndown,_szro")] = getRainRateCountdown();
+        obj_state["X_" + indent + "_Countndown,_szro"] = getRainRateCountdown();
     }
     obj_state[String((temp_prove ? (temp_safe ? "🟢" : "🔴") : "⚫")) + F("_Temperature,_°Czro")] = String(temperature, 1);
     obj_state[String((humi_prove ? (humi_safe ? "🟢" : "🔴") : "⚫")) + F("_Humidity,_%zro")] = String(humidity, 0);
-    obj_state[F("___Dew_Point,_°Czro")] = String(dewpoint, 1);
+    obj_state[indent + "_Dew_Point,_°Czro"] = String(dewpoint, 1);
     obj_state[String((dewdelta_prove ? (dewdelta_safe ? "🟢" : "🔴") : "⚫")) + F("_Dew_Point_Δ,_°Czro")] = String(dewpoint_delta, 1);
     obj_state[String((skytemp_prove ? (skytemp_safe ? "🟢" : "🔴") : "⚫")) + F("_Sky_Temp,_°Czro")] = String(tempsky, 1);
     obj_state[String((wind_prove ? (wind_safe ? "🟢" : "🔴") : "⚫")) + F("_Wind_Speed,_mzsszro")] = String(windspeed, 1);
@@ -288,19 +293,23 @@ void SafetyMonitor::aWriteJson(JsonObject &root) {
     switch (safeunsafe_state) {
     case SafeUnsafeStatus::AWAIT_SAFE:
         safe_state_icon = "🔴🟡";
+        indent = "⠀⠀⠀⠀";
         break;
     case SafeUnsafeStatus::AWAIT_UNSAFE:
         safe_state_icon = "🟢🟡";
+        indent = "⠀⠀⠀⠀";
         break;
     case SafeUnsafeStatus::SAFE:
         safe_state_icon = "🟢";
+        indent = "⠀⠀";
         break;
     case SafeUnsafeStatus::UNSAFE:
         safe_state_icon = "🔴";
+        indent = "⠀⠀";
         break;
     }
     obj_state[safe_state_icon + F("_Is_Safezro")] = is_safe;
     if (getSafeUnsafeCountdown() > 0) {
-        obj_state[F("Y___Countndown,_szro")] = getSafeUnsafeCountdown();
+        obj_state["Y_" + indent + "_Countndown,_szro"] = getSafeUnsafeCountdown();
     }
 }
