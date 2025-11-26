@@ -303,74 +303,46 @@ void initConsoleCommands() {
     console_commands["help"] = commandHelp;
     console_commands["reboot"] = commandReboot;
 
-    console_commands["logmainon"] = commandLogMainOn;
-    console_commands["mainon"] = commandLogMainOn;
-    console_commands["logmainoff"] = commandLogMainOff;
-    console_commands["mainoff"] = commandLogMainOff;
-
-    console_commands["logmeteoon"] = commandLogMeteoOn;
-    console_commands["meteoon"] = commandLogMeteoOn;
-    console_commands["logmeteooff"] = commandLogMeteoOff;
-    console_commands["meteooff"] = commandLogMeteoOff;
-
-    console_commands["logalpacaon"] = commandLogAlpacaOn;
-    console_commands["alpacaon"] = commandLogAlpacaOn;
-    console_commands["logalpacaoff"] = commandLogAlpacaOff;
-    console_commands["alpacaoff"] = commandLogAlpacaOff;
-
-    console_commands["logocon"] = commandLogOcOn;
-    console_commands["ocon"] = commandLogOcOn;
-    console_commands["logocoff"] = commandLogOcOff;
-    console_commands["ocoff"] = commandLogOcOff;
-
-    console_commands["logsmon"] = commandLogSmOn;
-    console_commands["smon"] = commandLogSmOn;
-    console_commands["logsmoff"] = commandLogSmOff;
-    console_commands["smoff"] = commandLogSmOff;
-
-    console_commands["logwifion"] = commandLogWifiOn;
-    console_commands["wifion"] = commandLogWifiOn;
-    console_commands["logwifioff"] = commandLogWifiOff;
-    console_commands["wifioff"] = commandLogWifiOff;
-
-    console_commands["logotaon"] = commandLogOtaOn;
-    console_commands["otaon"] = commandLogOtaOn;
-    console_commands["logotaoff"] = commandLogOtaOff;
-    console_commands["otaoff"] = commandLogOtaOff;
-
-    console_commands["logon"] = commandLogOn;
-    console_commands["logoff"] = commandLogOff;
-
     console_commands["log"] = commandLogState;
     console_commands["logs"] = commandLogState;
 
     console_commands["hw"] = commandHardwareState;
     console_commands["hardware"] = commandHardwareState;
 
+    console_commands["logmainon"] = commandLogMainOn;
+    console_commands["logmainoff"] = commandLogMainOff;
+    console_commands["logmeteoon"] = commandLogMeteoOn;
+    console_commands["logmeteooff"] = commandLogMeteoOff;
+    console_commands["logalpacaon"] = commandLogAlpacaOn;
+    console_commands["logalpacaoff"] = commandLogAlpacaOff;
+    console_commands["logocon"] = commandLogOcOn;
+    console_commands["logocoff"] = commandLogOcOff;
+    console_commands["logsmon"] = commandLogSmOn;
+    console_commands["logsmoff"] = commandLogSmOff;
+    console_commands["logwifion"] = commandLogWifiOn;
+    console_commands["logwifioff"] = commandLogWifiOff;
+    console_commands["logotaon"] = commandLogOtaOn;
+    console_commands["logotaoff"] = commandLogOtaOff;
+    console_commands["logon"] = commandLogOn;
+    console_commands["logoff"] = commandLogOff;
+
     console_commands["alpacaocon"] = commandAlpacaOcOn;
     console_commands["alpacaocoff"] = commandAlpacaOcOff;
-
     console_commands["alpacasmon"] = commandAlpacaSmOn;
     console_commands["alpacasmoff"] = commandAlpacaSmOff;
 
     console_commands["hwds3231on"] = commandHwDs3231On;
     console_commands["hwds3231off"] = commandHwDs3231Off;
-
     console_commands["hwbmp280on"] = commandHwBmp280On;
     console_commands["hwbmp280off"] = commandHwBmp280Off;
-
     console_commands["hwaht20on"] = commandHwAht20On;
     console_commands["hwaht20off"] = commandHwAht20Off;
-
     console_commands["hwmlx90614on"] = commandHwMlx90614On;
     console_commands["hwmlx90614off"] = commandHwMlx90614Off;
-
     console_commands["hwtsl2591on"] = commandHwTsl2591On;
     console_commands["hwtsl2591off"] = commandHwTsl2591Off;
-
     console_commands["hwuicpalon"] = commandHwUicpalOn;
     console_commands["hwuicpaloff"] = commandHwUicpalOff;
-
     console_commands["hwrg15on"] = commandHwRg15On;
     console_commands["hwrg15off"] = commandHwRg15Off;
 }

@@ -29,13 +29,16 @@ class Meteo {
         aht_humidity,
         mlx_tempamb,
         mlx_tempobj,
-        tempsky,
+        sky_temperature,
         noise_db,
-        dewpoint,
-        cloudcover,
-        skyquality,
-        skybrightness,
-        rainrate;
+        dew_point,
+        cloud_cover,
+        sky_quality,
+        sky_brightness,
+        rain_rate,
+        wind_direction,
+        wind_speed,
+        wind_gust;
     // sensors
     // methods
     void update();

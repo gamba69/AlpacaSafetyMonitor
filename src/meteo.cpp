@@ -38,9 +38,9 @@ void Meteo::begin() {
     aht.begin(&Wire, 0, I2C_AHT_ADDR);
     // Initialization
     if (digitalRead(RAIN_SENSOR_PIN)) {
-        rainrate = 1;
+        rain_rate = 1;
     } else {
-        rainrate = 0;
+        rain_rate = 0;
     }
 }
 
@@ -107,11 +107,11 @@ void Meteo::update() {
     String message = "[METEO][DATA]";
 
     if (digitalRead(RAIN_SENSOR_PIN)) {
-        rainrate = 1;
+        rain_rate = 1;
     } else {
-        rainrate = 0;
+        rain_rate = 0;
     }
-    message += " RR:" + String(rainrate, 1);
+    message += " RR:" + String(rain_rate, 1);
 
     bmp_temperature = bmp.readTemperature();
     message += " TB:" + String(bmp_temperature, 1);
@@ -127,8 +127,8 @@ void Meteo::update() {
     aht_humidity = aht_sensor_humidity.relative_humidity;
     message += " HA:" + String(aht_humidity, 0);
 
-    dewpoint = aht_temperature - (100 - aht_humidity) / 5.;
-    message += " DP:" + String(dewpoint, 1);
+    dew_point = aht_temperature - (100 - aht_humidity) / 5.;
+    message += " DP:" + String(dew_point, 1);
 
     mlx_tempamb = mlx.readAmbientTempC();
     message += " MA:" + String(mlx_tempamb, 1);
@@ -136,21 +136,21 @@ void Meteo::update() {
     mlx_tempobj = mlx.readObjectTempC();
     message += " MO:" + String(mlx_tempobj, 1);
 
-    tempsky = tsky_calc(mlx_tempobj, mlx_tempamb);
-    message += " ST:" + String(tempsky, 1);
+    sky_temperature = tsky_calc(mlx_tempobj, mlx_tempamb);
+    message += " ST:" + String(sky_temperature);
 
     // add tempsky value to circular buffer and calculate  
     // Turbulence (noise dB) / Seeing estimation
-    cb_add(tempsky); 
+    cb_add(sky_temperature); 
     noise_db = cb_noise_db_calc();
     message += " TR:" + String(noise_db, 1);
 
-    cloudcover = 100. + (tempsky * 6.);
-    if (cloudcover > 100.)
-        cloudcover = 100.;
-    if (cloudcover < 0.)
-        cloudcover = 0.;
-    message += " CC:" + String(cloudcover, 0);
-    
+    cloud_cover = 100. + (sky_temperature * 6.);
+    if (cloud_cover > 100.)
+        cloud_cover = 100.;
+    if (cloud_cover < 0.)
+        cloud_cover = 0.;
+    message += " CC:" + String(cloud_cover, 0);
+
     logMessage(message);
 }

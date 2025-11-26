@@ -78,12 +78,12 @@ void SafetyMonitor::update(Meteo meteo) {
     //  update meteo
     temperature = (meteo.bmp_temperature + meteo.aht_temperature) / 2;
     humidity = meteo.aht_humidity;
-    dewpoint = meteo.dewpoint;
+    dewpoint = meteo.dew_point;
     dewpoint_delta = (temperature - dewpoint > 0 ? temperature - dewpoint : 0);
-    tempsky = meteo.tempsky;
+    tempsky = meteo.sky_temperature;
     // windspeed = meteo.windspeed;
     if (!rain_init) {
-        rainrate = meteo.rainrate;
+        rainrate = meteo.rain_rate;
         if (rainrate > 0) {
             rainrate_prev = rainrate;
             rainrate_curr = rainrate;
@@ -95,8 +95,8 @@ void SafetyMonitor::update(Meteo meteo) {
         }
         rain_init = true;
     }
-    if (meteo.rainrate > 0) {
-        rainrate_curr = meteo.rainrate;
+    if (meteo.rain_rate > 0) {
+        rainrate_curr = meteo.rain_rate;
     } else {
         rainrate_curr = 0;
     }

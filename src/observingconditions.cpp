@@ -45,7 +45,7 @@ bool ObservingConditions::begin() {
 void ObservingConditions::update(Meteo meteo) {
     String message = "[OBSERVING][DATA]";
 
-    rainrate = meteo.rainrate;
+    rainrate = meteo.rain_rate;
     rainrate_ra.add(rainrate);
     message += " RR:" + String(rainrate, 1) + "/" + String(rainrate_ra.getAverageLast(_averaging > rainrate_ra.getCount() ? rainrate_ra.getCount() : _averaging), 1);
 
@@ -61,26 +61,26 @@ void ObservingConditions::update(Meteo meteo) {
     pressure_ra.add(pressure);
     message += " P:" + String(pressure, 0) + "/" + String(pressure_ra.getAverageLast(_averaging > pressure_ra.getCount() ? pressure_ra.getCount() : _averaging), 0);
 
-    dewpoint = meteo.dewpoint;
+    dewpoint = meteo.dew_point;
     dewpoint_ra.add(dewpoint);
     message += " DP:" + String(dewpoint, 1) + "/" + String(dewpoint_ra.getAverageLast(_averaging > dewpoint_ra.getCount() ? dewpoint_ra.getCount() : _averaging), 1);
 
-    tempsky = meteo.tempsky;
-    tempsky_ra.add(tempsky);
-    message += " ST:" + String(tempsky, 1) + "/" + String(tempsky_ra.getAverageLast(_averaging > tempsky_ra.getCount() ? tempsky_ra.getCount() : _averaging), 1);
+    skytemp = meteo.sky_temperature;
+    skytemp_ra.add(skytemp);
+    message += " ST:" + String(skytemp, 1) + "/" + String(skytemp_ra.getAverageLast(_averaging > skytemp_ra.getCount() ? skytemp_ra.getCount() : _averaging), 1);
 
     noisedb = meteo.noise_db;
     noisedb_ra.add(noisedb);
     message += " TR:" + String(noisedb, 1) + "/" + String(noisedb_ra.getAverageLast(_averaging > noisedb_ra.getCount() ? noisedb_ra.getCount() : _averaging), 1);
 
-    cloudcover = meteo.cloudcover;
+    cloudcover = meteo.cloud_cover;
     cloudcover_ra.add(cloudcover);
     message += " CC:" + String(cloudcover, 0) + "/" + String(cloudcover_ra.getAverageLast(_averaging > cloudcover_ra.getCount() ? cloudcover_ra.getCount() : _averaging), 0);
 
-    skyquality = meteo.skyquality;
+    skyquality = meteo.sky_quality;
     skyquality_ra.add(skyquality);
 
-    skybrightness = meteo.skybrightness;
+    skybrightness = meteo.sky_brightness;
     skybrightness_ra.add(skybrightness);
 
     timelastupdate = millis();
@@ -151,8 +151,8 @@ void ObservingConditions::aGetPressure(AsyncWebServerRequest *request) {
 }
 
 void ObservingConditions::aGetSkyTemperature(AsyncWebServerRequest *request) {
-    float value = tempsky_ra.getAverageLast(
-        _averaging > temperature_ra.getCount() ? tempsky_ra.getCount() : _averaging);
+    float value = skytemp_ra.getAverageLast(
+        _averaging > skytemp_ra.getCount() ? skytemp_ra.getCount() : _averaging);
     value = round(10. * value) / 10.;
     _alpacaServer->respond(request, value);
 }
@@ -211,7 +211,7 @@ void ObservingConditions::aWriteJson(JsonObject &root) {
     obj_instant_state[F("Humidity,_zpzro")] = String(humidity, 0);
     obj_instant_state[F("Dewpoint,_°Czro")] = String(dewpoint, 1);
     obj_instant_state[F("Pressure,_hPazro")] = String(pressure, 0);
-    obj_instant_state[F("Sky_Temp,_°Czro")] = String(tempsky, 1);
+    obj_instant_state[F("Sky_Temp,_°Czro")] = String(skytemp, 1);
     obj_instant_state[F("Cloud_Cover,_zpzro")] = String(cloudcover, 0);
     // not exactly seeing (fwhm)
     obj_instant_state[F("Turbulence,_dBzro")] = String(noisedb, 1);
@@ -243,8 +243,8 @@ void ObservingConditions::aWriteJson(JsonObject &root) {
             _averaging > pressure_ra.getCount() ? pressure_ra.getCount() : _averaging),
         0);
     obj_averaged_state[F("Sky_Temp,_°Czro")] = String(
-        tempsky_ra.getAverageLast(
-            _averaging > tempsky_ra.getCount() ? tempsky_ra.getCount() : _averaging),
+        skytemp_ra.getAverageLast(
+            _averaging > skytemp_ra.getCount() ? skytemp_ra.getCount() : _averaging),
         1);
     obj_averaged_state[F("Cloud_Cover,_zpzro")] = String(
         cloudcover_ra.getAverageLast(
