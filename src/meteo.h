@@ -1,11 +1,11 @@
 #pragma once
 
+#include "config.h"
 #include <Adafruit_AHTX0.h>
 #include <Adafruit_BMP280.h>
 #include <Adafruit_MLX90614.h>
 #include <Arduino.h>
 #include <Wire.h>
-#include "config.h"
 
 // Circular buffer functions
 #define CB_SIZE 40
@@ -23,6 +23,7 @@ class Meteo {
     // attributes
     std::string Name;
     float
+        rain_rate,
         bmp_temperature,
         bmp_pressure,
         aht_temperature,
@@ -31,21 +32,21 @@ class Meteo {
         mlx_tempobj,
         sky_temperature,
         noise_db,
+        amb_temperature,
         dew_point,
         cloud_cover,
         sky_quality,
         sky_brightness,
-        rain_rate,
         wind_direction,
         wind_speed,
         wind_gust;
     // sensors
     // methods
     void update();
-    //Meteo(const std::string &newName); // constructor place
-    // setters
-    // getters
-    //const std::string &getName() const;
+    // Meteo(const std::string &newName); // constructor place
+    //  setters
+    //  getters
+    // const std::string &getName() const;
     void begin();
     // Set current logger
     void setLogger(std::function<void(String)> logLineCallback = nullptr, std::function<void(String)> logLinePartCallback = nullptr, std::function<String()> logTimeCallback = nullptr);

@@ -1,4 +1,5 @@
 #include "meteo.h"
+#include "hardware.h"
 
 Adafruit_BMP280 bmp;
 Adafruit_MLX90614 mlx = Adafruit_MLX90614();
@@ -106,51 +107,86 @@ float cb_snr_calc() {
 void Meteo::update() {
     String message = "[METEO][DATA]";
 
-    if (digitalRead(RAIN_SENSOR_PIN)) {
-        rain_rate = 1;
+    if (hwEnabled[hwUicpal]) {
+        if (digitalRead(RAIN_SENSOR_PIN)) {
+            rain_rate = 1;
+        } else {
+            rain_rate = 0;
+        }
+        message += " RR:" + String(rain_rate, 1);
     } else {
         rain_rate = 0;
+        message += " RR:n/a";
     }
-    message += " RR:" + String(rain_rate, 1);
 
-    bmp_temperature = bmp.readTemperature();
-    message += " TB:" + String(bmp_temperature, 1);
+    if (hwEnabled[hwBmp280]) {
+        bmp_temperature = bmp.readTemperature();
+        message += " TB:" + String(bmp_temperature, 1);
+        bmp_pressure = bmp.readPressure() / 100.0F;
+        message += " PB:" + String(bmp_pressure, 0);
+    } else {
+        bmp_temperature = 0;
+        bmp_pressure = 0;
+        message += " TB:n/a PB:n/a";
+    }
 
-    bmp_pressure = bmp.readPressure() / 100.0F;
-    message += " PB:" + String(bmp_pressure, 0);
+    if (hwEnabled[hwAht20]) {
+        sensors_event_t aht_sensor_humidity, aht_sensor_temp;
+        aht.getEvent(&aht_sensor_humidity, &aht_sensor_temp);
+        aht_temperature = aht_sensor_temp.temperature;
+        message += " TA:" + String(aht_temperature, 1);
+        aht_humidity = aht_sensor_humidity.relative_humidity;
+        message += " HA:" + String(aht_humidity, 0);
+    } else {
+        aht_temperature = 0;
+        aht_humidity = 0;
+        message += " TA:n/a HA:n/a";
+    }
 
-    sensors_event_t aht_sensor_humidity, aht_sensor_temp;
-    aht.getEvent(&aht_sensor_humidity, &aht_sensor_temp);
-    aht_temperature = aht_sensor_temp.temperature;
-    message += " TA:" + String(aht_temperature, 1);
+    if (hwEnabled[hwBmp280] && hwEnabled[hwAht20]) {
+        amb_temperature = (bmp_temperature + aht_temperature) / 2;
+    } else if (hwEnabled[hwBmp280] && !hwEnabled[hwAht20]) {
+        amb_temperature = bmp_temperature;
+    } else if (!hwEnabled[hwBmp280] && hwEnabled[hwAht20]) {
+        amb_temperature = aht_temperature;
+    } else {
+        amb_temperature = 0;
+    }
 
-    aht_humidity = aht_sensor_humidity.relative_humidity;
-    message += " HA:" + String(aht_humidity, 0);
+    if (hwEnabled[hwAht20]) {
+        dew_point = amb_temperature - (100 - aht_humidity) / 5.;
+        message += " DP:" + String(dew_point, 1);
+    } else {
+        dew_point = 0;
+        message += " DP:n/a";
+    }
 
-    dew_point = aht_temperature - (100 - aht_humidity) / 5.;
-    message += " DP:" + String(dew_point, 1);
-
-    mlx_tempamb = mlx.readAmbientTempC();
-    message += " MA:" + String(mlx_tempamb, 1);
-
-    mlx_tempobj = mlx.readObjectTempC();
-    message += " MO:" + String(mlx_tempobj, 1);
-
-    sky_temperature = tsky_calc(mlx_tempobj, mlx_tempamb);
-    message += " ST:" + String(sky_temperature);
-
-    // add tempsky value to circular buffer and calculate  
-    // Turbulence (noise dB) / Seeing estimation
-    cb_add(sky_temperature); 
-    noise_db = cb_noise_db_calc();
-    message += " TR:" + String(noise_db, 1);
-
-    cloud_cover = 100. + (sky_temperature * 6.);
-    if (cloud_cover > 100.)
-        cloud_cover = 100.;
-    if (cloud_cover < 0.)
-        cloud_cover = 0.;
-    message += " CC:" + String(cloud_cover, 0);
-
+    if (hwEnabled[hwMlx90614]) {
+        mlx_tempamb = mlx.readAmbientTempC();
+        message += " MA:" + String(mlx_tempamb, 1);
+        mlx_tempobj = mlx.readObjectTempC();
+        message += " MO:" + String(mlx_tempobj, 1);
+        sky_temperature = tsky_calc(mlx_tempobj, mlx_tempamb);
+        message += " ST:" + String(sky_temperature);
+        // add tempsky value to circular buffer and calculate
+        // Turbulence (noise dB) / Seeing estimation
+        cb_add(sky_temperature);
+        noise_db = cb_noise_db_calc();
+        message += " TR:" + String(noise_db, 1);
+        cloud_cover = 100. + (sky_temperature * 6.);
+        if (cloud_cover > 100.)
+            cloud_cover = 100.;
+        if (cloud_cover < 0.)
+            cloud_cover = 0.;
+        message += " CC:" + String(cloud_cover, 0);
+    } else {
+        mlx_tempamb = 0;
+        mlx_tempobj = 0;
+        sky_temperature = 0;
+        noise_db = 0;
+        cloud_cover = 0;
+        message += " MA:n/a MO:n/a ST:n/a TR:n/a CC:n/a";
+    }
+    
     logMessage(message);
 }
