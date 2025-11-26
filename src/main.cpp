@@ -206,9 +206,9 @@ void setup() {
     // Safety Monitor
     if (hwEnabled[alpacaSm]) {
         safetymonitor.setLogger(logLineSM, logLinePartSM, logTime);
-        alpacaServer.addDevice(&safetymonitor);
-        alpacaServer.loadSettings();
+        alpacaServer.addDevice(&safetymonitor);        
     }
+    alpacaServer.loadSettings();
     // Meteo sensors
     meteo.setLogger(logLineMeteo, logLinePartMeteo, logTime);
     meteo.begin();

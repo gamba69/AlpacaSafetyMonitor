@@ -105,6 +105,7 @@ float cb_snr_calc() {
 
 void Meteo::update() {
     String message = "[METEO][DATA]";
+
     if (digitalRead(RAIN_SENSOR_PIN)) {
         rainrate = 1;
     } else {
@@ -150,5 +151,6 @@ void Meteo::update() {
     if (cloudcover < 0.)
         cloudcover = 0.;
     message += " CC:" + String(cloudcover, 0);
+    
     logMessage(message);
 }

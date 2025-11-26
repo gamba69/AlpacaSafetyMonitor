@@ -21,6 +21,7 @@ void calcHwPrefs() {
     hwEnabled[ocWindDirection] = false;
     hwEnabled[ocWindSpeed] = hwEnabled[hwAnemo4403];
     hwEnabled[ocWindGust] = hwEnabled[hwAnemo4403];
+    
     hwEnabled[smRainRate] = hwEnabled[hwUicpal] || hwEnabled[hwRg15];
     hwEnabled[smTemperature] = hwEnabled[hwBmp280] || hwEnabled[hwAht20];
     hwEnabled[smHumidity] = hwEnabled[hwAht20];

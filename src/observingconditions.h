@@ -54,6 +54,7 @@ class ObservingConditions : public AlpacaObservingConditions {
     const char *sensordescription = "Xiao Seeed ESP32S3/BMP280/AHT20/MLX90614";
     int _avgperiod = 30;
     int _refresh = 3;
+    int _averaging = 1;
     bool _noise_as_fwhm = true;
 
     // immediate update
