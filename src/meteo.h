@@ -52,6 +52,8 @@ class Meteo {
     void setLogger(std::function<void(String)> logLineCallback = nullptr, std::function<void(String)> logLinePartCallback = nullptr, std::function<String()> logTimeCallback = nullptr);
 
   private:
+    // Last log message
+    unsigned long last_message = 0;
     // Logger println
     std::function<void(String)> logLine = nullptr;
     // Logger print

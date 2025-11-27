@@ -1,6 +1,8 @@
 #include "meteo.h"
 #include "hardware.h"
 
+#define METEO_LOG_DELAY 30
+
 Adafruit_BMP280 bmp;
 Adafruit_MLX90614 mlx = Adafruit_MLX90614();
 Adafruit_AHTX0 aht;
@@ -191,6 +193,9 @@ void Meteo::update() {
     // TODO TSL2591
 
     // TODO ANEMO4403
-    
-    logMessage(message);
+
+    if (logEnabled[LogMeteo] == LogDebug || (logEnabled[LogMeteo] == LogOn && millis() - last_message > METEO_LOG_DELAY * 1000)) {
+        logMessage(message);
+        last_message = millis();
+    }
 }

@@ -13,6 +13,8 @@ class ObservingConditions : public AlpacaObservingConditions {
     static ObservingConditions *_observingconditions_array[4];
     uint8_t _observingconditions_index;
 
+    // Last log message
+    unsigned long last_message = 0;
     // Logger println
     std::function<void(String)> logLine = NULL;
     // Logger print

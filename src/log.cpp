@@ -15,11 +15,11 @@ String logTime() {
 
 Preferences logPrefs;
 
-bool logEnabled[LOG_ENABLED_SIZE];
+uint8_t logEnabled[LOG_ENABLED_SIZE];
 
 void initLogPrefs() {
     logPrefs.begin("logPrefs", false);
-    std::fill(std::begin(logEnabled), std::end(logEnabled), true);
+    std::fill(std::begin(logEnabled), std::end(logEnabled), LogOn);
     loadLogPrefs();
 }
 

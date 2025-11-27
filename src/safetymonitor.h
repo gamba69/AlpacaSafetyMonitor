@@ -26,6 +26,8 @@ class SafetyMonitor : public AlpacaSafetyMonitor {
     static SafetyMonitor *_safetymonitor_array[4];
     uint8_t _safetymonitor_index;
 
+    // Last log message
+    unsigned long last_message = 0;
     // Logger println
     std::function<void(String)> logLine = NULL;
     // Logger print

@@ -13,15 +13,18 @@ void commandLogMainOff();
 
 void commandLogMeteoOn();
 void commandLogMeteoOff();
+void commandLogMeteoDebug();
 
 void commandLogAlpacaOn();
 void commandLogAlpacaOff();
 
 void commandLogOcOn();
 void commandLogOcOff();
+void commandLogOcDebug();
 
 void commandLogSmOn();
 void commandLogSmOff();
+void commandLogSmDebug();
 
 void commandLogWifiOn();
 void commandLogWifiOff();

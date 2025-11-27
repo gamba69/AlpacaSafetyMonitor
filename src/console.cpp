@@ -17,14 +17,14 @@ void commandHelp() {
     logMessageConsole("[HELP] General:");
     logMessageConsole("[HELP]   reboot            - restart esp32 ascom alpaca device");
     logMessageConsole("[HELP] Log settings:");
-    logMessageConsole("[HELP]   log on/off        - enable/disable all logging");
-    logMessageConsole("[HELP]   log main on/off   - enable/disable main logging");
-    logMessageConsole("[HELP]   log alpaca on/off - enable/disable alpaca server logging");
-    logMessageConsole("[HELP]   log meteo on/off  - enable/disable meteo logging");
-    logMessageConsole("[HELP]   log oc on/off     - enable/disable observing conditions logging");
-    logMessageConsole("[HELP]   log sm on/off     - enable/disable safety monitor logging");
-    logMessageConsole("[HELP]   log wifi on/off   - enable/disable wifi manager logging");
-    logMessageConsole("[HELP]   log ota on/off    - enable/disable ota update logging");
+    logMessageConsole("[HELP]   log on/off             - enable/disable all logging");
+    logMessageConsole("[HELP]   log main on/off        - enable/disable main logging");
+    logMessageConsole("[HELP]   log alpaca on/off      - enable/disable alpaca server logging");
+    logMessageConsole("[HELP]   log meteo on/debug/off - enable/disable meteo logging");
+    logMessageConsole("[HELP]   log oc on/debug/off    - enable/disable observing conditions logging");
+    logMessageConsole("[HELP]   log sm on/debug/off    - enable/disable safety monitor logging");
+    logMessageConsole("[HELP]   log wifi on/off        - enable/disable wifi manager logging");
+    logMessageConsole("[HELP]   log ota on/off         - enable/disable ota update logging");
     logMessageConsole("[HELP] Hardware settings (reboot required):");
     logMessageConsole("[HELP]   hw bmp280 on/off   - enable/disable BMP280 sensor");
     logMessageConsole("[HELP]   hw aht20 on/off    - enable/disable AHT20 sensor");
@@ -41,13 +41,13 @@ void commandLogState() {
     logMessageConsole("[INFO] Logging state");
     logMessageConsole("[INFO] -------------");
     logMessageConsole("[INFO]  console - enabled");
-    logMessageConsole("[INFO]  main    - " + String(logEnabled[LogMain] ? "enabled" : "disabled"));
-    logMessageConsole("[INFO]  alpaca  - " + String(logEnabled[LogAlpaca] ? "enabled" : "disabled"));
-    logMessageConsole("[INFO]  meteo   - " + String(logEnabled[LogMeteo] ? "enabled" : "disabled"));
-    logMessageConsole("[INFO]  oc      - " + String(logEnabled[LogObservingConditions] ? "enabled " : "disabled") + " (observing conditions)");
-    logMessageConsole("[INFO]  sm      - " + String(logEnabled[LogSafetyMonitor] ? "enabled " : "disabled") + " (safety monitor)");
+    logMessageConsole("[INFO]  main    - " + String(logEnabled[LogMain] ? "enabled " : "disabled"));
+    logMessageConsole("[INFO]  alpaca  - " + String(logEnabled[LogAlpaca] ? "enabled " : "disabled"));
+    logMessageConsole("[INFO]  meteo   - " + String(logEnabled[LogMeteo] ? (logEnabled[LogMeteo] == LogOn ? "enabled " : "debug   ") : "disabled") + " (meteo sensors)");
+    logMessageConsole("[INFO]  oc      - " + String(logEnabled[LogObservingConditions] ? (logEnabled[LogObservingConditions] == LogOn ? "enabled " : "debug   ") : "disabled") + " (observing conditions)");
+    logMessageConsole("[INFO]  sm      - " + String(logEnabled[LogSafetyMonitor] ? (logEnabled[LogSafetyMonitor] == LogOn ? "enabled " : "debug   ") : "disabled") + " (safety monitor)");
     logMessageConsole("[INFO]  wifi    - " + String(logEnabled[LogWifi] ? "enabled " : "disabled") + " (wifi manager)");
-    logMessageConsole("[INFO]  ota     - " + String(logEnabled[LogOta] ? "enabled" : "disabled"));
+    logMessageConsole("[INFO]  ota     - " + String(logEnabled[LogOta] ? "enabled " : "disabled"));
 }
 
 void commandHardwareState() {
@@ -96,97 +96,124 @@ void commandReboot() {
 
 void commandLogMainOn() {
     logMessageConsole("[CONSOLE] Main logging enabled");
-    logEnabled[LogMain] = true;
+    logEnabled[LogMain] = LogOn;
     saveLogPrefs();
 }
 
 void commandLogMainOff() {
     logMessageConsole("[CONSOLE] Main logging disabled");
-    logEnabled[LogMain] = false;
+    logEnabled[LogMain] = LogOff;
     saveLogPrefs();
 }
 
 void commandLogMeteoOn() {
     logMessageConsole("[CONSOLE] Meteo logging enabled");
-    logEnabled[LogMeteo] = true;
+    logEnabled[LogMeteo] = LogOn;
     saveLogPrefs();
 }
 
 void commandLogMeteoOff() {
     logMessageConsole("[CONSOLE] Meteo logging disabled");
-    logEnabled[LogMeteo] = false;
+    logEnabled[LogMeteo] = LogOff;
+    saveLogPrefs();
+}
+
+void commandLogMeteoDebug() {
+    logMessageConsole("[CONSOLE] Meteo logging debug");
+    logEnabled[LogMeteo] = LogDebug;
     saveLogPrefs();
 }
 
 void commandLogAlpacaOn() {
     logMessageConsole("[CONSOLE] Alpaca logging enabled");
-    logEnabled[LogAlpaca] = true;
+    logEnabled[LogAlpaca] = LogOn;
     saveLogPrefs();
 }
 
 void commandLogAlpacaOff() {
     logMessageConsole("[CONSOLE] Alpaca logging disabled");
-    logEnabled[LogAlpaca] = false;
+    logEnabled[LogAlpaca] = LogOff;
     saveLogPrefs();
 }
 
 void commandLogOcOn() {
     logMessageConsole("[CONSOLE] Observing conditions logging enabled");
-    logEnabled[LogObservingConditions] = true;
+    logEnabled[LogObservingConditions] = LogOn;
     saveLogPrefs();
 }
 
 void commandLogOcOff() {
     logMessageConsole("[CONSOLE] Observing conditions logging disabled");
-    logEnabled[LogObservingConditions] = false;
+    logEnabled[LogObservingConditions] = LogOff;
+    saveLogPrefs();
+}
+
+void commandLogOcDebug() {
+    logMessageConsole("[CONSOLE] Observing conditions logging debug");
+    logEnabled[LogObservingConditions] = LogDebug;
     saveLogPrefs();
 }
 
 void commandLogSmOn() {
     logMessageConsole("[CONSOLE] Safety monitor logging enabled");
-    logEnabled[LogSafetyMonitor] = true;
+    logEnabled[LogSafetyMonitor] = LogOn;
     saveLogPrefs();
 }
 
 void commandLogSmOff() {
     logMessageConsole("[CONSOLE] Safety monitor logging disabled");
-    logEnabled[LogSafetyMonitor] = false;
+    logEnabled[LogSafetyMonitor] = LogOff;
+    saveLogPrefs();
+}
+
+void commandLogSmDebug() {
+    logMessageConsole("[CONSOLE] Safety monitor logging debug");
+    logEnabled[LogSafetyMonitor] = LogDebug;
     saveLogPrefs();
 }
 
 void commandLogWifiOn() {
     logMessageConsole("[CONSOLE] Wifi monitor logging enabled");
-    logEnabled[LogWifi] = true;
+    logEnabled[LogWifi] = LogOn;
     saveLogPrefs();
 }
 
 void commandLogWifiOff() {
     logMessageConsole("[CONSOLE] Wifi logging disabled");
-    logEnabled[LogWifi] = false;
+    logEnabled[LogWifi] = LogOff;
     saveLogPrefs();
 }
 
 void commandLogOtaOn() {
     logMessageConsole("[CONSOLE] Ota monitor logging enabled");
-    logEnabled[LogOta] = true;
+    logEnabled[LogOta] = LogOn;
     saveLogPrefs();
 }
 
 void commandLogOtaOff() {
     logMessageConsole("[CONSOLE] Ota logging disabled");
-    logEnabled[LogOta] = false;
+    logEnabled[LogOta] = LogOff;
     saveLogPrefs();
 }
 
 void commandLogOn() {
     logMessageConsole("[CONSOLE] All logging enabled");
-    std::fill(std::begin(logEnabled), std::end(logEnabled), true);
+    std::fill(std::begin(logEnabled), std::end(logEnabled), LogOn);
     saveLogPrefs();
 }
 
 void commandLogOff() {
     logMessageConsole("[CONSOLE] All logging disabled");
-    std::fill(std::begin(logEnabled), std::end(logEnabled), false);
+    std::fill(std::begin(logEnabled), std::end(logEnabled), LogOff);
+    saveLogPrefs();
+}
+
+void commandLogDebug() {
+    logMessageConsole("[CONSOLE] All logging enabled, debug");
+    std::fill(std::begin(logEnabled), std::end(logEnabled), LogOn);
+    logEnabled[LogMeteo] = LogDebug;
+    logEnabled[LogObservingConditions] = LogDebug;
+    logEnabled[LogSafetyMonitor] = LogDebug;
     saveLogPrefs();
 }
 
@@ -313,18 +340,22 @@ void initConsoleCommands() {
     console_commands["logmainoff"] = commandLogMainOff;
     console_commands["logmeteoon"] = commandLogMeteoOn;
     console_commands["logmeteooff"] = commandLogMeteoOff;
+    console_commands["logmeteodebug"] = commandLogMeteoDebug;
     console_commands["logalpacaon"] = commandLogAlpacaOn;
     console_commands["logalpacaoff"] = commandLogAlpacaOff;
     console_commands["logocon"] = commandLogOcOn;
     console_commands["logocoff"] = commandLogOcOff;
+    console_commands["logocdebug"] = commandLogOcDebug;
     console_commands["logsmon"] = commandLogSmOn;
     console_commands["logsmoff"] = commandLogSmOff;
+    console_commands["logsmdebug"] = commandLogSmDebug;
     console_commands["logwifion"] = commandLogWifiOn;
     console_commands["logwifioff"] = commandLogWifiOff;
     console_commands["logotaon"] = commandLogOtaOn;
     console_commands["logotaoff"] = commandLogOtaOff;
     console_commands["logon"] = commandLogOn;
     console_commands["logoff"] = commandLogOff;
+    console_commands["logdebug"] = commandLogDebug;
 
     console_commands["alpacaocon"] = commandAlpacaOcOn;
     console_commands["alpacaocoff"] = commandAlpacaOcOff;

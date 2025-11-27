@@ -6,7 +6,7 @@
 
 #define LOG_ENABLED_SIZE 32
 
-extern bool logEnabled[LOG_ENABLED_SIZE];
+extern uint8_t logEnabled[LOG_ENABLED_SIZE];
 
 enum LogSource {
     LogMain = 0,
@@ -17,6 +17,12 @@ enum LogSource {
     LogWifi = 5,
     LogOta = 6,
     LogConsole = 7
+};
+
+enum LogValues {
+    LogOff = 0,
+    LogOn = 1,
+    LogDebug = 2
 };
 
 String logTime();
