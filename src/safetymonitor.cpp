@@ -32,19 +32,23 @@ void SafetyMonitor::setLogger(std::function<void(String)> logLineCallback, std::
 
 int SafetyMonitor::getRainRateCountdown() {
     if (rainrate_state == RainRateState::AWAIT_DRY) {
-        if (rainrate_occur == 0)
+        if (rainrate_occur == 0) {
             return 0;
+        }
         int countdown = static_cast<int>(std::round(((1000. * rainrate_dry_delay) - (millis() - rainrate_occur))) / 1000.);
-        if (countdown < 0)
+        if (countdown < 0) {
             return 0;
+        }
         return countdown;
     }
     if (rainrate_state == RainRateState::AWAIT_WET) {
-        if (rainrate_occur == 0)
+        if (rainrate_occur == 0) {
             return 0;
+        }
         int countdown = static_cast<int>(std::round(((1000. * rainrate_wet_delay) - (millis() - rainrate_occur))) / 1000.);
-        if (countdown < 0)
+        if (countdown < 0) {
             return 0;
+        }
         return countdown;
     }
     return 0;
@@ -52,19 +56,23 @@ int SafetyMonitor::getRainRateCountdown() {
 
 int SafetyMonitor::getSafeUnsafeCountdown() {
     if (safeunsafe_state == SafeUnsafeStatus::AWAIT_SAFE) {
-        if (safeunsafe_occur == 0)
+        if (safeunsafe_occur == 0) {
             return 0;
+        }
         int countdown = static_cast<int>(std::round(((1000. * safe_delay) - (millis() - safeunsafe_occur))) / 1000.);
-        if (countdown < 0)
+        if (countdown < 0) {
             return 0;
+        }
         return countdown;
     }
     if (safeunsafe_state == SafeUnsafeStatus::AWAIT_UNSAFE) {
-        if (safeunsafe_occur == 0)
+        if (safeunsafe_occur == 0) {
             return 0;
+        }
         int countdown = static_cast<int>(std::round(((1000. * unsafe_delay) - (millis() - safeunsafe_occur))) / 1000.);
-        if (countdown < 0)
+        if (countdown < 0) {
             return 0;
+        }
         return countdown;
     }
     return 0;
@@ -76,7 +84,7 @@ bool SafetyMonitor::begin() {
 }
 
 void SafetyMonitor::update(Meteo meteo) {
-    String message = "[SAFETY]";
+    String message = "[SAFETY][DATA]";
     // Rain
     if (hwEnabled[smRainRate]) {
         if (!rain_init) {
@@ -100,91 +108,90 @@ void SafetyMonitor::update(Meteo meteo) {
         if (rainrate_curr > 0 && rainrate_prev == 0) {
             rainrate_state = RainRateState::AWAIT_WET;
             rainrate_occur = millis();
-            logMessage("[SAFETY] R:AWAIT_WET");
         }
         if (rainrate_curr == 0 && rainrate_prev > 0) {
             rainrate_state = RainRateState::AWAIT_DRY;
             rainrate_occur = millis();
-            logMessage("[SAFETY] R:AWAIT_DRY");
         }
         rainrate_prev = rainrate_curr;
         if (millis() - rainrate_occur >= rainrate_dry_delay * 1000 && rainrate_state == RainRateState::AWAIT_DRY) {
             rainrate_occur = 0;
             rainrate_state = RainRateState::DRY;
             rainrate = 0;
-            logMessage("[SAFETY] R:DRY");
         }
         if (millis() - rainrate_occur >= rainrate_wet_delay * 1000 && rainrate_state == RainRateState::AWAIT_WET) {
             rainrate_occur = 0;
             rainrate_state = RainRateState::WET;
             rainrate = rainrate_curr;
-            logMessage("[SAFETY] R:WET");
         }
         rain_safe = (rain_prove ? (rainrate_state == RainRateState::DRY || rainrate_state == RainRateState::AWAIT_WET ? true : false) : true);
-        message += " R:" + String(rainrate, 1) + "/" + (rain_safe ? "S" : "U");
+        String rain_info = (rain_prove ? (rain_safe ? "S" : "U") : "P");
+        message += " R:" + rain_info + "/" + String(rainrate, 1);
+        if (rainrate_state == RainRateState::AWAIT_WET || rainrate_state == RainRateState::AWAIT_DRY) {
+            message += "[" + String(getRainRateCountdown()) + "]";
+        }
     } else {
         rainrate = 0;
         rain_safe = true;
         message += " R:-";
     }
-
     // Temperature
     if (hwEnabled[smTemperature]) {
         temperature = meteo.amb_temperature;
         temp_safe = (temp_prove ? (temperature > temp_upper_limit ? true : (temperature <= temp_lower_limit ? false : temp_safe)) : true);
-        message += " T:" + String(temperature, 1) + "/" + (temp_safe ? "S" : "U");
+        String temp_info = (temp_prove ? (temp_safe ? "S" : "U") : "P");
+        message += " T:" + temp_info + "/" + String(temperature, 1) + "[" + String(temp_lower_limit, 1) + ";" + String(temp_upper_limit, 1) + "]";
     } else {
         temperature = 0;
         temp_safe = true;
         message += " T:-";
     }
-
     // Humidity
     if (hwEnabled[smHumidity]) {
         humidity = meteo.aht_humidity;
         humi_safe = (humi_prove ? (humidity < humi_lower_limit ? true : (humidity >= humi_lower_limit ? false : humi_safe)) : true);
-        message += " H:" + String(humidity, 1) + "/" + (humi_safe ? "S" : "U");
+        String humi_info = (humi_prove ? (humi_safe ? "S" : "U") : "P");
+        message += " H:" + humi_info + "/" + String(humidity, 0) + "[" + String(humi_lower_limit, 0) + ";" + String(humi_upper_limit, 0) + "]";
     } else {
         humidity = 0;
         humi_safe = true;
         message += " H:-";
     }
-
     // Dew Point Delta
-    if (hwEnabled[smHumidity]) {
+    if (hwEnabled[smDewPoint]) {
         dewpoint = meteo.dew_point;
         dewpoint_delta = (temperature - dewpoint > 0 ? temperature - dewpoint : 0);
         dewdelta_safe = (dewdelta_prove ? (dewpoint_delta > dewdelta_upper_limit ? true : (dewpoint_delta <= dewdelta_lower_limit ? false : dewdelta_safe)) : true);
-        message += " D:" + String(dewpoint_delta, 1) + "/" + (dewdelta_safe ? "S" : "U");
+        String dewdelta_info = (dewdelta_prove ? (dewdelta_safe ? "S" : "U") : "P");
+        message += " D:" + dewdelta_info + "/" + String(dewpoint_delta, 1) + "[" + String(dewdelta_lower_limit, 1) + ";" + String(dewdelta_upper_limit, 1) + "]";
     } else {
         dewpoint = 0;
         dewpoint_delta = 0;
         dewdelta_safe = true;
         message += " D:-";
     }
-
     // Sky Temperature
     if (hwEnabled[smSkyTemp]) {
         skytemp = meteo.sky_temperature;
         skytemp_safe = (skytemp_prove ? (skytemp < skytemp_lower_limit ? true : (skytemp >= skytemp_upper_limit ? false : skytemp_safe)) : true);
-        message += " S:" + String(skytemp, 1) + "/" + (skytemp_safe ? "S" : "U");
+        String skytemp_info = (skytemp_prove ? (skytemp_safe ? "S" : "U") : "P");
+        message += " S:" + skytemp_info + "/" + String(skytemp, 1) + "[" + String(skytemp_lower_limit, 1) + ";" + String(skytemp_upper_limit, 1) + "]";
     } else {
         skytemp = 0;
         skytemp_safe = true;
         message += " S:-";
     }
-
     // Wind Speed
     if (hwEnabled[smWindSpeed]) {
         windspeed = meteo.wind_speed;
         wind_safe = (wind_prove ? (windspeed < wind_lower_limit ? true : (windspeed >= wind_upper_limit ? false : wind_safe)) : true);
-        message += " W:" + String(windspeed, 1) + "/" + (wind_safe ? "S" : "U");
+        String wind_info = (wind_prove ? (wind_safe ? "S" : "U") : "P");
+        message += " W:" + wind_info + "/" + String(windspeed, 1) + "[" + String(wind_lower_limit, 1) + ";" + String(wind_upper_limit, 1) + "]";
     } else {
         windspeed = 0;
         wind_safe = true;
         message += " W:-";
     }
-
     // IsSafe Monitor
     safeunsafe_curr = rain_safe && temp_safe && humi_safe && dewdelta_safe && skytemp_safe && wind_safe;
     if (!safeunsafe_init) {
@@ -199,26 +206,25 @@ void SafetyMonitor::update(Meteo meteo) {
     if (safeunsafe_curr && !safeunsafe_prev) {
         safeunsafe_state = SafeUnsafeStatus::AWAIT_SAFE;
         safeunsafe_occur = millis();
-        logMessage("[SAFETY] S:AWAIT_SAFE");
     }
     if (!safeunsafe_curr && safeunsafe_prev) {
         safeunsafe_state = SafeUnsafeStatus::AWAIT_UNSAFE;
         safeunsafe_occur = millis();
-        logMessage("[SAFETY] S:AWAIT_UNSAFE");
     }
     safeunsafe_prev = safeunsafe_curr;
     if (millis() - safeunsafe_occur >= safe_delay * 1000 && safeunsafe_state == SafeUnsafeStatus::AWAIT_SAFE) {
         safeunsafe_occur = 0;
         safeunsafe_state = SafeUnsafeStatus::SAFE;
-        logMessage("[SAFETY] S:SAFE");
     }
     if (millis() - safeunsafe_occur >= unsafe_delay * 1000 && safeunsafe_state == SafeUnsafeStatus::AWAIT_UNSAFE) {
         safeunsafe_occur = 0;
         safeunsafe_state = SafeUnsafeStatus::UNSAFE;
-        logMessage("[SAFETY] S:UNSAFE");
     }
     is_safe = (safeunsafe_state == SafeUnsafeStatus::AWAIT_UNSAFE || safeunsafe_state == SafeUnsafeStatus::SAFE);
     message += is_safe ? " SAFE" : " UNSAFE";
+    if (safeunsafe_state == SafeUnsafeStatus::AWAIT_UNSAFE || safeunsafe_state == SafeUnsafeStatus::AWAIT_SAFE) {
+        message += "[" + String(getSafeUnsafeCountdown()) + "]";
+    }
     logMessage(message);
 };
 
@@ -245,45 +251,51 @@ void SafetyMonitor::aReadJson(JsonObject &root) {
         safe_delay = obj_config[F("B___zda_safe_delayzc_s")] | safe_delay;
         unsafe_delay = obj_config[F("C___zda_unsafe_delayzc_s")] | unsafe_delay;
         // Rain
-        if (obj_config[F("D_Rain_Ratezc_prove")].as<String>() == String("true"))
+        if (obj_config[F("D_Rain_Ratezc_prove")].as<String>() == String("true")) {
             rain_prove = true;
-        else
+        } else {
             rain_prove = false;
+        }
         rainrate_wet_delay = obj_config[F("E___zda_wet_delayzc_s")] | rainrate_wet_delay;
         rainrate_dry_delay = obj_config[F("F___zda_dry_delayzc_s")] | rainrate_dry_delay;
         // Temp
-        if (obj_config[F("G_Temperaturezc_prove")].as<String>() == String("true"))
+        if (obj_config[F("G_Temperaturezc_prove")].as<String>() == String("true")) {
             temp_prove = true;
-        else
+        } else {
             temp_prove = false;
+        }
         temp_lower_limit = obj_config[F("H___zda_lower_limitzc_zdgC")] | temp_lower_limit;
         temp_upper_limit = obj_config[F("I___zda_upper_limitzc_zdgC")] | temp_upper_limit;
         // Humi
-        if (obj_config[F("J_Humidityzc_prove")].as<String>() == String("true"))
+        if (obj_config[F("J_Humidityzc_prove")].as<String>() == String("true")) {
             humi_prove = true;
-        else
+        } else {
             humi_prove = false;
+        }
         humi_lower_limit = obj_config[F("K___zda_lower_limitzc_zdgC")] | humi_lower_limit;
         humi_upper_limit = obj_config[F("L___zda_upper_limitzc_zdgC")] | humi_upper_limit;
         // DewDelta
-        if (obj_config[F("M_Dew_Point_zdtzc_prove")].as<String>() == String("true"))
+        if (obj_config[F("M_Dew_Point_zdtzc_prove")].as<String>() == String("true")) {
             dewdelta_prove = true;
-        else
+        } else {
             dewdelta_prove = false;
+        }
         dewdelta_lower_limit = obj_config[F("N___zda_lower_limitzc_zdgC")] | dewdelta_lower_limit;
         dewdelta_upper_limit = obj_config[F("O___zda_upper_limitzc_zdgC")] | dewdelta_upper_limit;
         // SkyTemp
-        if (obj_config[F("P_Sky_Tempzc_prove")].as<String>() == String("true"))
+        if (obj_config[F("P_Sky_Tempzc_prove")].as<String>() == String("true")) {
             skytemp_prove = true;
-        else
+        } else {
             skytemp_prove = false;
+        }
         skytemp_lower_limit = obj_config[F("Q___zda_lower_limitzc_zdgC")] | skytemp_lower_limit;
         skytemp_upper_limit = obj_config[F("R___zda_upper_limitzc_zdgC")] | skytemp_upper_limit;
         // WindSpeed
-        if (obj_config[F("S_Wind_Speedzc_prove")].as<String>() == String("true"))
+        if (obj_config[F("S_Wind_Speedzc_prove")].as<String>() == String("true")) {
             wind_prove = true;
-        else
+        } else {
             wind_prove = false;
+        }
         wind_lower_limit = obj_config[F("T___zda_lower_limitzc_zdgC")] | wind_lower_limit;
         wind_upper_limit = obj_config[F("U___zda_upper_limitzc_zdgC")] | wind_upper_limit;
     }
@@ -322,7 +334,7 @@ void SafetyMonitor::aWriteJson(JsonObject &root) {
     JsonObject obj_state = root[F("State")].to<JsonObject>();
     String rain_state_icon = "⚫";
     String indent = "";
-    if (rain_prove) {
+    if (hwEnabled[smRainRate] && rain_prove) {
         switch (rainrate_state) {
         case RainRateState::AWAIT_DRY:
             rain_state_icon = "🔴🟡";
@@ -343,16 +355,16 @@ void SafetyMonitor::aWriteJson(JsonObject &root) {
         }
     }
     obj_state[rain_state_icon + ("_Rainzro")] = !rain_safe;
-    obj_state[indent + "_Rate,_mmzshzro"] = String(rainrate, 1);
+    obj_state[indent + "_Rate,_mmzshzro"] = hwEnabled[smRainRate] ? String(rainrate, 1) : "n/a";
     if (getRainRateCountdown() > 0) {
         obj_state["X_" + indent + "_Countndown,_szro"] = getRainRateCountdown();
     }
-    obj_state[String((temp_prove ? (temp_safe ? "🟢" : "🔴") : "⚫")) + F("_Temperature,_°Czro")] = String(temperature, 1);
-    obj_state[String((humi_prove ? (humi_safe ? "🟢" : "🔴") : "⚫")) + F("_Humidity,_%zro")] = String(humidity, 0);
-    obj_state[indent + "_Dew_Point,_°Czro"] = String(dewpoint, 1);
-    obj_state[String((dewdelta_prove ? (dewdelta_safe ? "🟢" : "🔴") : "⚫")) + F("_Dew_Point_Δ,_°Czro")] = String(dewpoint_delta, 1);
-    obj_state[String((skytemp_prove ? (skytemp_safe ? "🟢" : "🔴") : "⚫")) + F("_Sky_Temp,_°Czro")] = String(skytemp, 1);
-    obj_state[String((wind_prove ? (wind_safe ? "🟢" : "🔴") : "⚫")) + F("_Wind_Speed,_mzsszro")] = String(windspeed, 1);
+    obj_state[String((hwEnabled[smTemperature] && temp_prove ? (temp_safe ? "🟢" : "🔴") : "⚫")) + F("_Temperature,_°Czro")] = hwEnabled[smTemperature] ? String(temperature, 1) : "n/a";
+    obj_state[String((hwEnabled[smHumidity] && humi_prove ? (humi_safe ? "🟢" : "🔴") : "⚫")) + F("_Humidity,_%zro")] = hwEnabled[smHumidity] ? String(humidity, 0) : "n/a";
+    obj_state[String((hwEnabled[smDewPoint] && dewdelta_prove ? (dewdelta_safe ? "🟢" : "🔴") : "⚫")) + F("_Dew_Point_Δ,_°Czro")] = hwEnabled[smDewPoint] ? String(dewpoint_delta, 1) : "n/a";
+    obj_state[indent + "_Dew_Point,_°Czro"] = hwEnabled[smDewPoint] ? String(dewpoint, 1) : "n/a";
+    obj_state[String((hwEnabled[smSkyTemp] && skytemp_prove ? (skytemp_safe ? "🟢" : "🔴") : "⚫")) + F("_Sky_Temp,_°Czro")] = hwEnabled[smSkyTemp] ? String(skytemp, 1) : "n/a";
+    obj_state[String((hwEnabled[smWindSpeed] && wind_prove ? (wind_safe ? "🟢" : "🔴") : "⚫")) + F("_Wind_Speed,_mzsszro")] = hwEnabled[smWindSpeed] ? String(windspeed, 1) : "n/a";
     String safe_state_icon = "⚫";
     switch (safeunsafe_state) {
     case SafeUnsafeStatus::AWAIT_SAFE:

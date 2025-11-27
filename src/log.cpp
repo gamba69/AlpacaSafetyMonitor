@@ -1,6 +1,6 @@
+#include "log.h"
 #include <Arduino.h>
 #include <Preferences.h>
-#include "log.h"
 
 String logTime() {
     time_t now;
@@ -34,30 +34,41 @@ void saveLogPrefs() {
 
 String mqttLogBuffer = "";
 
-void logLine(String line, LogSource source) {
+void logLine(String line, LogSource source, bool mqtt) {
     if (logEnabled[source] || source == LogConsole) {
         Serial.println(line);
         webSerial.println(line);
-        if (mqttClient)
-            mqttClient->publish(MQTT_LOG_TOPIC, mqttLogBuffer + line);
-        mqttLogBuffer = "";
+        if (mqtt) {
+            if (mqttClient)
+                mqttClient->publish(MQTT_LOG_TOPIC, mqttLogBuffer + line);
+            mqttLogBuffer = "";
+        }
     }
 }
 
-void logLinePart(String line, LogSource source) {
+void logLine(String line, LogSource source) {
+    logLine(line, source, true);
+}
+
+void logLinePart(String line, LogSource source, bool mqtt) {
     if (logEnabled[source] || source == LogConsole) {
         Serial.print(line);
         webSerial.print(line);
-        mqttLogBuffer = mqttLogBuffer + line;
+        if (mqtt) {
+            mqttLogBuffer = mqttLogBuffer + line;
+        }
     }
+}
+void logLinePart(String line, LogSource source) {
+    logLinePart(line, source, true);
 }
 
 void logLineConsole(String line) {
-    logLine(line, LogConsole);
+    logLine(line, LogConsole, false);
 }
 
 void logLinePartConsole(String line) {
-    logLinePart(line, LogConsole);
+    logLinePart(line, LogConsole, false);
 }
 
 void logLineMain(String line) {
