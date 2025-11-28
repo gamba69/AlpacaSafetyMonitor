@@ -234,8 +234,8 @@ void loop() {
     // do not continue regular operation as long as a OTA is running
     // reason: background workload can cause upgrade issues that we want to avoid!
     if (OtaWebUpdater.otaIsRunning) {
-        yield();
-        delay(50);
+        taskYIELD();
+        vTaskDelay(pdMS_TO_TICKS(50));
         return;
     };
     // wifi (re)connected
@@ -274,7 +274,8 @@ void loop() {
     }
     immediateUpdate = false;
     Watchdog.reset();
-    delay(50);
+    taskYIELD();
+    vTaskDelay(pdMS_TO_TICKS(50));
 }
 
 void setup_wifi() {

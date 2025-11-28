@@ -65,14 +65,14 @@ class Meteo {
     // Print a part of log message, can be overwritten
     virtual void logMessagePart(String msg, bool showtime = false);
 
-    TaskHandle_t tsl2591TaskHandle = NULL;
-    static void tsl2591TaskWrapper(void *parameter) {
+    TaskHandle_t updateTtsl2591Handle = NULL;
+    static void updateTsl2591Wrapper(void *parameter) {
         // Cast parameter back to the class instance pointer
         Meteo *instance = static_cast<Meteo *>(parameter);
         // Call the actual member function
-        instance->tsl2591Task();
+        instance->updateTsl2591();
     }
-    void tsl2591Task(void);
+    void updateTsl2591(void);
 };
 
 #endif

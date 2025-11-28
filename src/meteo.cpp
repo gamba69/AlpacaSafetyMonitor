@@ -44,14 +44,13 @@ void Meteo::begin() {
         rain_rate = 0;
     }
     xTaskCreatePinnedToCore(
-        Meteo::tsl2591TaskWrapper, // Task function
-        "tsl2591Task",             // Task name
-        10000,                     // Stack size (bytes)
-        this,                      // Parameters
-        1,                         // Priority
-        &tsl2591TaskHandle,        // Task handle
-        1                          // Core 1
-    );
+        Meteo::updateTsl2591Wrapper,
+        "updateTsl2591",
+        2048,
+        this,
+        1,
+        &updateTtsl2591Handle,
+        1);
 }
 
 #define sgn(x) ((x) < 0 ? -1 : ((x) > 0 ? 1 : 0))
@@ -113,9 +112,9 @@ float cb_snr_calc() {
     return (10 * log10(s / n));
 }
 
-void Meteo::tsl2591Task() {
-    for (;;) {
-        Serial.print("tsl2591Task running on core ");
+void Meteo::updateTsl2591() {
+    while (true) {
+        Serial.print("updateTsl2591 task running on core ");
         Serial.println(xPortGetCoreID());
         vTaskDelay(pdMS_TO_TICKS(3000));
     }
