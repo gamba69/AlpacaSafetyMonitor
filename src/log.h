@@ -4,9 +4,10 @@
 #include <String.h>
 #include "main.h"
 
-#define LOG_ENABLED_SIZE 32
+#define LOG_ENABLED_SIZE 16
 
 extern uint8_t logEnabled[LOG_ENABLED_SIZE];
+extern uint16_t logSlow[LOG_ENABLED_SIZE];
 
 enum LogSource {
     LogMain = 0,

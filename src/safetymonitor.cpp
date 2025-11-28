@@ -2,8 +2,6 @@
 #include "hardware.h"
 #include "meteo.h"
 
-#define SM_LOG_DELAY 30
-
 // cannot call member functions directly from interrupt, so need these helpers for up to 1 SafetyMonitor
 uint8_t SafetyMonitor::_n_safetymonitors = 0;
 SafetyMonitor *SafetyMonitor::_safetymonitor_array[4] = {nullptr, nullptr, nullptr, nullptr};
@@ -257,7 +255,7 @@ void SafetyMonitor::update(Meteo meteo) {
         message += "[" + String(getSafeUnsafeCountdown()) + "]";
     }
 
-    if (log_required || logEnabled[LogSafetyMonitor] == LogOn || (logEnabled[LogSafetyMonitor] == LogSlow && millis() - last_message > SM_LOG_DELAY * 1000)) {
+    if (log_required || logEnabled[LogSafetyMonitor] == LogOn || (logEnabled[LogSafetyMonitor] == LogSlow && millis() - last_message > logSlow[LogSafetyMonitor] * 1000)) {
         logMessage(message);
         last_message = millis();
     }

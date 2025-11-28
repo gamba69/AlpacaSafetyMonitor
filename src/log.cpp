@@ -16,20 +16,27 @@ String logTime() {
 Preferences logPrefs;
 
 uint8_t logEnabled[LOG_ENABLED_SIZE];
+uint16_t logSlow[LOG_ENABLED_SIZE];
 
 void initLogPrefs() {
     logPrefs.begin("logPrefs", false);
     std::fill(std::begin(logEnabled), std::end(logEnabled), LogOn);
+    std::fill(std::begin(logSlow), std::end(logSlow), 30);
     loadLogPrefs();
 }
 
 void loadLogPrefs() {
-    if (logPrefs.isKey("logging"))
-        logPrefs.getBytes("logging", logEnabled, sizeof(logEnabled));
+    if (logPrefs.isKey("enabled")) {
+        logPrefs.getBytes("enabled", logEnabled, sizeof(logEnabled));
+    }
+    if (logPrefs.isKey("slow")) {
+        logPrefs.getBytes("slow", logSlow, sizeof(logSlow));
+    }
 }
 
 void saveLogPrefs() {
-    logPrefs.putBytes("logging", logEnabled, sizeof(logEnabled));
+    logPrefs.putBytes("enabled", logEnabled, sizeof(logEnabled));
+    logPrefs.putBytes("slow", logSlow, sizeof(logSlow));
 }
 
 String mqttLogBuffer = "";

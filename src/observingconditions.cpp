@@ -2,8 +2,6 @@
 #include "hardware.h"
 #include "meteo.h"
 
-#define OC_LOG_DELAY 30
-
 // cannot call member functions directly from interrupt, so need these helpers for up to 1 ObservingConditions
 uint8_t ObservingConditions::_n_observingconditionss = 0;
 ObservingConditions *ObservingConditions::_observingconditions_array[4] = {nullptr, nullptr, nullptr, nullptr};
@@ -180,7 +178,7 @@ void ObservingConditions::update(Meteo meteo) {
 
     timelastupdate = millis();
 
-    if (logEnabled[LogObservingConditions] == LogOn || (logEnabled[LogObservingConditions] == LogSlow && millis() - last_message > OC_LOG_DELAY * 1000)) {
+    if (logEnabled[LogObservingConditions] == LogOn || (logEnabled[LogObservingConditions] == LogSlow && millis() - last_message > logSlow[LogObservingConditions] * 1000)) {
         logMessage(message);
         last_message = millis();
     }

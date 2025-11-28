@@ -13,6 +13,7 @@ void commandLogMainOff();
 
 void commandLogMeteoOn();
 void commandLogMeteoSlow();
+void commandLogMeteoSlowDelay(uint16_t delay);
 void commandLogMeteoOff();
 
 void commandLogAlpacaOn();
@@ -20,10 +21,12 @@ void commandLogAlpacaOff();
 
 void commandLogOcOn();
 void commandLogOcSlow();
+void commandLogOcSlowDelay(uint16_t delay);
 void commandLogOcOff();
 
 void commandLogSmOn();
 void commandLogSmSlow();
+void commandLogSmSlowDelay(uint16_t delay);
 void commandLogSmOff();
 
 void commandLogWifiOn();
