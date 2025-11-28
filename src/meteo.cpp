@@ -211,7 +211,7 @@ void Meteo::update() {
 
     // TODO ANEMO4403
 
-    if (logEnabled[LogMeteo] == LogDebug || (logEnabled[LogMeteo] == LogOn && millis() - last_message > METEO_LOG_DELAY * 1000)) {
+    if (logEnabled[LogMeteo] == LogOn || (logEnabled[LogMeteo] == LogSlow && millis() - last_message > METEO_LOG_DELAY * 1000)) {
         logMessage(message);
         last_message = millis();
     }

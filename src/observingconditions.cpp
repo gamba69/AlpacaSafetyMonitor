@@ -180,7 +180,7 @@ void ObservingConditions::update(Meteo meteo) {
 
     timelastupdate = millis();
 
-    if (logEnabled[LogObservingConditions] == LogDebug || (logEnabled[LogObservingConditions] == LogOn && millis() - last_message > OC_LOG_DELAY * 1000)) {
+    if (logEnabled[LogObservingConditions] == LogOn || (logEnabled[LogObservingConditions] == LogSlow && millis() - last_message > OC_LOG_DELAY * 1000)) {
         logMessage(message);
         last_message = millis();
     }

@@ -22,7 +22,7 @@ enum LogSource {
 enum LogValues {
     LogOff = 0,
     LogOn = 1,
-    LogDebug = 2
+    LogSlow = 2
 };
 
 String logTime();

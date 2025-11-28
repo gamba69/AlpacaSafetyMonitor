@@ -12,19 +12,19 @@ void commandLogMainOn();
 void commandLogMainOff();
 
 void commandLogMeteoOn();
+void commandLogMeteoSlow();
 void commandLogMeteoOff();
-void commandLogMeteoDebug();
 
 void commandLogAlpacaOn();
 void commandLogAlpacaOff();
 
 void commandLogOcOn();
+void commandLogOcSlow();
 void commandLogOcOff();
-void commandLogOcDebug();
 
 void commandLogSmOn();
+void commandLogSmSlow();
 void commandLogSmOff();
-void commandLogSmDebug();
 
 void commandLogWifiOn();
 void commandLogWifiOff();
