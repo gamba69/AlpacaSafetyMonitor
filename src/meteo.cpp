@@ -43,6 +43,7 @@ void Meteo::begin() {
     } else {
         rain_rate = 0;
     }
+    xDevicesGroup = xEventGroupCreate();
     xTaskCreate(
         Meteo::updateTsl2591Wrapper,
         "updateTsl2591",
@@ -111,6 +112,32 @@ float cb_snr_calc() {
     return (10 * log10(s / n));
 }
 
+void Meteo::updateUicpal() {
+    EventBits_t xBits;
+    static unsigned long last_update = 0;
+    static bool force_update = true;
+    while (true) {
+        if (force_update || millis() - last_update > METEO_MEASURE_DELAY) {
+            if (digitalRead(RAIN_SENSOR_PIN)) {
+                rain_rate = 1;
+            } else {
+                rain_rate = 0;
+            }
+            last_update = millis();
+            force_update = false;
+        }
+        xBits = xEventGroupWaitBits(
+            xDevicesGroup,
+            UICPAL_KICK,
+            pdTRUE,
+            pdFALSE,
+            pdMS_TO_TICKS(50));
+        if ((xBits & UICPAL_KICK) != 0) {
+            force_update = true;
+        }
+    }
+}
+
 void Meteo::updateTsl2591() {
     while (true) {
         // Serial.print("updateTsl2591 task running on core ");
@@ -119,7 +146,7 @@ void Meteo::updateTsl2591() {
     }
 }
 
-void Meteo::update() {
+void Meteo::update(bool immediate) {
     String message = "[METEO][DATA]";
 
     if (hwEnabled[hwUicpal]) {

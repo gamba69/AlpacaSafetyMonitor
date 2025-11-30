@@ -15,6 +15,10 @@ static int cb_index = 0;
 static float cb_avg = 0.0;
 static float cb_rms = 0.0;
 
+// Devices group bits
+#define UICPAL_KICK (1UL << 0)
+#define UICPAL_DONE (1UL << 1)
+
 #ifndef METEO_H
 #define METEO_H
 
@@ -42,7 +46,7 @@ class Meteo {
         wind_gust;
     // sensors
     // methods
-    void update();
+    void update(bool immediate = false);
     // Meteo(const std::string &newName); // constructor place
     //  setters
     //  getters
@@ -65,6 +69,8 @@ class Meteo {
     // Print a part of log message, can be overwritten
     virtual void logMessagePart(String msg, bool showtime = false);
 
+    EventGroupHandle_t xDevicesGroup;
+
     TaskHandle_t updateTtsl2591Handle = NULL;
     static void updateTsl2591Wrapper(void *parameter) {
         // Cast parameter back to the class instance pointer
@@ -73,6 +79,15 @@ class Meteo {
         instance->updateTsl2591();
     }
     void updateTsl2591(void);
+
+    TaskHandle_t updateUicpalHandle = NULL;
+    static void updateUicpalWrapper(void *parameter) {
+        // Cast parameter back to the class instance pointer
+        Meteo *instance = static_cast<Meteo *>(parameter);
+        // Call the actual member function
+        instance->updateUicpal();
+    }
+    void updateUicpal(void);
 };
 
 #endif
