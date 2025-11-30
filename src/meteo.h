@@ -25,8 +25,7 @@ static float cb_rms = 0.0;
 class Meteo {
   public:
     // attributes
-    std::string Name;
-    float
+    volatile float
         rain_rate,
         bmp_temperature,
         bmp_pressure,
@@ -44,10 +43,8 @@ class Meteo {
         wind_direction,
         wind_speed,
         wind_gust;
-    // sensors
     // methods
     void update(bool immediate = false);
-    // Meteo(const std::string &newName); // constructor place
     //  setters
     //  getters
     // const std::string &getName() const;
