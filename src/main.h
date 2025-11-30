@@ -1,6 +1,5 @@
 #pragma once
 
-#include <Adafruit_SleepyDog.h>
 #include <AlpacaServer.h>
 #include <Arduino.h>
 #include <ESPNtpClient.h>
@@ -8,6 +7,7 @@
 #include <PicoMQTT.h>
 #include <RTClib.h>
 #include <WiFi.h>
+#include <esp_task_wdt.h>
 #include <otawebupdater.h>
 #include <wifimanager.h>
 #include "config.h"

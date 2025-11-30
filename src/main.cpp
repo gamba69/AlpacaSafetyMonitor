@@ -116,6 +116,68 @@ void IRAM_ATTR immediateMeteoUpdate() {
     immediateUpdate = true;
 }
 
+void workload(void *parameter) {
+    // weather update last ran millis
+    static unsigned long meteoLastRan = 0;
+    static unsigned long safetyMonitorLastRan = 0;
+    static unsigned long observingConditionsLastRan = 0;
+    // mqtt status loop delay
+    static int prevWifiStatus = WL_DISCONNECTED;
+    static int mqttStatusDelay = MQTT_STATUS_DELAY;
+    static int lastMqttStatus = 0;
+    esp_task_wdt_add(NULL);
+    while (true) {
+        // do not continue regular operation as long as a OTA is running
+        // reason: background workload can cause upgrade issues that we want to avoid!
+        if (OtaWebUpdater.otaIsRunning) {
+            esp_task_wdt_reset();
+            taskYIELD();
+            vTaskDelay(pdMS_TO_TICKS(50));
+            continue;
+        };
+        // wifi (re)connected
+        if (WiFi.status() == WL_CONNECTED && prevWifiStatus != WL_CONNECTED) {
+            // ALPACA Tcp Server
+            alpacaServer.beginUdp(ALPACA_UDP_PORT);
+            // initialize mqtt
+            setupMqtt();
+        }
+        prevWifiStatus = WiFi.status();
+        if (mqttClient)
+            mqttClient->loop();
+        // log mqtt status without blocking webserver
+        if (millis() > lastMqttStatus + mqttStatusDelay) {
+            logMqttStatus();
+            lastMqttStatus = millis();
+        }
+        // update meteo every METEO_MEASURE_DELAY without blocking webserver
+        if (immediateUpdate || (millis() > meteoLastRan + METEO_MEASURE_DELAY)) {
+            meteo.update();
+            meteoLastRan = millis();
+        }
+        // update observingconditions every refresh without blocking webserver
+        if (hwEnabled[alpacaOc]) {
+            if (immediateUpdate || (millis() > observingConditionsLastRan + (1000 * observingconditions.getRefresh()))) {
+                observingconditions.update(meteo);
+                observingConditionsLastRan = millis();
+            }
+        }
+        // update safetymonitor every METEO_MEASURE_DELAY without blocking webserver
+        if (hwEnabled[alpacaSm]) {
+            if (immediateUpdate || (millis() > safetyMonitorLastRan + SAFETY_MONITOR_DELAY)) {
+                safetymonitor.update(meteo);
+                safetyMonitorLastRan = millis();
+            }
+        }
+        immediateUpdate = false;
+        esp_task_wdt_reset();
+        taskYIELD();
+        vTaskDelay(pdMS_TO_TICKS(50));
+    }
+    esp_task_wdt_delete(NULL);
+    vTaskDelete(NULL);
+}
+
 void setup() {
     // Setup serial
     Serial.begin(115200);
@@ -218,64 +280,24 @@ void setup() {
     meteo.begin();
     attachInterrupt(digitalPinToInterrupt(RAIN_SENSOR_PIN), immediateMeteoUpdate, CHANGE);
     // Watchdog
-    int watchdogCountdown = Watchdog.enable(WATCHDOG_COUNTDOWN);
-    logMessage("[WATCHDOG] Enabled with " + String(watchdogCountdown) + "ms countdown.");
+    esp_task_wdt_deinit();
+    esp_err_t error = esp_task_wdt_init(WATCHDOG_COUNTDOWN, true);
+    logMessage("[WATCHDOG] Initialization: %s\n", esp_err_to_name(error));
+    // Tasks
+    xTaskCreate(
+        workload,   // Function to implement the task
+        "workload", // Name of the task
+        8192,       // Stack size in bytes
+        NULL,       // Task input parameter
+        1,          // Priority of the task
+        NULL        // Task handle
+    );
+    // Terminate
+    vTaskDelete(NULL);
 }
 
 void loop() {
-    // weather update last ran millis
-    static unsigned long meteoLastRan = 0;
-    static unsigned long safetyMonitorLastRan = 0;
-    static unsigned long observingConditionsLastRan = 0;
-    // mqtt status loop delay
-    static int prevWifiStatus = WL_DISCONNECTED;
-    static int mqttStatusDelay = MQTT_STATUS_DELAY;
-    static int lastMqttStatus = 0;
-    // do not continue regular operation as long as a OTA is running
-    // reason: background workload can cause upgrade issues that we want to avoid!
-    if (OtaWebUpdater.otaIsRunning) {
-        taskYIELD();
-        vTaskDelay(pdMS_TO_TICKS(50));
-        return;
-    };
-    // wifi (re)connected
-    if (WiFi.status() == WL_CONNECTED && prevWifiStatus != WL_CONNECTED) {
-        // ALPACA Tcp Server
-        alpacaServer.beginUdp(ALPACA_UDP_PORT);
-        // initialize mqtt
-        setupMqtt();
-    }
-    prevWifiStatus = WiFi.status();
-    if (mqttClient)
-        mqttClient->loop();
-    // log mqtt status without blocking webserver
-    if (millis() > lastMqttStatus + mqttStatusDelay) {
-        logMqttStatus();
-        lastMqttStatus = millis();
-    }
-    // update meteo every METEO_MEASURE_DELAY without blocking webserver
-    if (immediateUpdate || (millis() > meteoLastRan + METEO_MEASURE_DELAY)) {
-        meteo.update();
-        meteoLastRan = millis();
-    }
-    // update observingconditions every refresh without blocking webserver
-    if (hwEnabled[alpacaOc]) {
-        if (immediateUpdate || (millis() > observingConditionsLastRan + (1000 * observingconditions.getRefresh()))) {
-            observingconditions.update(meteo);
-            observingConditionsLastRan = millis();
-        }
-    }
-    // update safetymonitor every METEO_MEASURE_DELAY without blocking webserver
-    if (hwEnabled[alpacaSm]) {
-        if (immediateUpdate || (millis() > safetyMonitorLastRan + SAFETY_MONITOR_DELAY)) {
-            safetymonitor.update(meteo);
-            safetyMonitorLastRan = millis();
-        }
-    }
-    immediateUpdate = false;
-    Watchdog.reset();
-    taskYIELD();
-    vTaskDelay(pdMS_TO_TICKS(50));
+    // Indeed
 }
 
 void setup_wifi() {
