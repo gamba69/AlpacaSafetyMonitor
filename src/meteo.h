@@ -44,7 +44,7 @@ class Meteo {
         wind_speed,
         wind_gust;
     // methods
-    void update(bool immediate = false);
+    void update(bool force = false);
     //  setters
     //  getters
     // const std::string &getName() const;
@@ -68,7 +68,7 @@ class Meteo {
 
     EventGroupHandle_t xDevicesGroup;
 
-    TaskHandle_t updateTtsl2591Handle = NULL;
+    TaskHandle_t updateTsl2591Handle = NULL;
     static void updateTsl2591Wrapper(void *parameter) {
         // Cast parameter back to the class instance pointer
         Meteo *instance = static_cast<Meteo *>(parameter);

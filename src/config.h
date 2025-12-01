@@ -24,6 +24,8 @@
 // METEO
 // Sensors read cycle in ms. Always must be 3000.
 #define METEO_MEASURE_DELAY 3000
+#define METEO_TASK_DELAY 200
+
 #define SAFETY_MONITOR_DELAY 3000
 
 // RAIN

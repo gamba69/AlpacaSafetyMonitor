@@ -22,7 +22,11 @@ ObservingConditions observingconditions = ObservingConditions();
 
 Meteo meteo = Meteo();
 
-volatile bool immediateUpdate = false;
+EventGroupHandle_t xInterruptsGroup;
+
+#define UICPAL_INTERRUPT (1UL << 0)
+
+volatile bool immediate = false;
 
 void setupMqtt() {
     if (mqttClient) {
@@ -112,8 +116,12 @@ void setupWebRedirects(AsyncWebServer *webServer) {
     });
 }
 
-void IRAM_ATTR immediateMeteoUpdate() {
-    immediateUpdate = true;
+void IRAM_ATTR immediateUpdate() {
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    xEventGroupSetBitsFromISR(xInterruptsGroup, UICPAL_INTERRUPT, &xHigherPriorityTaskWoken);
+    if (xHigherPriorityTaskWoken) {
+        portYIELD_FROM_ISR();
+    }
 }
 
 void workload(void *parameter) {
@@ -151,28 +159,37 @@ void workload(void *parameter) {
             lastMqttStatus = millis();
         }
         // update meteo every METEO_MEASURE_DELAY without blocking webserver
-        if (immediateUpdate || (millis() > meteoLastRan + METEO_MEASURE_DELAY)) {
-            meteo.update();
+        if (immediate || (millis() > meteoLastRan + METEO_MEASURE_DELAY)) {
+            meteo.update(immediate);
             meteoLastRan = millis();
         }
         // update observingconditions every refresh without blocking webserver
         if (ALPACA_OBSCON) {
-            if (immediateUpdate || (millis() > observingConditionsLastRan + (1000 * observingconditions.getRefresh()))) {
+            if (immediate || (millis() > observingConditionsLastRan + (1000 * observingconditions.getRefresh()))) {
                 observingconditions.update(meteo);
                 observingConditionsLastRan = millis();
             }
         }
         // update safetymonitor every METEO_MEASURE_DELAY without blocking webserver
         if (ALPACA_SAFEMON) {
-            if (immediateUpdate || (millis() > safetyMonitorLastRan + SAFETY_MONITOR_DELAY)) {
+            if (immediate || (millis() > safetyMonitorLastRan + SAFETY_MONITOR_DELAY)) {
                 safetymonitor.update(meteo);
                 safetyMonitorLastRan = millis();
             }
         }
-        immediateUpdate = false;
+        immediate = false;
         esp_task_wdt_reset();
         taskYIELD();
-        vTaskDelay(pdMS_TO_TICKS(50));
+        EventBits_t await = UICPAL_INTERRUPT;
+        EventBits_t xBits = xEventGroupWaitBits(
+            xInterruptsGroup,
+            await,
+            pdTRUE,
+            pdFALSE,
+            pdMS_TO_TICKS(200));
+        if ((xBits & await) != 0) {
+            immediate = true;
+        }
     }
     esp_task_wdt_delete(NULL);
     vTaskDelete(NULL);
@@ -265,7 +282,7 @@ void setup() {
     alpacaServer.beginTcp(tcp_server, ALPACA_TCP_PORT);
     // Observing Conditions
     if (ALPACA_OBSCON) {
-        observingconditions.setImmediateUpdate(immediateMeteoUpdate);
+        observingconditions.setImmediateUpdate(immediateUpdate);
         observingconditions.setLogger(logLineObscon, logLinePartObscon, logTime);
         alpacaServer.addDevice(&observingconditions);
     }
@@ -278,12 +295,13 @@ void setup() {
     // Meteo sensors
     meteo.setLogger(logLineMeteo, logLinePartMeteo, logTime);
     meteo.begin();
-    attachInterrupt(digitalPinToInterrupt(RAIN_SENSOR_PIN), immediateMeteoUpdate, CHANGE);
+    attachInterrupt(digitalPinToInterrupt(RAIN_SENSOR_PIN), immediateUpdate, CHANGE);
     // Watchdog
     esp_task_wdt_deinit();
     esp_err_t error = esp_task_wdt_init(WATCHDOG_COUNTDOWN, true);
     logMessage("[WATCHDOG] Initialization: %s\n", esp_err_to_name(error));
     // Tasks
+    xInterruptsGroup = xEventGroupCreate();
     xTaskCreate(
         workload,   // Function to implement the task
         "workload", // Name of the task

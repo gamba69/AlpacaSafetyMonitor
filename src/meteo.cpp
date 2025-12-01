@@ -30,27 +30,39 @@ void Meteo::setLogger(std::function<void(String)> logLineCallback, std::function
 }
 
 void Meteo::begin() {
-    pinMode(RAIN_SENSOR_PIN, INPUT_PULLDOWN);
+
     Wire.end();
     Wire.setPins(I2C_SDA_PIN, I2C_SCL_PIN);
     Wire.begin();
+
     mlx.begin(I2C_MLX_ADDR);
     bmp.begin(I2C_BMP_ADDR);
     aht.begin(&Wire, 0, I2C_AHT_ADDR);
-    // Initialization
-    if (digitalRead(RAIN_SENSOR_PIN)) {
-        rain_rate = 1;
-    } else {
-        rain_rate = 0;
-    }
+
     xDevicesGroup = xEventGroupCreate();
-    xTaskCreate(
-        Meteo::updateTsl2591Wrapper,
-        "updateTsl2591",
-        2048,
-        this,
-        1,
-        &updateTtsl2591Handle);
+    if (HARDWARE_UICPAL) {
+        pinMode(RAIN_SENSOR_PIN, INPUT_PULLDOWN);
+        if (digitalRead(RAIN_SENSOR_PIN)) {
+            rain_rate = 1;
+        } else {
+            rain_rate = 0;
+        }
+
+        xTaskCreate(
+            Meteo::updateUicpalWrapper,
+            "updateUicpal",
+            2048,
+            this,
+            1,
+            &updateUicpalHandle);
+    }
+    // xTaskCreate(
+    //     Meteo::updateTsl2591Wrapper,
+    //     "updateTsl2591",
+    //     2048,
+    //     this,
+    //     1,
+    //     &updateTsl2591Handle);
 }
 
 #define sgn(x) ((x) < 0 ? -1 : ((x) > 0 ? 1 : 0))
@@ -123,6 +135,7 @@ void Meteo::updateUicpal() {
             } else {
                 rain_rate = 0;
             }
+            Serial.println("UICPAL updated" + String(force_update ? " force" : " time"));
             last_update = millis();
             force_update = false;
         }
@@ -131,7 +144,7 @@ void Meteo::updateUicpal() {
             UICPAL_KICK,
             pdTRUE,
             pdFALSE,
-            pdMS_TO_TICKS(50));
+            pdMS_TO_TICKS(METEO_TASK_DELAY));
         if ((xBits & UICPAL_KICK) != 0) {
             force_update = true;
         }
@@ -146,15 +159,22 @@ void Meteo::updateTsl2591() {
     }
 }
 
-void Meteo::update(bool immediate) {
+void Meteo::update(bool force) {
     String message = "[METEO][DATA]";
 
-    if (HARDWARE_UICPAL) {
-        if (digitalRead(RAIN_SENSOR_PIN)) {
-            rain_rate = 1;
-        } else {
-            rain_rate = 0;
+    if (force) {
+        EventBits_t xDone;
+        EventBits_t xKick;
+        if (HARDWARE_UICPAL) {
+            xDone |= UICPAL_DONE;
+            xKick |= UICPAL_KICK;
         }
+        xEventGroupClearBits(xDevicesGroup, xDone);
+        xEventGroupSetBits(xDevicesGroup, xKick);
+        xEventGroupWaitBits(xDevicesGroup, xDone, pdFALSE, pdTRUE, pdMS_TO_TICKS(500));
+    }
+
+    if (HARDWARE_UICPAL) {
         message += " RR:" + String(rain_rate, 1);
     } else {
         rain_rate = 0;
