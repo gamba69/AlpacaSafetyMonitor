@@ -40,12 +40,12 @@
 #define WATCHDOG_COUNTDOWN 5
 
 // INITIAL HARDWARE SETTINGS
-#define HARDWARE_DS3231 true
-#define HARDWARE_BMP280 true
-#define HARDWARE_AHT20 true
-#define HARDWARE_MLX90614 true
-#define HARDWARE_TSL2591 false
-#define HARDWARE_UICPAL true
-#define HARDWARE_RG15 false
-#define HARDWARE_ALPACA_OC true
-#define HARDWARE_ALPACA_SM true
+#define FIRMWARE_DS3231 true
+#define FIRMWARE_BMP280 true
+#define FIRMWARE_AHT20 true
+#define FIRMWARE_MLX90614 true
+#define FIRMWARE_TSL2591 false
+#define FIRMWARE_UICPAL true
+#define FIRMWARE_RG15 false
+#define FIRMWARE_ALPACA_OBSCON true
+#define FIRMWARE_ALPACA_SAFEMON true

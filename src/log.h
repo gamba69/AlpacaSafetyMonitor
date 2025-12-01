@@ -47,11 +47,11 @@ void logLinePartMeteo(String line);
 void logLineAlpaca(String line);
 void logLinePartAlpaca(String line) ;
 
-void logLineOC(String line);
-void logLinePartOC(String line);
+void logLineObscon(String line);
+void logLinePartObscon(String line);
 
-void logLineSM(String line);
-void logLinePartSM(String line);
+void logLineSafemon(String line);
+void logLinePartSafemon(String line);
 
 void logLineWifi(String line);
 void logLinePartWifi(String line);

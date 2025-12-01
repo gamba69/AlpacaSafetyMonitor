@@ -149,7 +149,7 @@ void Meteo::updateTsl2591() {
 void Meteo::update(bool immediate) {
     String message = "[METEO][DATA]";
 
-    if (hwEnabled[hwUicpal]) {
+    if (HARDWARE_UICPAL) {
         if (digitalRead(RAIN_SENSOR_PIN)) {
             rain_rate = 1;
         } else {
@@ -161,7 +161,7 @@ void Meteo::update(bool immediate) {
         message += " RR:n/a";
     }
 
-    if (hwEnabled[hwBmp280]) {
+    if (HARDWARE_BMP280) {
         bmp_temperature = bmp.readTemperature();
         message += " TB:" + String(bmp_temperature, 1);
         bmp_pressure = bmp.readPressure() / 100.0F;
@@ -172,7 +172,7 @@ void Meteo::update(bool immediate) {
         message += " TB:n/a PB:n/a";
     }
 
-    if (hwEnabled[hwAht20]) {
+    if (HARDWARE_AHT20) {
         sensors_event_t aht_sensor_humidity, aht_sensor_temp;
         aht.getEvent(&aht_sensor_humidity, &aht_sensor_temp);
         aht_temperature = aht_sensor_temp.temperature;
@@ -185,17 +185,17 @@ void Meteo::update(bool immediate) {
         message += " TA:n/a HA:n/a";
     }
 
-    if (hwEnabled[hwBmp280] && hwEnabled[hwAht20]) {
+    if (HARDWARE_BMP280 && HARDWARE_AHT20) {
         amb_temperature = (bmp_temperature + aht_temperature) / 2;
-    } else if (hwEnabled[hwBmp280] && !hwEnabled[hwAht20]) {
+    } else if (HARDWARE_BMP280 && !HARDWARE_AHT20) {
         amb_temperature = bmp_temperature;
-    } else if (!hwEnabled[hwBmp280] && hwEnabled[hwAht20]) {
+    } else if (!HARDWARE_BMP280 && HARDWARE_AHT20) {
         amb_temperature = aht_temperature;
     } else {
         amb_temperature = 0;
     }
 
-    if (hwEnabled[hwAht20]) {
+    if (HARDWARE_AHT20) {
         dew_point = amb_temperature - (100 - aht_humidity) / 5.;
         message += " DP:" + String(dew_point, 1);
     } else {
@@ -203,7 +203,7 @@ void Meteo::update(bool immediate) {
         message += " DP:n/a";
     }
 
-    if (hwEnabled[hwMlx90614]) {
+    if (HARDWARE_MLX90614) {
         mlx_tempamb = mlx.readAmbientTempC();
         message += " MA:" + String(mlx_tempamb, 1);
         mlx_tempobj = mlx.readObjectTempC();

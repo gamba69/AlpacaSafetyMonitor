@@ -102,19 +102,19 @@ void logLinePartAlpaca(String line) {
     logLinePart(line, LogAlpaca);
 }
 
-void logLineOC(String line) {
+void logLineObscon(String line) {
     logLine(line, LogObservingConditions);
 }
 
-void logLinePartOC(String line) {
+void logLinePartObscon(String line) {
     logLinePart(line, LogObservingConditions);
 }
 
-void logLineSM(String line) {
+void logLineSafemon(String line) {
     logLine(line, LogSafetyMonitor);
 }
 
-void logLinePartSM(String line) {
+void logLinePartSafemon(String line) {
     logLinePart(line, LogSafetyMonitor);
 }
 

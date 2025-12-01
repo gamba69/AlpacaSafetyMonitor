@@ -17,14 +17,14 @@ void commandHelp() {
     logMessageConsole("[HELP] General:");
     logMessageConsole("[HELP]   reboot            - restart esp32 ascom alpaca device");
     logMessageConsole("[HELP] Log settings:");
-    logMessageConsole("[HELP]   log on/off                  - enable/disable all logging");
-    logMessageConsole("[HELP]   log main on/off             - enable/disable main logging");
-    logMessageConsole("[HELP]   log alpaca on/off           - enable/disable alpaca server logging");
-    logMessageConsole("[HELP]   log meteo on/slow [nnn]/off - enable/slow, nnn seconds/disable meteo logging");
-    logMessageConsole("[HELP]   log oc on/slow [nnn]/off    - enable/slow, nnn seconds/disable observing conditions logging");
-    logMessageConsole("[HELP]   log sm on/slow [nnn]/off    - enable/slow, nnn seconds/disable safety monitor logging");
-    logMessageConsole("[HELP]   log wifi on/off             - enable/disable wifi manager logging");
-    logMessageConsole("[HELP]   log ota on/off              - enable/disable ota update logging");
+    logMessageConsole("[HELP]   log on/off                    - enable/disable all logging");
+    logMessageConsole("[HELP]   log main on/off               - enable/disable main logging");
+    logMessageConsole("[HELP]   log alpaca on/off             - enable/disable alpaca server logging");
+    logMessageConsole("[HELP]   log meteo on/slow [nnn]/off   - enable/slow, nnn seconds/disable meteo logging");
+    logMessageConsole("[HELP]   log obscon on/slow [nnn]/off  - enable/slow, nnn seconds/disable observing conditions logging");
+    logMessageConsole("[HELP]   log safemon on/slow [nnn]/off - enable/slow, nnn seconds/disable safety monitor logging");
+    logMessageConsole("[HELP]   log wifi on/off               - enable/disable wifi manager logging");
+    logMessageConsole("[HELP]   log ota on/off                - enable/disable ota update logging");
     logMessageConsole("[HELP] Hardware settings (reboot required):");
     logMessageConsole("[HELP]   hw bmp280 on/off   - enable/disable BMP280 sensor");
     logMessageConsole("[HELP]   hw aht20 on/off    - enable/disable AHT20 sensor");
@@ -33,8 +33,8 @@ void commandHelp() {
     logMessageConsole("[HELP]   hw uicpal on/off   - enable/disable UICPAL sensor");
     logMessageConsole("[HELP]   hw rg15 on/off     - enable/disable RG-15 sensor");
     logMessageConsole("[HELP] Alpaca settings (reboot required):");
-    logMessageConsole("[HELP]   alpaca oc on/off   - enable/disable observing conditions service");
-    logMessageConsole("[HELP]   alpaca sm on/off   - enable/disable safety monitor service");
+    logMessageConsole("[HELP]   alpaca obscon on/off  - enable/disable observing conditions service");
+    logMessageConsole("[HELP]   alpaca safemon on/off - enable/disable safety monitor service");
 }
 
 void commandLogState() {
@@ -44,8 +44,8 @@ void commandLogState() {
     logMessageConsole("[INFO]  main    - " + String(logEnabled[LogMain] ? "on" : "off"));
     logMessageConsole("[INFO]  alpaca  - " + String(logEnabled[LogAlpaca] ? "on" : "off"));
     logMessageConsole("[INFO]  meteo   - " + String(logEnabled[LogMeteo] ? (logEnabled[LogMeteo] == LogOn ? "on" : ("slow " + String(logSlow[LogMeteo]))) : "off") + " [meteo sensors]");
-    logMessageConsole("[INFO]  oc      - " + String(logEnabled[LogObservingConditions] ? (logEnabled[LogObservingConditions] == LogOn ? "ob" : ("slow " + String(logSlow[LogObservingConditions]))) : "off") + " [observing conditions]");
-    logMessageConsole("[INFO]  sm      - " + String(logEnabled[LogSafetyMonitor] ? (logEnabled[LogSafetyMonitor] == LogOn ? "on" : ("slow " + String(logSlow[LogSafetyMonitor]))) : "off") + " [safety monitor]");
+    logMessageConsole("[INFO]  obscon  - " + String(logEnabled[LogObservingConditions] ? (logEnabled[LogObservingConditions] == LogOn ? "ob" : ("slow " + String(logSlow[LogObservingConditions]))) : "off") + " [observing conditions]");
+    logMessageConsole("[INFO]  safemon - " + String(logEnabled[LogSafetyMonitor] ? (logEnabled[LogSafetyMonitor] == LogOn ? "on" : ("slow " + String(logSlow[LogSafetyMonitor]))) : "off") + " [safety monitor]");
     logMessageConsole("[INFO]  wifi    - " + String(logEnabled[LogWifi] ? "on" : "off") + " [wifi manager]");
     logMessageConsole("[INFO]  ota     - " + String(logEnabled[LogOta] ? "on" : "off") + " [update manager]");
 }
@@ -54,37 +54,37 @@ void commandHardwareState() {
     logMessageConsole("[INFO] Firmware supported hardware");
     logMessageConsole("[INFO] ---------------------------");
     logMessageConsole("[INFO] Sensors:");
-    logMessageConsole("[INFO]   DS3231   - " + String(hwEnabled[hwDs3231] ? "enabled " : "disabled") + " (realtime clock)");
-    logMessageConsole("[INFO]   BMP280   - " + String(hwEnabled[hwBmp280] ? "enabled " : "disabled") + " (temperature and pressure)");
-    logMessageConsole("[INFO]   AHT20    - " + String(hwEnabled[hwAht20] ? "enabled " : "disabled") + " (temperature and humidity)");
-    logMessageConsole("[INFO]   MLX90614 - " + String(hwEnabled[hwMlx90614] ? "enabled " : "disabled") + " (sky temperature)");
-    logMessageConsole("[INFO]   TSL2591  - " + String(hwEnabled[hwTsl2591] ? "enabled " : "disabled") + " (sky brightness)");
-    logMessageConsole("[INFO]   UICPAL   - " + String(hwEnabled[hwUicpal] ? "enabled " : "disabled") + " (rain/snow sensor)");
-    logMessageConsole("[INFO]   RG15     - " + String(hwEnabled[hwRg15] ? "enabled " : "disabled") + " (rain rate sensor)");
+    logMessageConsole("[INFO]   DS3231   - " + String(HARDWARE_DS3231 ? "enabled " : "disabled") + " (realtime clock)");
+    logMessageConsole("[INFO]   BMP280   - " + String(HARDWARE_BMP280 ? "enabled " : "disabled") + " (temperature and pressure)");
+    logMessageConsole("[INFO]   AHT20    - " + String(HARDWARE_AHT20 ? "enabled " : "disabled") + " (temperature and humidity)");
+    logMessageConsole("[INFO]   MLX90614 - " + String(HARDWARE_MLX90614 ? "enabled " : "disabled") + " (sky temperature)");
+    logMessageConsole("[INFO]   TSL2591  - " + String(HARDWARE_TSL2591 ? "enabled " : "disabled") + " (sky brightness)");
+    logMessageConsole("[INFO]   UICPAL   - " + String(HARDWARE_UICPAL ? "enabled " : "disabled") + " (rain/snow sensor)");
+    logMessageConsole("[INFO]   RG15     - " + String(HARDWARE_RG15 ? "enabled " : "disabled") + " (rain rate sensor)");
     logMessageConsole("[INFO] Alpaca:");
-    logMessageConsole("[INFO]   Observing conditions - " + String(hwEnabled[alpacaOc] ? "enabled" : "disabled"));
-    logMessageConsole("[INFO]   Safety monitor       - " + String(hwEnabled[alpacaSm] ? "enabled" : "disabled"));
+    logMessageConsole("[INFO]   Observing conditions - " + String(ALPACA_OBSCON ? "enabled" : "disabled"));
+    logMessageConsole("[INFO]   Safety monitor       - " + String(ALPACA_SAFEMON ? "enabled" : "disabled"));
     logMessageConsole("[INFO] Obsering conditions:");
-    logMessageConsole("[INFO]   Rain rate       - " + String(hwEnabled[ocRainRate] ? "enabled" : "disabled"));
-    logMessageConsole("[INFO]   Temperature     - " + String(hwEnabled[ocTemperature] ? "enabled" : "disabled"));
-    logMessageConsole("[INFO]   Humidity        - " + String(hwEnabled[ocHumidity] ? "enabled" : "disabled"));
-    logMessageConsole("[INFO]   Dew point       - " + String(hwEnabled[ocDewPoint] ? "enabled" : "disabled"));
-    logMessageConsole("[INFO]   Pressure        - " + String(hwEnabled[ocPressure] ? "enabled" : "disabled"));
-    logMessageConsole("[INFO]   Sky temperature - " + String(hwEnabled[ocSkyTemp] ? "enabled" : "disabled"));
-    logMessageConsole("[INFO]   Cloud cover     - " + String(hwEnabled[ocCloudCover] ? "enabled" : "disabled"));
-    logMessageConsole("[INFO]   Star FWHM       - " + String(hwEnabled[ocFwhm] ? "enabled" : "disabled"));
-    logMessageConsole("[INFO]   Sky brightness  - " + String(hwEnabled[ocSkyBrightness] ? "enabled" : "disabled"));
-    logMessageConsole("[INFO]   Sky quality     - " + String(hwEnabled[ocSkyQuality] ? "enabled" : "disabled"));
-    logMessageConsole("[INFO]   Wind direction  - " + String(hwEnabled[ocWindDirection] ? "enabled" : "disabled"));
-    logMessageConsole("[INFO]   Wind speed      - " + String(hwEnabled[ocWindSpeed] ? "enabled" : "disabled"));
-    logMessageConsole("[INFO]   Wind gust       - " + String(hwEnabled[ocWindGust] ? "enabled" : "disabled"));
+    logMessageConsole("[INFO]   Rain rate       - " + String(OBSCON_RAINRATE ? "enabled" : "disabled"));
+    logMessageConsole("[INFO]   Temperature     - " + String(OBSCON_TEMPERATURE ? "enabled" : "disabled"));
+    logMessageConsole("[INFO]   Humidity        - " + String(OBSCON_HUMIDITY ? "enabled" : "disabled"));
+    logMessageConsole("[INFO]   Dew point       - " + String(OBSCON_DEWPOINT ? "enabled" : "disabled"));
+    logMessageConsole("[INFO]   Pressure        - " + String(OBSCON_PRESSURE ? "enabled" : "disabled"));
+    logMessageConsole("[INFO]   Sky temperature - " + String(OBSCON_SKYTEMP ? "enabled" : "disabled"));
+    logMessageConsole("[INFO]   Cloud cover     - " + String(OBSCON_CLOUDCOVER ? "enabled" : "disabled"));
+    logMessageConsole("[INFO]   Star FWHM       - " + String(OBSCON_FWHM ? "enabled" : "disabled"));
+    logMessageConsole("[INFO]   Sky brightness  - " + String(OBSCON_SKYBRIGHTNESS ? "enabled" : "disabled"));
+    logMessageConsole("[INFO]   Sky quality     - " + String(OBSCON_SKYQUALITY ? "enabled" : "disabled"));
+    logMessageConsole("[INFO]   Wind direction  - " + String(OBSCON_WINDDIR ? "enabled" : "disabled"));
+    logMessageConsole("[INFO]   Wind speed      - " + String(OBSCON_WINDSPEED ? "enabled" : "disabled"));
+    logMessageConsole("[INFO]   Wind gust       - " + String(OBSCON_WINDGUST ? "enabled" : "disabled"));
     logMessageConsole("[INFO] Safety monitor:");
-    logMessageConsole("[INFO]   Rain rate       - " + String(hwEnabled[smRainRate] ? "enabled" : "disabled"));
-    logMessageConsole("[INFO]   Temperature     - " + String(hwEnabled[smTemperature] ? "enabled" : "disabled"));
-    logMessageConsole("[INFO]   Humidity        - " + String(hwEnabled[smHumidity] ? "enabled" : "disabled"));
-    logMessageConsole("[INFO]   Dew point       - " + String(hwEnabled[smDewPoint] ? "enabled" : "disabled"));
-    logMessageConsole("[INFO]   Sky temperature - " + String(hwEnabled[smSkyTemp] ? "enabled" : "disabled"));
-    logMessageConsole("[INFO]   Wind speed      - " + String(hwEnabled[smWindSpeed] ? "enabled" : "disabled"));
+    logMessageConsole("[INFO]   Rain rate       - " + String(SAFEMON_RAINRATE ? "enabled" : "disabled"));
+    logMessageConsole("[INFO]   Temperature     - " + String(SAFEMON_TEMPERATURE ? "enabled" : "disabled"));
+    logMessageConsole("[INFO]   Humidity        - " + String(SAFEMON_HUMIDITY ? "enabled" : "disabled"));
+    logMessageConsole("[INFO]   Dew point       - " + String(SAFEMON_DEWPOINT ? "enabled" : "disabled"));
+    logMessageConsole("[INFO]   Sky temperature - " + String(SAFEMON_SKYTEMP ? "enabled" : "disabled"));
+    logMessageConsole("[INFO]   Wind speed      - " + String(SAFEMON_WINDSPEED ? "enabled" : "disabled"));
 }
 
 void commandReboot() {
@@ -143,50 +143,50 @@ void commandLogAlpacaOff() {
     saveLogPrefs();
 }
 
-void commandLogOcOn() {
+void commandLogObsconOn() {
     logMessageConsole("[CONSOLE] Observing conditions logging enabled");
     logEnabled[LogObservingConditions] = LogOn;
     saveLogPrefs();
 }
 
-void commandLogOcOff() {
+void commandLogObsconOff() {
     logMessageConsole("[CONSOLE] Observing conditions logging disabled");
     logEnabled[LogObservingConditions] = LogOff;
     saveLogPrefs();
 }
 
-void commandLogOcSlow() {
+void commandLogObsconSlow() {
     logMessageConsole("[CONSOLE] Observing conditions logging slow " + String(logSlow[LogObservingConditions]));
     logEnabled[LogObservingConditions] = LogSlow;
     saveLogPrefs();
 }
 
-void commandLogOcSlowDelay(uint16_t delay) {
+void commandLogObsconSlowDelay(uint16_t delay) {
     logMessageConsole("[CONSOLE] Observing conditions logging slow " + String(delay));
     logEnabled[LogObservingConditions] = LogSlow;
     logSlow[LogObservingConditions] = delay;
     saveLogPrefs();
 }
 
-void commandLogSmOn() {
+void commandLogSafemonOn() {
     logMessageConsole("[CONSOLE] Safety monitor logging enabled");
     logEnabled[LogSafetyMonitor] = LogOn;
     saveLogPrefs();
 }
 
-void commandLogSmOff() {
+void commandLogSafemonOff() {
     logMessageConsole("[CONSOLE] Safety monitor logging disabled");
     logEnabled[LogSafetyMonitor] = LogOff;
     saveLogPrefs();
 }
 
-void commandLogSmSlow() {
+void commandLogSafemonSlow() {
     logMessageConsole("[CONSOLE] Safety monitor logging slow " + String(logSlow[LogSafetyMonitor]));
     logEnabled[LogSafetyMonitor] = LogSlow;
     saveLogPrefs();
 }
 
-void commandLogSmSlowDelay(uint16_t delay) {
+void commandLogSafemonSlowDelay(uint16_t delay) {
     logMessageConsole("[CONSOLE] Safety monitor logging slow " + String(delay));
     logEnabled[LogSafetyMonitor] = LogSlow;
     logSlow[LogSafetyMonitor] = delay;
@@ -238,111 +238,111 @@ void commandLogSlow() {
     saveLogPrefs();
 }
 
-void commandAlpacaOcOn() {
+void commandAlpacaObsconOn() {
     logMessageConsole("[CONSOLE] Alpaca observing conditions enabled");
-    hwEnabled[alpacaOc] = true;
+    ALPACA_OBSCON = true;
     saveHwPrefs();
 }
 
-void commandAlpacaOcOff() {
+void commandAlpacaObsconOff() {
     logMessageConsole("[CONSOLE] Alpaca observing conditions disabled");
-    hwEnabled[alpacaOc] = false;
+    ALPACA_OBSCON = false;
     saveHwPrefs();
 }
 
-void commandAlpacaSmOn() {
+void commandAlpacaSafemonOn() {
     logMessageConsole("[CONSOLE] Alpaca safety monitor enabled");
-    hwEnabled[alpacaSm] = true;
+    ALPACA_SAFEMON = true;
     saveHwPrefs();
 }
 
-void commandAlpacaSmOff() {
+void commandAlpacaSafemonOff() {
     logMessageConsole("[CONSOLE] Alpaca safety monitor disabled");
-    hwEnabled[alpacaSm] = false;
+    ALPACA_SAFEMON = false;
     saveHwPrefs();
 }
 
 void commandHwDs3231On() {
     logMessageConsole("[CONSOLE] DS3231 enabled");
-    hwEnabled[hwDs3231] = true;
+    HARDWARE_DS3231 = true;
     saveHwPrefs();
 }
 
 void commandHwDs3231Off() {
     logMessageConsole("[CONSOLE] DS3231 disabled");
-    hwEnabled[hwDs3231] = false;
+    HARDWARE_DS3231 = false;
     saveHwPrefs();
 }
 
 void commandHwBmp280On() {
     logMessageConsole("[CONSOLE] BMP280 enabled");
-    hwEnabled[hwBmp280] = true;
+    HARDWARE_BMP280 = true;
     saveHwPrefs();
 }
 
 void commandHwBmp280Off() {
     logMessageConsole("[CONSOLE] BMP280 disabled");
-    hwEnabled[hwBmp280] = false;
+    HARDWARE_BMP280 = false;
     saveHwPrefs();
 }
 
 void commandHwAht20On() {
     logMessageConsole("[CONSOLE] AHT20 enabled");
-    hwEnabled[hwAht20] = true;
+    HARDWARE_AHT20 = true;
     saveHwPrefs();
 }
 
 void commandHwAht20Off() {
     logMessageConsole("[CONSOLE] AHT20 disabled");
-    hwEnabled[hwAht20] = false;
+    HARDWARE_AHT20 = false;
     saveHwPrefs();
 }
 
 void commandHwMlx90614On() {
     logMessageConsole("[CONSOLE] MLX90614 enabled");
-    hwEnabled[hwMlx90614] = true;
+    HARDWARE_MLX90614 = true;
     saveHwPrefs();
 }
 
 void commandHwMlx90614Off() {
     logMessageConsole("[CONSOLE] MLX90614 disabled");
-    hwEnabled[hwMlx90614] = false;
+    HARDWARE_MLX90614 = false;
     saveHwPrefs();
 }
 
 void commandHwTsl2591On() {
     logMessageConsole("[CONSOLE] TSL2591 enabled");
-    hwEnabled[hwTsl2591] = true;
+    HARDWARE_TSL2591 = true;
     saveHwPrefs();
 }
 
 void commandHwTsl2591Off() {
     logMessageConsole("[CONSOLE] TSL2591 disabled");
-    hwEnabled[hwTsl2591] = false;
+    HARDWARE_TSL2591 = false;
     saveHwPrefs();
 }
 
 void commandHwUicpalOn() {
     logMessageConsole("[CONSOLE] UICPAL enabled");
-    hwEnabled[hwUicpal] = true;
+    HARDWARE_UICPAL = true;
     saveHwPrefs();
 }
 
 void commandHwUicpalOff() {
     logMessageConsole("[CONSOLE] UICPAL disabled");
-    hwEnabled[hwUicpal] = false;
+    HARDWARE_UICPAL = false;
     saveHwPrefs();
 }
 
 void commandHwRg15On() {
     logMessageConsole("[CONSOLE] RG15 enabled");
-    hwEnabled[hwRg15] = true;
+    HARDWARE_RG15 = true;
     saveHwPrefs();
 }
 
 void commandHwRg15Off() {
     logMessageConsole("[CONSOLE] RG15 disabled");
-    hwEnabled[hwRg15] = false;
+    HARDWARE_RG15 = false;
     saveHwPrefs();
 }
 
@@ -364,12 +364,12 @@ void initConsoleCommands() {
     console_commands["logmeteooff"] = commandLogMeteoOff;
     console_commands["logalpacaon"] = commandLogAlpacaOn;
     console_commands["logalpacaoff"] = commandLogAlpacaOff;
-    console_commands["logocon"] = commandLogOcOn;
-    console_commands["logocslow"] = commandLogOcSlow;
-    console_commands["logocoff"] = commandLogOcOff;
-    console_commands["logsmon"] = commandLogSmOn;
-    console_commands["logsmslow"] = commandLogSmSlow;
-    console_commands["logsmoff"] = commandLogSmOff;
+    console_commands["logobsconon"] = commandLogObsconOn;
+    console_commands["logobsconslow"] = commandLogObsconSlow;
+    console_commands["logobsconoff"] = commandLogObsconOff;
+    console_commands["logsafemonon"] = commandLogSafemonOn;
+    console_commands["logsafemonslow"] = commandLogSafemonSlow;
+    console_commands["logsafemonoff"] = commandLogSafemonOff;
     console_commands["logwifion"] = commandLogWifiOn;
     console_commands["logwifioff"] = commandLogWifiOff;
     console_commands["logotaon"] = commandLogOtaOn;
@@ -378,10 +378,10 @@ void initConsoleCommands() {
     console_commands["logslow"] = commandLogSlow;
     console_commands["logoff"] = commandLogOff;
 
-    console_commands["alpacaocon"] = commandAlpacaOcOn;
-    console_commands["alpacaocoff"] = commandAlpacaOcOff;
-    console_commands["alpacasmon"] = commandAlpacaSmOn;
-    console_commands["alpacasmoff"] = commandAlpacaSmOff;
+    console_commands["alpacaobsconon"] = commandAlpacaObsconOn;
+    console_commands["alpacaobsconoff"] = commandAlpacaObsconOff;
+    console_commands["alpacasafemonon"] = commandAlpacaSafemonOn;
+    console_commands["alpacasafemonoff"] = commandAlpacaSafemonOff;
 
     console_commands["hwds3231on"] = commandHwDs3231On;
     console_commands["hwds3231off"] = commandHwDs3231Off;
@@ -410,12 +410,12 @@ void IRAM_ATTR processConsoleCommand(const std::string &msg) {
         commandLogMeteoSlowDelay(static_cast<uint16_t>(std::stoul(cmd.substr(12))));
         return;
     }
-    if (cmd.length() > 9 && cmd.substr(0, 9) == "logocslow") {
-        commandLogOcSlowDelay(static_cast<uint16_t>(std::stoul(cmd.substr(9))));
+    if (cmd.length() > 13 && cmd.substr(0, 13) == "logobsconslow") {
+        commandLogObsconSlowDelay(static_cast<uint16_t>(std::stoul(cmd.substr(13))));
         return;
     }
-    if (cmd.length() > 9 && cmd.substr(0, 9) == "logsmslow") {
-        commandLogSmSlowDelay(static_cast<uint16_t>(std::stoul(cmd.substr(9))));
+    if (cmd.length() > 14 && cmd.substr(0, 14) == "logsafemonslow") {
+        commandLogSafemonSlowDelay(static_cast<uint16_t>(std::stoul(cmd.substr(14))));
         return;
     }
     auto it = console_commands.find(cmd);

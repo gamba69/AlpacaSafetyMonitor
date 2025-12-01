@@ -46,7 +46,7 @@ bool ObservingConditions::begin() {
 void ObservingConditions::update(Meteo meteo) {
     String message = "[OBSERVING][DATA]";
 
-    if (hwEnabled[ocRainRate]) {
+    if (OBSCON_RAINRATE) {
         rainrate = meteo.rain_rate;
         rainrate_ra.add(rainrate);
         message += " RR:" + String(rainrate, 1) + "/" + String(rainrate_ra.getAverageLast(_averaging > rainrate_ra.getCount() ? rainrate_ra.getCount() : _averaging), 1);
@@ -56,7 +56,7 @@ void ObservingConditions::update(Meteo meteo) {
         message += " RR:-";
     }
 
-    if (hwEnabled[ocTemperature]) {
+    if (OBSCON_TEMPERATURE) {
         temperature = meteo.amb_temperature;
         temperature_ra.add(temperature);
         message += " T:" + String(temperature, 1) + "/" + String(temperature_ra.getAverageLast(_averaging > temperature_ra.getCount() ? temperature_ra.getCount() : _averaging), 1);
@@ -66,7 +66,7 @@ void ObservingConditions::update(Meteo meteo) {
         message += " T:-";
     }
 
-    if (hwEnabled[ocHumidity]) {
+    if (OBSCON_HUMIDITY) {
         humidity = meteo.aht_humidity;
         humidity_ra.add(humidity);
         message += " H:" + String(humidity, 0) + "/" + String(humidity_ra.getAverageLast(_averaging > humidity_ra.getCount() ? humidity_ra.getCount() : _averaging), 0);
@@ -76,7 +76,7 @@ void ObservingConditions::update(Meteo meteo) {
         message += " H:-";
     }
 
-    if (hwEnabled[ocHumidity]) {
+    if (OBSCON_PRESSURE) {
         pressure = meteo.bmp_pressure;
         pressure_ra.add(pressure);
         message += " P:" + String(pressure, 0) + "/" + String(pressure_ra.getAverageLast(_averaging > pressure_ra.getCount() ? pressure_ra.getCount() : _averaging), 0);
@@ -86,7 +86,7 @@ void ObservingConditions::update(Meteo meteo) {
         message += " P:-";
     }
 
-    if (hwEnabled[ocDewPoint]) {
+    if (OBSCON_DEWPOINT) {
         dewpoint = meteo.dew_point;
         dewpoint_ra.add(dewpoint);
         message += " DP:" + String(dewpoint, 1) + "/" + String(dewpoint_ra.getAverageLast(_averaging > dewpoint_ra.getCount() ? dewpoint_ra.getCount() : _averaging), 1);
@@ -96,7 +96,7 @@ void ObservingConditions::update(Meteo meteo) {
         message += " DP:-";
     }
 
-    if (hwEnabled[ocSkyTemp]) {
+    if (OBSCON_SKYTEMP) {
         skytemp = meteo.sky_temperature;
         skytemp_ra.add(skytemp);
         message += " ST:" + String(skytemp, 1) + "/" + String(skytemp_ra.getAverageLast(_averaging > skytemp_ra.getCount() ? skytemp_ra.getCount() : _averaging), 1);
@@ -106,7 +106,7 @@ void ObservingConditions::update(Meteo meteo) {
         message += " ST:-";
     }
 
-    if (hwEnabled[ocFwhm]) {
+    if (OBSCON_FWHM) {
         noisedb = meteo.noise_db;
         noisedb_ra.add(noisedb);
         message += " TR:" + String(noisedb, 1) + "/" + String(noisedb_ra.getAverageLast(_averaging > noisedb_ra.getCount() ? noisedb_ra.getCount() : _averaging), 1);
@@ -116,7 +116,7 @@ void ObservingConditions::update(Meteo meteo) {
         message += " TR:-";
     }
 
-    if (hwEnabled[ocCloudCover]) {
+    if (OBSCON_CLOUDCOVER) {
         cloudcover = meteo.cloud_cover;
         cloudcover_ra.add(cloudcover);
         message += " CC:" + String(cloudcover, 0) + "/" + String(cloudcover_ra.getAverageLast(_averaging > cloudcover_ra.getCount() ? cloudcover_ra.getCount() : _averaging), 0);
@@ -126,7 +126,7 @@ void ObservingConditions::update(Meteo meteo) {
         message += " CC:-";
     }
 
-    if (hwEnabled[ocSkyQuality]) {
+    if (OBSCON_SKYQUALITY) {
         skyquality = meteo.sky_quality;
         skyquality_ra.add(skyquality);
         message += " SQ:" + String(skyquality, 1) + "/" + String(skyquality_ra.getAverageLast(_averaging > skyquality_ra.getCount() ? skyquality_ra.getCount() : _averaging), 1);
@@ -136,7 +136,7 @@ void ObservingConditions::update(Meteo meteo) {
         message += " SQ:-";
     }
 
-    if (hwEnabled[ocSkyBrightness]) {
+    if (OBSCON_SKYBRIGHTNESS) {
         skybrightness = meteo.sky_brightness;
         skybrightness_ra.add(skybrightness);
         message += " SB:" + String(skybrightness, 1) + "/" + String(skybrightness_ra.getAverageLast(_averaging > skybrightness_ra.getCount() ? skybrightness_ra.getCount() : _averaging), 1);
@@ -146,7 +146,7 @@ void ObservingConditions::update(Meteo meteo) {
         message += " SB:-";
     }
 
-    if (hwEnabled[ocWindDirection]) {
+    if (OBSCON_WINDDIR) {
         winddir = meteo.wind_direction;
         winddir_ra.add(winddir);
         message += " WD:" + String(winddir, 1) + "/" + String(winddir_ra.getAverageLast(_averaging > winddir_ra.getCount() ? winddir_ra.getCount() : _averaging), 1);
@@ -156,7 +156,7 @@ void ObservingConditions::update(Meteo meteo) {
         message += " WD:-";
     }
 
-    if (hwEnabled[ocWindSpeed]) {
+    if (OBSCON_WINDSPEED) {
         windspeed = meteo.wind_speed;
         windspeed_ra.add(windspeed);
         message += " WS:" + String(windspeed, 1) + "/" + String(windspeed_ra.getAverageLast(_averaging > windspeed_ra.getCount() ? windspeed_ra.getCount() : _averaging), 1);
@@ -166,7 +166,7 @@ void ObservingConditions::update(Meteo meteo) {
         message += " WS:-";
     }
 
-    if (hwEnabled[ocWindGust]) {
+    if (OBSCON_WINDGUST) {
         windgust = meteo.wind_gust;
         windgust_ra.add(windgust);
         message += " WG:" + String(windgust, 1) + "/" + String(windgust_ra.getAverageLast(_averaging > windgust_ra.getCount() ? windgust_ra.getCount() : _averaging), 1);
@@ -212,7 +212,7 @@ void ObservingConditions::aGetAveragePeriod(AsyncWebServerRequest *request) {
 }
 
 void ObservingConditions::aGetRainRate(AsyncWebServerRequest *request) {
-    if (hwEnabled[ocRainRate]) {
+    if (OBSCON_RAINRATE) {
         float value = rainrate_ra.getAverageLast(
             _averaging > rainrate_ra.getCount() ? rainrate_ra.getCount() : _averaging);
         value = round(10. * value) / 10.;
@@ -223,7 +223,7 @@ void ObservingConditions::aGetRainRate(AsyncWebServerRequest *request) {
 }
 
 void ObservingConditions::aGetTemperature(AsyncWebServerRequest *request) {
-    if (hwEnabled[ocTemperature]) {
+    if (OBSCON_TEMPERATURE) {
         float value = temperature_ra.getAverageLast(
             _averaging > temperature_ra.getCount() ? temperature_ra.getCount() : _averaging);
         value = round(10. * value) / 10.;
@@ -234,7 +234,7 @@ void ObservingConditions::aGetTemperature(AsyncWebServerRequest *request) {
 }
 
 void ObservingConditions::aGetHumidity(AsyncWebServerRequest *request) {
-    if (hwEnabled[ocHumidity]) {
+    if (OBSCON_HUMIDITY) {
         float value = humidity_ra.getAverageLast(
             _averaging > humidity_ra.getCount() ? humidity_ra.getCount() : _averaging);
         value = round(1. * value) / 1.;
@@ -245,7 +245,7 @@ void ObservingConditions::aGetHumidity(AsyncWebServerRequest *request) {
 }
 
 void ObservingConditions::aGetDewPoint(AsyncWebServerRequest *request) {
-    if (hwEnabled[ocDewPoint]) {
+    if (OBSCON_DEWPOINT) {
         float value = dewpoint_ra.getAverageLast(
             _averaging > dewpoint_ra.getCount() ? dewpoint_ra.getCount() : _averaging);
         value = round(10. * value) / 10.;
@@ -256,7 +256,7 @@ void ObservingConditions::aGetDewPoint(AsyncWebServerRequest *request) {
 }
 
 void ObservingConditions::aGetPressure(AsyncWebServerRequest *request) {
-    if (hwEnabled[ocPressure]) {
+    if (OBSCON_PRESSURE) {
         float value = pressure_ra.getAverageLast(
             _averaging > pressure_ra.getCount() ? pressure_ra.getCount() : _averaging);
         value = round(1. * value) / 1.;
@@ -267,7 +267,7 @@ void ObservingConditions::aGetPressure(AsyncWebServerRequest *request) {
 }
 
 void ObservingConditions::aGetSkyTemperature(AsyncWebServerRequest *request) {
-    if (hwEnabled[ocSkyTemp]) {
+    if (OBSCON_SKYTEMP) {
         float value = skytemp_ra.getAverageLast(
             _averaging > skytemp_ra.getCount() ? skytemp_ra.getCount() : _averaging);
         value = round(10. * value) / 10.;
@@ -278,7 +278,7 @@ void ObservingConditions::aGetSkyTemperature(AsyncWebServerRequest *request) {
 }
 
 void ObservingConditions::aGetCloudCover(AsyncWebServerRequest *request) {
-    if (hwEnabled[ocCloudCover]) {
+    if (OBSCON_CLOUDCOVER) {
         float value = cloudcover_ra.getAverageLast(
             _averaging > cloudcover_ra.getCount() ? cloudcover_ra.getCount() : _averaging);
         value = round(1. * value) / 1.;
@@ -289,7 +289,7 @@ void ObservingConditions::aGetCloudCover(AsyncWebServerRequest *request) {
 }
 
 void ObservingConditions::aGetStarFwhm(AsyncWebServerRequest *request) {
-    if (_noise_as_fwhm && hwEnabled[ocFwhm]) {
+    if (_noise_as_fwhm && OBSCON_FWHM) {
         float value = noisedb_ra.getAverageLast(
             _averaging > noisedb_ra.getCount() ? noisedb_ra.getCount() : _averaging);
         value = round(10. * value) / 10.;
@@ -300,7 +300,7 @@ void ObservingConditions::aGetStarFwhm(AsyncWebServerRequest *request) {
 }
 
 void ObservingConditions::aGetSkyBrightness(AsyncWebServerRequest *request) {
-    if (hwEnabled[ocSkyBrightness]) {
+    if (OBSCON_SKYBRIGHTNESS) {
         float value = skybrightness_ra.getAverageLast(
             _averaging > skybrightness_ra.getCount() ? skybrightness_ra.getCount() : _averaging);
         value = round(10. * value) / 10.;
@@ -311,7 +311,7 @@ void ObservingConditions::aGetSkyBrightness(AsyncWebServerRequest *request) {
 }
 
 void ObservingConditions::aGetSkyQuality(AsyncWebServerRequest *request) {
-    if (hwEnabled[ocSkyQuality]) {
+    if (OBSCON_SKYQUALITY) {
         float value = skyquality_ra.getAverageLast(
             _averaging > skyquality_ra.getCount() ? skyquality_ra.getCount() : _averaging);
         value = round(10. * value) / 10.;
@@ -322,7 +322,7 @@ void ObservingConditions::aGetSkyQuality(AsyncWebServerRequest *request) {
 }
 
 void ObservingConditions::aGetWindDirection(AsyncWebServerRequest *request) {
-    if (hwEnabled[ocWindDirection]) {
+    if (OBSCON_WINDDIR) {
         float value = winddir_ra.getAverageLast(
             _averaging > winddir_ra.getCount() ? winddir_ra.getCount() : _averaging);
         value = round(1. * value) / 1.;
@@ -333,7 +333,7 @@ void ObservingConditions::aGetWindDirection(AsyncWebServerRequest *request) {
 }
 
 void ObservingConditions::aGetWindGust(AsyncWebServerRequest *request) {
-    if (hwEnabled[ocWindGust]) {
+    if (OBSCON_WINDGUST) {
         // Wind gust not averaged, ASCOM
         float value = windgust;
         value = round(10. * value) / 10.;
@@ -344,7 +344,7 @@ void ObservingConditions::aGetWindGust(AsyncWebServerRequest *request) {
 }
 
 void ObservingConditions::aGetWindSpeed(AsyncWebServerRequest *request) {
-    if (hwEnabled[ocWindSpeed]) {
+    if (OBSCON_WINDSPEED) {
         float value = windspeed_ra.getAverageLast(
             _averaging > windspeed_ra.getCount() ? windspeed_ra.getCount() : _averaging);
         value = round(10. * value) / 10.;
@@ -385,38 +385,38 @@ void ObservingConditions::aWriteJson(JsonObject &root) {
 
     // instant
     JsonObject obj_instant_state = root[F("Instant State (Latest)")].to<JsonObject>();
-    obj_instant_state[F("Rain_Rate,_mm/hzro")] = hwEnabled[ocRainRate] ? String(rainrate, 1) : "n/a";
-    obj_instant_state[F("Temperature,_°Czro")] = hwEnabled[ocTemperature] ? String(temperature, 1) : "n/a";
-    obj_instant_state[F("Humidity,_zpzro")] = hwEnabled[ocHumidity] ? String(humidity, 0) : "n/a";
-    obj_instant_state[F("Dewpoint,_°Czro")] = hwEnabled[ocDewPoint] ? String(dewpoint, 1) : "n/a";
-    obj_instant_state[F("Pressure,_hPazro")] = hwEnabled[ocPressure] ? String(pressure, 0) : "n/a";
-    obj_instant_state[F("Sky_Temp,_°Czro")] = hwEnabled[ocSkyTemp] ? String(skytemp, 1) : "n/a";
-    obj_instant_state[F("Cloud_Cover,_zpzro")] = hwEnabled[ocCloudCover] ? String(cloudcover, 0) : "n/a";
+    obj_instant_state[F("Rain_Rate,_mm/hzro")] = OBSCON_RAINRATE ? String(rainrate, 1) : "n/a";
+    obj_instant_state[F("Temperature,_°Czro")] = OBSCON_TEMPERATURE ? String(temperature, 1) : "n/a";
+    obj_instant_state[F("Humidity,_zpzro")] = OBSCON_HUMIDITY ? String(humidity, 0) : "n/a";
+    obj_instant_state[F("Dewpoint,_°Czro")] = OBSCON_DEWPOINT ? String(dewpoint, 1) : "n/a";
+    obj_instant_state[F("Pressure,_hPazro")] = OBSCON_PRESSURE ? String(pressure, 0) : "n/a";
+    obj_instant_state[F("Sky_Temp,_°Czro")] = OBSCON_SKYTEMP ? String(skytemp, 1) : "n/a";
+    obj_instant_state[F("Cloud_Cover,_zpzro")] = OBSCON_CLOUDCOVER ? String(cloudcover, 0) : "n/a";
     // not exactly seeing (fwhm)
-    obj_instant_state[F("Turbulence,_dBzro")] = hwEnabled[ocFwhm] ? String(noisedb, 1) : "n/a";
-    obj_instant_state[F("Sky_Quality,_magzro")] = hwEnabled[ocSkyQuality] ? String(skyquality, 1) : "n/a";
-    obj_instant_state[F("Sky_Brightness,_luxzro")] = hwEnabled[ocSkyBrightness] ? String(skybrightness, 1) : "n/a";
-    obj_instant_state[F("Wind_Direction,_°zro")] = hwEnabled[ocWindDirection] ? String(winddir, 0) : "n/a";
-    obj_instant_state[F("Wind_Speed,_m/szro")] = hwEnabled[ocWindSpeed] ? String(windspeed, 0) : "n/a";
-    obj_instant_state[F("Wind_Gust,_m/szro")] = hwEnabled[ocWindGust] ? String(windgust, 0) : "n/a";
+    obj_instant_state[F("Turbulence,_dBzro")] = OBSCON_FWHM ? String(noisedb, 1) : "n/a";
+    obj_instant_state[F("Sky_Quality,_magzro")] = OBSCON_SKYQUALITY ? String(skyquality, 1) : "n/a";
+    obj_instant_state[F("Sky_Brightness,_luxzro")] = OBSCON_SKYBRIGHTNESS ? String(skybrightness, 1) : "n/a";
+    obj_instant_state[F("Wind_Direction,_°zro")] = OBSCON_WINDDIR ? String(winddir, 0) : "n/a";
+    obj_instant_state[F("Wind_Speed,_m/szro")] = OBSCON_WINDSPEED ? String(windspeed, 0) : "n/a";
+    obj_instant_state[F("Wind_Gust,_m/szro")] = OBSCON_WINDGUST ? String(windgust, 0) : "n/a";
     obj_instant_state[F("Updated,_secs/agozro")] = String(((float)millis() - (float)timelastupdate) / 1000., 1);
 
     // averaged
     JsonObject obj_averaged_state = root[F("Averaged State (ASCOM)")].to<JsonObject>();
-    obj_averaged_state[F("Rain_Rate,_mm/hzro")] = hwEnabled[ocRainRate] ? String(rainrate_ra.getAverageLast(_averaging > rainrate_ra.getCount() ? rainrate_ra.getCount() : _averaging), 1) : "n/a";
-    obj_averaged_state[F("Temperature,_°Czro")] = hwEnabled[ocTemperature] ? String(temperature_ra.getAverageLast(_averaging > temperature_ra.getCount() ? temperature_ra.getCount() : _averaging), 1) : "n/a";
-    obj_averaged_state[F("Humidity,_zpzro")] = hwEnabled[ocHumidity] ? String(humidity_ra.getAverageLast(_averaging > humidity_ra.getCount() ? humidity_ra.getCount() : _averaging), 0) : "n/a";
-    obj_averaged_state[F("Dewpoint,_°Czro")] = hwEnabled[ocDewPoint] ? String(dewpoint_ra.getAverageLast(_averaging > dewpoint_ra.getCount() ? dewpoint_ra.getCount() : _averaging), 1) : "n/a";
-    obj_averaged_state[F("Pressure,_hPazro")] = hwEnabled[ocPressure] ? String(pressure_ra.getAverageLast(_averaging > pressure_ra.getCount() ? pressure_ra.getCount() : _averaging), 0) : "n/a";
-    obj_averaged_state[F("Sky_Temp,_°Czro")] = hwEnabled[ocSkyTemp] ? String(skytemp_ra.getAverageLast(_averaging > skytemp_ra.getCount() ? skytemp_ra.getCount() : _averaging), 1) : "n/a";
-    obj_averaged_state[F("Cloud_Cover,_zpzro")] = hwEnabled[ocCloudCover] ? String(cloudcover_ra.getAverageLast(_averaging > cloudcover_ra.getCount() ? cloudcover_ra.getCount() : _averaging), 0) : "n/a";
+    obj_averaged_state[F("Rain_Rate,_mm/hzro")] = OBSCON_RAINRATE ? String(rainrate_ra.getAverageLast(_averaging > rainrate_ra.getCount() ? rainrate_ra.getCount() : _averaging), 1) : "n/a";
+    obj_averaged_state[F("Temperature,_°Czro")] = OBSCON_TEMPERATURE ? String(temperature_ra.getAverageLast(_averaging > temperature_ra.getCount() ? temperature_ra.getCount() : _averaging), 1) : "n/a";
+    obj_averaged_state[F("Humidity,_zpzro")] = OBSCON_HUMIDITY ? String(humidity_ra.getAverageLast(_averaging > humidity_ra.getCount() ? humidity_ra.getCount() : _averaging), 0) : "n/a";
+    obj_averaged_state[F("Dewpoint,_°Czro")] = OBSCON_DEWPOINT ? String(dewpoint_ra.getAverageLast(_averaging > dewpoint_ra.getCount() ? dewpoint_ra.getCount() : _averaging), 1) : "n/a";
+    obj_averaged_state[F("Pressure,_hPazro")] = OBSCON_PRESSURE ? String(pressure_ra.getAverageLast(_averaging > pressure_ra.getCount() ? pressure_ra.getCount() : _averaging), 0) : "n/a";
+    obj_averaged_state[F("Sky_Temp,_°Czro")] = OBSCON_SKYTEMP ? String(skytemp_ra.getAverageLast(_averaging > skytemp_ra.getCount() ? skytemp_ra.getCount() : _averaging), 1) : "n/a";
+    obj_averaged_state[F("Cloud_Cover,_zpzro")] = OBSCON_CLOUDCOVER ? String(cloudcover_ra.getAverageLast(_averaging > cloudcover_ra.getCount() ? cloudcover_ra.getCount() : _averaging), 0) : "n/a";
     // not exactly seeing (fwhm)
-    obj_averaged_state[F("Turbulence,_dBzro")] = hwEnabled[ocFwhm] ? String(noisedb_ra.getAverageLast(_averaging > noisedb_ra.getCount() ? noisedb_ra.getCount() : _averaging), 1) : "n/a";
-    obj_averaged_state[F("Sky_Quality,_magzro")] = hwEnabled[ocSkyQuality] ? String(skyquality_ra.getAverageLast(_averaging > skyquality_ra.getCount() ? skyquality_ra.getCount() : _averaging), 1) : "n/a";
-    obj_averaged_state[F("Sky_Brightness,_luxzro")] = hwEnabled[ocSkyBrightness] ? String(skybrightness_ra.getAverageLast(_averaging > skybrightness_ra.getCount() ? skybrightness_ra.getCount() : _averaging), 1) : "n/a";
-    obj_averaged_state[F("Wind_Direction,_°zro")] = hwEnabled[ocWindDirection] ? String(winddir_ra.getAverageLast(_averaging > winddir_ra.getCount() ? winddir_ra.getCount() : _averaging), 1) : "n/a";
-    obj_averaged_state[F("Wind_Speed,_m/szro")] = hwEnabled[ocWindSpeed] ? String(windspeed_ra.getAverageLast(_averaging > windspeed_ra.getCount() ? windspeed_ra.getCount() : _averaging), 1) : "n/a";
-    // not averaged, ASCOЬ
-    obj_averaged_state[F("Wind_Gust,_m/szro")] = hwEnabled[ocWindGust] ? String(windgust_ra.getAverageLast(_averaging > windgust_ra.getCount() ? windgust_ra.getCount() : _averaging), 1) : "n/a";    
+    obj_averaged_state[F("Turbulence,_dBzro")] = OBSCON_FWHM ? String(noisedb_ra.getAverageLast(_averaging > noisedb_ra.getCount() ? noisedb_ra.getCount() : _averaging), 1) : "n/a";
+    obj_averaged_state[F("Sky_Quality,_magzro")] = OBSCON_SKYQUALITY ? String(skyquality_ra.getAverageLast(_averaging > skyquality_ra.getCount() ? skyquality_ra.getCount() : _averaging), 1) : "n/a";
+    obj_averaged_state[F("Sky_Brightness,_luxzro")] = OBSCON_SKYBRIGHTNESS ? String(skybrightness_ra.getAverageLast(_averaging > skybrightness_ra.getCount() ? skybrightness_ra.getCount() : _averaging), 1) : "n/a";
+    obj_averaged_state[F("Wind_Direction,_°zro")] = OBSCON_WINDDIR ? String(winddir_ra.getAverageLast(_averaging > winddir_ra.getCount() ? winddir_ra.getCount() : _averaging), 1) : "n/a";
+    obj_averaged_state[F("Wind_Speed,_m/szro")] = OBSCON_WINDSPEED ? String(windspeed_ra.getAverageLast(_averaging > windspeed_ra.getCount() ? windspeed_ra.getCount() : _averaging), 1) : "n/a";
+    // not averaged, ASCOM
+    obj_averaged_state[F("Wind_Gust,_m/szro")] = OBSCON_WINDGUST ? String(windgust_ra.getAverageLast(_averaging > windgust_ra.getCount() ? windgust_ra.getCount() : _averaging), 1) : "n/a";
     obj_averaged_state[F("Updated,_secs/agozro")] = String(((float)millis() - (float)timelastupdate) / 1000., 1);
 }

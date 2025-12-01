@@ -8,41 +8,41 @@ Preferences hwPrefs;
 bool hwEnabled[HW_ENABLED_SIZE];
 
 void calcHwPrefs() {
-    hwEnabled[ocRainRate] = hwEnabled[hwUicpal] || hwEnabled[hwRg15];
-    hwEnabled[ocTemperature] = hwEnabled[hwBmp280] || hwEnabled[hwAht20];
-    hwEnabled[ocHumidity] = hwEnabled[hwAht20];
-    hwEnabled[ocDewPoint] = hwEnabled[ocTemperature] && hwEnabled[ocHumidity];
-    hwEnabled[ocPressure] = hwEnabled[hwBmp280];
-    hwEnabled[ocSkyTemp] = hwEnabled[hwMlx90614];
-    hwEnabled[ocCloudCover] = hwEnabled[hwMlx90614];
-    hwEnabled[ocFwhm] = hwEnabled[hwMlx90614];
-    hwEnabled[ocSkyBrightness] = hwEnabled[hwTsl2591];
-    hwEnabled[ocSkyQuality] = hwEnabled[hwTsl2591];
-    hwEnabled[ocWindDirection] = false;
-    hwEnabled[ocWindSpeed] = hwEnabled[hwAnemo4403];
-    hwEnabled[ocWindGust] = hwEnabled[hwAnemo4403];
+    OBSCON_RAINRATE =  HARDWARE_UICPAL || HARDWARE_RG15;
+    OBSCON_TEMPERATURE = HARDWARE_BMP280 || HARDWARE_AHT20;
+    OBSCON_HUMIDITY = HARDWARE_AHT20;
+    OBSCON_DEWPOINT = OBSCON_TEMPERATURE && OBSCON_HUMIDITY;
+    OBSCON_PRESSURE = HARDWARE_BMP280;
+    OBSCON_SKYTEMP = HARDWARE_MLX90614;
+    OBSCON_CLOUDCOVER = HARDWARE_MLX90614;
+    OBSCON_FWHM = HARDWARE_MLX90614;
+    OBSCON_SKYBRIGHTNESS = HARDWARE_TSL2591;
+    OBSCON_SKYQUALITY = HARDWARE_TSL2591;
+    OBSCON_WINDDIR = false;
+    OBSCON_WINDSPEED = HARDWARE_ANEMO4403;
+    OBSCON_WINDGUST = HARDWARE_ANEMO4403;
 
-    hwEnabled[smRainRate] = hwEnabled[hwUicpal] || hwEnabled[hwRg15];
-    hwEnabled[smTemperature] = hwEnabled[hwBmp280] || hwEnabled[hwAht20];
-    hwEnabled[smHumidity] = hwEnabled[hwAht20];
-    hwEnabled[smDewPoint] = hwEnabled[smTemperature] && hwEnabled[smHumidity];
-    hwEnabled[smSkyTemp] = hwEnabled[hwMlx90614];
-    hwEnabled[smWindSpeed] = hwEnabled[hwAnemo4403];
+    SAFEMON_RAINRATE = HARDWARE_UICPAL || HARDWARE_RG15;
+    SAFEMON_TEMPERATURE = HARDWARE_BMP280 || HARDWARE_AHT20;
+    SAFEMON_HUMIDITY = HARDWARE_AHT20;
+    SAFEMON_DEWPOINT = SAFEMON_TEMPERATURE && SAFEMON_HUMIDITY;
+    SAFEMON_SKYTEMP = HARDWARE_MLX90614;
+    SAFEMON_WINDSPEED = HARDWARE_ANEMO4403;
 }
 
 void initHwPrefs() {
     hwPrefs.begin("hwPrefs", false);
     // Default values for current firmware
     std::fill(std::begin(hwEnabled), std::end(hwEnabled), false);
-    hwEnabled[hwDs3231] = HARDWARE_DS3231;
-    hwEnabled[hwBmp280] = HARDWARE_BMP280;
-    hwEnabled[hwAht20] = HARDWARE_AHT20;
-    hwEnabled[hwMlx90614] = HARDWARE_MLX90614;
-    hwEnabled[hwTsl2591] = HARDWARE_TSL2591;
-    hwEnabled[hwUicpal] = HARDWARE_UICPAL;
-    hwEnabled[hwRg15] = HARDWARE_RG15;
-    hwEnabled[alpacaOc] = HARDWARE_ALPACA_OC;
-    hwEnabled[alpacaSm] = HARDWARE_ALPACA_SM;
+    HARDWARE_DS3231 = FIRMWARE_DS3231;
+    HARDWARE_BMP280 = FIRMWARE_BMP280;
+    HARDWARE_AHT20 = FIRMWARE_AHT20;
+    HARDWARE_MLX90614 = FIRMWARE_MLX90614;
+    HARDWARE_TSL2591 = FIRMWARE_TSL2591;
+    HARDWARE_UICPAL = FIRMWARE_UICPAL;
+    HARDWARE_RG15 = FIRMWARE_RG15;
+    ALPACA_OBSCON = FIRMWARE_ALPACA_OBSCON;
+    ALPACA_SAFEMON = FIRMWARE_ALPACA_SAFEMON;
     calcHwPrefs();
     loadHwPrefs();
 }

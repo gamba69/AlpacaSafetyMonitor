@@ -156,14 +156,14 @@ void workload(void *parameter) {
             meteoLastRan = millis();
         }
         // update observingconditions every refresh without blocking webserver
-        if (hwEnabled[alpacaOc]) {
+        if (ALPACA_OBSCON) {
             if (immediateUpdate || (millis() > observingConditionsLastRan + (1000 * observingconditions.getRefresh()))) {
                 observingconditions.update(meteo);
                 observingConditionsLastRan = millis();
             }
         }
         // update safetymonitor every METEO_MEASURE_DELAY without blocking webserver
-        if (hwEnabled[alpacaSm]) {
+        if (ALPACA_SAFEMON) {
             if (immediateUpdate || (millis() > safetyMonitorLastRan + SAFETY_MONITOR_DELAY)) {
                 safetymonitor.update(meteo);
                 safetyMonitorLastRan = millis();
@@ -193,7 +193,7 @@ void setup() {
     setenv("TZ", RTC_TIMEZONE, 1);
     tzset();
     // RTC
-    if (hwEnabled[hwDs3231]) {
+    if (HARDWARE_DS3231) {
         if (!rtc.begin())
             logMessage("[TIME][RTC] Couldn't find RTC", false);
         if (rtc.lostPower()) {
@@ -212,7 +212,7 @@ void setup() {
     NTP.onNTPSyncEvent([](NTPEvent_t event) {
         switch (event.event) {
         case timeSyncd: {
-            if (hwEnabled[hwDs3231]) {
+            if (HARDWARE_DS3231) {
                 struct timeval now;
                 gettimeofday(&now, NULL);
                 time_t t = now.tv_sec;
@@ -264,14 +264,14 @@ void setup() {
     alpacaServer.setLogger(logLineAlpaca, logLinePartAlpaca, logTime);
     alpacaServer.beginTcp(tcp_server, ALPACA_TCP_PORT);
     // Observing Conditions
-    if (hwEnabled[alpacaOc]) {
+    if (ALPACA_OBSCON) {
         observingconditions.setImmediateUpdate(immediateMeteoUpdate);
-        observingconditions.setLogger(logLineOC, logLinePartOC, logTime);
+        observingconditions.setLogger(logLineObscon, logLinePartObscon, logTime);
         alpacaServer.addDevice(&observingconditions);
     }
     // Safety Monitor
-    if (hwEnabled[alpacaSm]) {
-        safetymonitor.setLogger(logLineSM, logLinePartSM, logTime);
+    if (ALPACA_SAFEMON) {
+        safetymonitor.setLogger(logLineSafemon, logLinePartSafemon, logTime);
         alpacaServer.addDevice(&safetymonitor);
     }
     alpacaServer.loadSettings();

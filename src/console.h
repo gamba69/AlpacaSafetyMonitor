@@ -19,15 +19,15 @@ void commandLogMeteoOff();
 void commandLogAlpacaOn();
 void commandLogAlpacaOff();
 
-void commandLogOcOn();
-void commandLogOcSlow();
-void commandLogOcSlowDelay(uint16_t delay);
-void commandLogOcOff();
+void commandLogObsconOn();
+void commandLogObsconSlow();
+void commandLogObsconSlowDelay(uint16_t delay);
+void commandLogObsconOff();
 
-void commandLogSmOn();
-void commandLogSmSlow();
-void commandLogSmSlowDelay(uint16_t delay);
-void commandLogSmOff();
+void commandLogSafemonOn();
+void commandLogSafemonSlow();
+void commandLogSafemonSlowDelay(uint16_t delay);
+void commandLogSafemonOff();
 
 void commandLogWifiOn();
 void commandLogWifiOff();
@@ -40,11 +40,11 @@ void commandLogOff();
 
 void commandHardwareState();
 
-void commandAlpacaOcOn();
-void commandAlpacaOcOff();
+void commandAlpacaObsconOn();
+void commandAlpacaObsconOff();
 
-void commandAlpacaSmOn();
-void commandAlpacaSmOff();
+void commandAlpacaSafemonOn();
+void commandAlpacaSafemonOff();
 
 void commandHwDs3231On();
 void commandHwDs3231Off();
