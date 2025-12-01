@@ -1,9 +1,12 @@
 #include "meteo.h"
 #include "hardware.h"
 
+#define sgn(x) ((x) < 0 ? -1 : ((x) > 0 ? 1 : 0))
+
 Adafruit_BMP280 bmp;
-Adafruit_MLX90614 mlx = Adafruit_MLX90614();
 Adafruit_AHTX0 aht;
+Adafruit_MLX90614 mlx = Adafruit_MLX90614();
+Adafruit_TSL2591 tsl;
 
 void Meteo::logMessage(String msg, bool showtime) {
     if (logLine && logLinePart) {
@@ -30,16 +33,10 @@ void Meteo::setLogger(std::function<void(String)> logLineCallback, std::function
 }
 
 void Meteo::begin() {
-
+    xDevicesGroup = xEventGroupCreate();
     Wire.end();
     Wire.setPins(I2C_SDA_PIN, I2C_SCL_PIN);
     Wire.begin();
-
-    mlx.begin(I2C_MLX_ADDR);
-    bmp.begin(I2C_BMP_ADDR);
-    aht.begin(&Wire, 0, I2C_AHT_ADDR);
-
-    xDevicesGroup = xEventGroupCreate();
     if (HARDWARE_UICPAL) {
         pinMode(RAIN_SENSOR_PIN, INPUT_PULLDOWN);
         if (digitalRead(RAIN_SENSOR_PIN)) {
@@ -47,7 +44,6 @@ void Meteo::begin() {
         } else {
             rain_rate = 0;
         }
-
         xTaskCreate(
             Meteo::updateUicpalWrapper,
             "updateUicpal",
@@ -56,6 +52,37 @@ void Meteo::begin() {
             1,
             &updateUicpalHandle);
     }
+    if (HARDWARE_BMP280) {
+        bmp.begin(I2C_BMP_ADDR);
+        xTaskCreate(
+            Meteo::updateBmp280Wrapper,
+            "updateBmp280",
+            2048,
+            this,
+            1,
+            &updateBmp280Handle);
+    }
+    if (HARDWARE_AHT20) {
+        aht.begin(&Wire, 0, I2C_AHT_ADDR);
+        xTaskCreate(
+            Meteo::updateAht20Wrapper,
+            "updateAht20",
+            2048,
+            this,
+            1,
+            &updateAht20Handle);
+    }
+    if (HARDWARE_MLX90614) {
+        mlx.begin(I2C_MLX_ADDR);
+        xTaskCreate(
+            Meteo::updateMlx90614Wrapper,
+            "updateMlx80614",
+            2048,
+            this,
+            1,
+            &updateMlx90614Handle);
+    }
+
     // xTaskCreate(
     //     Meteo::updateTsl2591Wrapper,
     //     "updateTsl2591",
@@ -65,9 +92,7 @@ void Meteo::begin() {
     //     &updateTsl2591Handle);
 }
 
-#define sgn(x) ((x) < 0 ? -1 : ((x) > 0 ? 1 : 0))
-
-float tsky_calc(float ts, float ta) {
+float Meteo::tsky_calc(float ts, float ta) {
     float t67, td = 0;
     float k[] = {0., 33., 0., 4., 100., 100., 0., 0.};
     if (abs(k[2] / 10. - ta) < 1) {
@@ -79,21 +104,21 @@ float tsky_calc(float ts, float ta) {
     return (ts - td);
 }
 
-float cb_avg_calc() {
+float Meteo::cb_avg_calc() {
     int sum = 0;
     for (int i = 0; i < CB_SIZE; i++)
         sum += cb[i];
     return ((float)sum) / CB_SIZE;
 }
 
-float cb_rms_calc() {
+float Meteo::cb_rms_calc() {
     int sum = 0;
     for (int i = 0; i < CB_SIZE; i++)
         sum += cb[i] * cb[i];
     return sqrt(sum / CB_SIZE);
 }
 
-void cb_add(float value) {
+void Meteo::cb_add(float value) {
     cb[cb_index] = value;
     cb_avg = cb_avg_calc();
     cb_rms = cb_rms_calc();
@@ -103,7 +128,7 @@ void cb_add(float value) {
         cb_index = 0;
 }
 
-float cb_noise_db_calc() {
+float Meteo::cb_noise_db_calc() {
     float n = 0;
     for (int i = 0; i < CB_SIZE; i++) {
         n += cb_noise[i] * cb_noise[i];
@@ -113,7 +138,7 @@ float cb_noise_db_calc() {
     return (10 * log10(n));
 }
 
-float cb_snr_calc() {
+float Meteo::cb_snr_calc() {
     float s, n = 0;
     for (int i = 0; i < CB_SIZE; i++) {
         s += cb[i] * cb[i];
@@ -135,7 +160,6 @@ void Meteo::updateUicpal() {
             } else {
                 rain_rate = 0;
             }
-            Serial.println("UICPAL updated" + String(force_update ? " force" : " time"));
             last_update = millis();
             force_update = false;
         }
@@ -146,6 +170,77 @@ void Meteo::updateUicpal() {
             pdFALSE,
             pdMS_TO_TICKS(METEO_TASK_DELAY));
         if ((xBits & UICPAL_KICK) != 0) {
+            force_update = true;
+        }
+    }
+}
+
+void Meteo::updateBmp280() {
+    EventBits_t xBits;
+    static unsigned long last_update = 0;
+    static bool force_update = true;
+    while (true) {
+        if (force_update || millis() - last_update > METEO_MEASURE_DELAY) {
+            bmp_temperature = bmp.readTemperature();
+            bmp_pressure = bmp.readPressure() / 100.0F;
+            last_update = millis();
+            force_update = false;
+        }
+        xBits = xEventGroupWaitBits(
+            xDevicesGroup,
+            BMP280_KICK,
+            pdTRUE,
+            pdFALSE,
+            pdMS_TO_TICKS(METEO_TASK_DELAY));
+        if ((xBits & BMP280_KICK) != 0) {
+            force_update = true;
+        }
+    }
+}
+
+void Meteo::updateAht20() {
+    EventBits_t xBits;
+    static unsigned long last_update = 0;
+    static bool force_update = true;
+    while (true) {
+        if (force_update || millis() - last_update > METEO_MEASURE_DELAY) {
+            sensors_event_t aht_sensor_humidity, aht_sensor_temp;
+            aht.getEvent(&aht_sensor_humidity, &aht_sensor_temp);
+            aht_temperature = aht_sensor_temp.temperature;
+            aht_humidity = aht_sensor_humidity.relative_humidity;
+            last_update = millis();
+            force_update = false;
+        }
+        xBits = xEventGroupWaitBits(
+            xDevicesGroup,
+            AHT20_KICK,
+            pdTRUE,
+            pdFALSE,
+            pdMS_TO_TICKS(METEO_TASK_DELAY));
+        if ((xBits & AHT20_KICK) != 0) {
+            force_update = true;
+        }
+    }
+}
+
+void Meteo::updateMlx90614() {
+    EventBits_t xBits;
+    static unsigned long last_update = 0;
+    static bool force_update = true;
+    while (true) {
+        if (force_update || millis() - last_update > METEO_MEASURE_DELAY) {
+            mlx_tempamb = mlx.readAmbientTempC();
+            mlx_tempobj = mlx.readObjectTempC();
+            last_update = millis();
+            force_update = false;
+        }
+        xBits = xEventGroupWaitBits(
+            xDevicesGroup,
+            MLX90614_KICK,
+            pdTRUE,
+            pdFALSE,
+            pdMS_TO_TICKS(METEO_TASK_DELAY));
+        if ((xBits & MLX90614_KICK) != 0) {
             force_update = true;
         }
     }
@@ -169,9 +264,21 @@ void Meteo::update(bool force) {
             xDone |= UICPAL_DONE;
             xKick |= UICPAL_KICK;
         }
+        if (HARDWARE_BMP280) {
+            xDone |= BMP280_DONE;
+            xKick |= BMP280_KICK;
+        }
+        if (HARDWARE_AHT20) {
+            xDone |= AHT20_DONE;
+            xKick |= AHT20_KICK;
+        }
+        if (HARDWARE_MLX90614) {
+            xDone |= MLX90614_DONE;
+            xKick |= MLX90614_KICK;
+        }
         xEventGroupClearBits(xDevicesGroup, xDone);
         xEventGroupSetBits(xDevicesGroup, xKick);
-        xEventGroupWaitBits(xDevicesGroup, xDone, pdFALSE, pdTRUE, pdMS_TO_TICKS(500));
+        xEventGroupWaitBits(xDevicesGroup, xDone, pdFALSE, pdTRUE, pdMS_TO_TICKS(METEO_FORCE_DELAY));
     }
 
     if (HARDWARE_UICPAL) {
@@ -182,9 +289,7 @@ void Meteo::update(bool force) {
     }
 
     if (HARDWARE_BMP280) {
-        bmp_temperature = bmp.readTemperature();
         message += " TB:" + String(bmp_temperature, 1);
-        bmp_pressure = bmp.readPressure() / 100.0F;
         message += " PB:" + String(bmp_pressure, 0);
     } else {
         bmp_temperature = 0;
@@ -193,11 +298,7 @@ void Meteo::update(bool force) {
     }
 
     if (HARDWARE_AHT20) {
-        sensors_event_t aht_sensor_humidity, aht_sensor_temp;
-        aht.getEvent(&aht_sensor_humidity, &aht_sensor_temp);
-        aht_temperature = aht_sensor_temp.temperature;
         message += " TA:" + String(aht_temperature, 1);
-        aht_humidity = aht_sensor_humidity.relative_humidity;
         message += " HA:" + String(aht_humidity, 0);
     } else {
         aht_temperature = 0;
@@ -224,9 +325,7 @@ void Meteo::update(bool force) {
     }
 
     if (HARDWARE_MLX90614) {
-        mlx_tempamb = mlx.readAmbientTempC();
         message += " MA:" + String(mlx_tempamb, 1);
-        mlx_tempobj = mlx.readObjectTempC();
         message += " MO:" + String(mlx_tempobj, 1);
         sky_temperature = tsky_calc(mlx_tempobj, mlx_tempamb);
         message += " ST:" + String(sky_temperature);
