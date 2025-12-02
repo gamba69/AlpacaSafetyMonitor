@@ -2,6 +2,7 @@
 .vscode/*
 src/secrets.h
 src/version.h
+src/firmware.h
 data/www/js/jquery-ui.min.js
 data/www/js/jquery.min.js
 data/www/js/bootstrap.min.js

@@ -1,5 +1,5 @@
 #include "hardware.h"
-#include "config.h"
+#include "firmware.h"
 #include <Arduino.h>
 #include <Preferences.h>
 
