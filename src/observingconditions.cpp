@@ -1,5 +1,6 @@
 #include "observingconditions.h"
 #include "hardware.h"
+#include "helpers.h"
 #include "meteo.h"
 
 // cannot call member functions directly from interrupt, so need these helpers for up to 1 ObservingConditions
@@ -139,7 +140,7 @@ void ObservingConditions::update(Meteo meteo) {
     if (OBSCON_SKYBRIGHTNESS) {
         skybrightness = meteo.sky_brightness;
         skybrightness_ra.add(skybrightness);
-        message += " SB:" + String(skybrightness, 1) + "/" + String(skybrightness_ra.getAverageLast(_averaging > skybrightness_ra.getCount() ? skybrightness_ra.getCount() : _averaging), 1);
+        message += " SB:" + smart_round(skybrightness) + "/" + smart_round(skybrightness_ra.getAverageLast(_averaging > skybrightness_ra.getCount() ? skybrightness_ra.getCount() : _averaging));
     } else {
         skybrightness = 0;
         skybrightness_ra.add(skybrightness);
@@ -394,8 +395,8 @@ void ObservingConditions::aWriteJson(JsonObject &root) {
     obj_instant_state[F("Cloud_Cover,_zpzro")] = OBSCON_CLOUDCOVER ? String(cloudcover, 0) : "n/a";
     // not exactly seeing (fwhm)
     obj_instant_state[F("Turbulence,_dBzro")] = OBSCON_FWHM ? String(noisedb, 1) : "n/a";
-    obj_instant_state[F("Sky_Quality,_magzro")] = OBSCON_SKYQUALITY ? String(skyquality, 1) : "n/a";
-    obj_instant_state[F("Sky_Brightness,_luxzro")] = OBSCON_SKYBRIGHTNESS ? String(skybrightness, 1) : "n/a";
+    obj_instant_state[F("Sky_Quality,_m/saszro")] = OBSCON_SKYQUALITY ? String(skyquality, 1) : "n/a";
+    obj_instant_state[F("Sky_Brightness,_luxzro")] = OBSCON_SKYBRIGHTNESS ? smart_round(skybrightness) : "n/a";
     obj_instant_state[F("Wind_Direction,_°zro")] = OBSCON_WINDDIR ? String(winddir, 0) : "n/a";
     obj_instant_state[F("Wind_Speed,_m/szro")] = OBSCON_WINDSPEED ? String(windspeed, 0) : "n/a";
     obj_instant_state[F("Wind_Gust,_m/szro")] = OBSCON_WINDGUST ? String(windgust, 0) : "n/a";
@@ -412,8 +413,8 @@ void ObservingConditions::aWriteJson(JsonObject &root) {
     obj_averaged_state[F("Cloud_Cover,_zpzro")] = OBSCON_CLOUDCOVER ? String(cloudcover_ra.getAverageLast(_averaging > cloudcover_ra.getCount() ? cloudcover_ra.getCount() : _averaging), 0) : "n/a";
     // not exactly seeing (fwhm)
     obj_averaged_state[F("Turbulence,_dBzro")] = OBSCON_FWHM ? String(noisedb_ra.getAverageLast(_averaging > noisedb_ra.getCount() ? noisedb_ra.getCount() : _averaging), 1) : "n/a";
-    obj_averaged_state[F("Sky_Quality,_magzro")] = OBSCON_SKYQUALITY ? String(skyquality_ra.getAverageLast(_averaging > skyquality_ra.getCount() ? skyquality_ra.getCount() : _averaging), 1) : "n/a";
-    obj_averaged_state[F("Sky_Brightness,_luxzro")] = OBSCON_SKYBRIGHTNESS ? String(skybrightness_ra.getAverageLast(_averaging > skybrightness_ra.getCount() ? skybrightness_ra.getCount() : _averaging), 1) : "n/a";
+    obj_averaged_state[F("Sky_Quality,_m/saszro")] = OBSCON_SKYQUALITY ? String(skyquality_ra.getAverageLast(_averaging > skyquality_ra.getCount() ? skyquality_ra.getCount() : _averaging), 1) : "n/a";
+    obj_averaged_state[F("Sky_Brightness,_luxzro")] = OBSCON_SKYBRIGHTNESS ? smart_round(skybrightness_ra.getAverageLast(_averaging > skybrightness_ra.getCount() ? skybrightness_ra.getCount() : _averaging)) : "n/a";
     obj_averaged_state[F("Wind_Direction,_°zro")] = OBSCON_WINDDIR ? String(winddir_ra.getAverageLast(_averaging > winddir_ra.getCount() ? winddir_ra.getCount() : _averaging), 1) : "n/a";
     obj_averaged_state[F("Wind_Speed,_m/szro")] = OBSCON_WINDSPEED ? String(windspeed_ra.getAverageLast(_averaging > windspeed_ra.getCount() ? windspeed_ra.getCount() : _averaging), 1) : "n/a";
     // not averaged, ASCOM

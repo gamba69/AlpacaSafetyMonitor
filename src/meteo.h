@@ -1,12 +1,13 @@
 #pragma once
 
-#include "config.h"
 #include <Adafruit_AHTX0.h>
 #include <Adafruit_BMP280.h>
 #include <Adafruit_MLX90614.h>
 #include <Adafruit_TSL2591.h>
 #include <Arduino.h>
 #include <Wire.h>
+#include "config.h"
+#include "meteotsl.h"
 
 // Circular buffer functions
 #define CB_SIZE 40
@@ -25,6 +26,8 @@ static float cb_rms = 0.0;
 #define AHT20_DONE (1UL << 5)
 #define MLX90614_KICK (1UL << 6)
 #define MLX90614_DONE (1UL << 7)
+#define TSL2591_KICK (1UL << 8)
+#define TSL2591_DONE (1UL << 9)
 
 #ifndef METEO_H
 #define METEO_H
@@ -80,6 +83,13 @@ class Meteo {
     void cb_add(float value);
     float cb_noise_db_calc();
     float cb_snr_calc();
+
+    TslSetting tslAgt[TSL_SETTINGS_SIZE];
+    void beginTslAGT(Adafruit_TSL2591 *);
+    void setTslAGT(Adafruit_TSL2591 *, int);
+    TslAutoLum getTslAGT(Adafruit_TSL2591 *);
+    float calcLuxAGT(TslAutoLum);
+    float calcSqmAGT(TslAutoLum);
 
     EventGroupHandle_t xDevicesGroup;
 

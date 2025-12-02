@@ -1,12 +1,11 @@
 #include "meteo.h"
 #include "hardware.h"
-
-#define sgn(x) ((x) < 0 ? -1 : ((x) > 0 ? 1 : 0))
+#include "helpers.h"
 
 Adafruit_BMP280 bmp;
 Adafruit_AHTX0 aht;
 Adafruit_MLX90614 mlx = Adafruit_MLX90614();
-Adafruit_TSL2591 tsl;
+Adafruit_TSL2591 tsl = Adafruit_TSL2591(2591);
 
 void Meteo::logMessage(String msg, bool showtime) {
     if (logLine && logLinePart) {
@@ -82,71 +81,19 @@ void Meteo::begin() {
             1,
             &updateMlx90614Handle);
     }
-
-    // xTaskCreate(
-    //     Meteo::updateTsl2591Wrapper,
-    //     "updateTsl2591",
-    //     2048,
-    //     this,
-    //     1,
-    //     &updateTsl2591Handle);
-}
-
-float Meteo::tsky_calc(float ts, float ta) {
-    float t67, td = 0;
-    float k[] = {0., 33., 0., 4., 100., 100., 0., 0.};
-    if (abs(k[2] / 10. - ta) < 1) {
-        t67 = sgn(k[6]) * sgn(ta - k[2] / 10.) * abs((k[2] / 10. - ta));
-    } else {
-        t67 = k[6] * sgn(ta - k[2] / 10.) * (log(abs((k[2] / 10 - ta))) / log(10.) + k[7] / 100);
+    if (HARDWARE_TSL2591) {
+        tsl.begin();
+        beginTslAGT(&tsl);
+        // Long task
+        xTaskCreatePinnedToCore(
+            Meteo::updateTsl2591Wrapper,
+            "updateTsl2591",
+            2048,
+            this,
+            1,
+            &updateTsl2591Handle,
+            1);
     }
-    td = (k[1] / 100.) * (ta - k[2] / 10.) + (k[3] / 100.) * pow(exp(k[4] / 1000. * ta), (k[5] / 100.)) + t67;
-    return (ts - td);
-}
-
-float Meteo::cb_avg_calc() {
-    int sum = 0;
-    for (int i = 0; i < CB_SIZE; i++)
-        sum += cb[i];
-    return ((float)sum) / CB_SIZE;
-}
-
-float Meteo::cb_rms_calc() {
-    int sum = 0;
-    for (int i = 0; i < CB_SIZE; i++)
-        sum += cb[i] * cb[i];
-    return sqrt(sum / CB_SIZE);
-}
-
-void Meteo::cb_add(float value) {
-    cb[cb_index] = value;
-    cb_avg = cb_avg_calc();
-    cb_rms = cb_rms_calc();
-    cb_noise[cb_index] = abs(value) - cb_rms;
-    cb_index++;
-    if (cb_index == CB_SIZE)
-        cb_index = 0;
-}
-
-float Meteo::cb_noise_db_calc() {
-    float n = 0;
-    for (int i = 0; i < CB_SIZE; i++) {
-        n += cb_noise[i] * cb_noise[i];
-    }
-    if (n == 0)
-        return 0;
-    return (10 * log10(n));
-}
-
-float Meteo::cb_snr_calc() {
-    float s, n = 0;
-    for (int i = 0; i < CB_SIZE; i++) {
-        s += cb[i] * cb[i];
-        n += cb_noise[i] * cb_noise[i];
-    }
-    if (n == 0)
-        return 0;
-    return (10 * log10(s / n));
 }
 
 void Meteo::updateUicpal() {
@@ -247,10 +194,26 @@ void Meteo::updateMlx90614() {
 }
 
 void Meteo::updateTsl2591() {
+    EventBits_t xBits;
+    static unsigned long last_update = 0;
+    static bool force_update = true;
     while (true) {
-        // Serial.print("updateTsl2591 task running on core ");
-        // Serial.println(xPortGetCoreID());
-        vTaskDelay(pdMS_TO_TICKS(3000));
+        if (force_update || millis() - last_update > METEO_MEASURE_DELAY) {
+	        TslAutoLum agt = getTslAGT(&tsl);
+            sky_brightness = calcLuxAGT(agt);
+            sky_quality = calcSqmAGT(agt);
+            last_update = millis();
+            force_update = false;
+        }
+        xBits = xEventGroupWaitBits(
+            xDevicesGroup,
+            TSL2591_KICK,
+            pdTRUE,
+            pdFALSE,
+            pdMS_TO_TICKS(METEO_TASK_DELAY));
+        if ((xBits & TSL2591_KICK) != 0) {
+            force_update = true;
+        }
     }
 }
 
@@ -276,6 +239,11 @@ void Meteo::update(bool force) {
             xDone |= MLX90614_DONE;
             xKick |= MLX90614_KICK;
         }
+        // Long task
+        // if (HARDWARE_TSL2591) {
+        //     xDone |= TSL2591_DONE;
+        //     xKick |= TSL2591_KICK;
+        // }
         xEventGroupClearBits(xDevicesGroup, xDone);
         xEventGroupSetBits(xDevicesGroup, xKick);
         xEventGroupWaitBits(xDevicesGroup, xDone, pdFALSE, pdTRUE, pdMS_TO_TICKS(METEO_FORCE_DELAY));
@@ -349,7 +317,12 @@ void Meteo::update(bool force) {
         message += " MA:n/a MO:n/a ST:n/a TR:n/a CC:n/a";
     }
 
-    // TODO TSL2591
+    if (HARDWARE_TSL2591) {
+        message += " SB: " + smart_round(sky_brightness);
+        message += " SQ: " + String(sky_quality, 1);
+    } else {
+        message += " SB:n/a SQ:n/a";
+    }
 
     // TODO ANEMO4403
 
