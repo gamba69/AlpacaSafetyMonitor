@@ -94,6 +94,18 @@ void Meteo::begin() {
             &updateTsl2591Handle,
             1);
     }
+    if (HARDWARE_ANEMO4403) {
+        FreqCountESP.begin(WIND_SENSOR_PIN, WIND_SENSOR_MEASURE);
+        // Long task
+        // xTaskCreatePinnedToCore(
+        //     Meteo::updateTsl2591Wrapper,
+        //     "updateTsl2591",
+        //     2048,
+        //     this,
+        //     1,
+        //     &updateTsl2591Handle,
+        //     1);
+    }
 }
 
 void Meteo::updateUicpal() {
@@ -109,13 +121,14 @@ void Meteo::updateUicpal() {
             }
             last_update = millis();
             force_update = false;
+            xEventGroupSetBits(xDevicesGroup, UICPAL_DONE);
         }
         xBits = xEventGroupWaitBits(
             xDevicesGroup,
             UICPAL_KICK,
             pdTRUE,
             pdFALSE,
-            pdMS_TO_TICKS(METEO_TASK_DELAY));
+            pdMS_TO_TICKS(METEO_TASK_SLEEP));
         if ((xBits & UICPAL_KICK) != 0) {
             force_update = true;
         }
@@ -132,13 +145,14 @@ void Meteo::updateBmp280() {
             bmp_pressure = bmp.readPressure() / 100.0F;
             last_update = millis();
             force_update = false;
+            xEventGroupSetBits(xDevicesGroup, BMP280_DONE);
         }
         xBits = xEventGroupWaitBits(
             xDevicesGroup,
             BMP280_KICK,
             pdTRUE,
             pdFALSE,
-            pdMS_TO_TICKS(METEO_TASK_DELAY));
+            pdMS_TO_TICKS(METEO_TASK_SLEEP));
         if ((xBits & BMP280_KICK) != 0) {
             force_update = true;
         }
@@ -157,13 +171,14 @@ void Meteo::updateAht20() {
             aht_humidity = aht_sensor_humidity.relative_humidity;
             last_update = millis();
             force_update = false;
+            xEventGroupSetBits(xDevicesGroup, AHT20_DONE);
         }
         xBits = xEventGroupWaitBits(
             xDevicesGroup,
             AHT20_KICK,
             pdTRUE,
             pdFALSE,
-            pdMS_TO_TICKS(METEO_TASK_DELAY));
+            pdMS_TO_TICKS(METEO_TASK_SLEEP));
         if ((xBits & AHT20_KICK) != 0) {
             force_update = true;
         }
@@ -180,13 +195,14 @@ void Meteo::updateMlx90614() {
             mlx_tempobj = mlx.readObjectTempC();
             last_update = millis();
             force_update = false;
+            xEventGroupSetBits(xDevicesGroup, MLX90614_DONE);
         }
         xBits = xEventGroupWaitBits(
             xDevicesGroup,
             MLX90614_KICK,
             pdTRUE,
             pdFALSE,
-            pdMS_TO_TICKS(METEO_TASK_DELAY));
+            pdMS_TO_TICKS(METEO_TASK_SLEEP));
         if ((xBits & MLX90614_KICK) != 0) {
             force_update = true;
         }
@@ -199,7 +215,8 @@ void Meteo::updateTsl2591() {
     static bool force_update = true;
     while (true) {
         if (force_update || millis() - last_update > METEO_MEASURE_DELAY) {
-	        TslAutoLum agt = getTslAGT(&tsl);
+            xEventGroupSetBits(xDevicesGroup, TSL2591_DONE); // long running
+            TslAutoLum agt = getTslAGT(&tsl);
             sky_brightness = calcLuxAGT(agt);
             sky_quality = calcSqmAGT(agt);
             last_update = millis();
@@ -210,8 +227,36 @@ void Meteo::updateTsl2591() {
             TSL2591_KICK,
             pdTRUE,
             pdFALSE,
-            pdMS_TO_TICKS(METEO_TASK_DELAY));
+            pdMS_TO_TICKS(METEO_TASK_SLEEP));
         if ((xBits & TSL2591_KICK) != 0) {
+            force_update = true;
+        }
+    }
+}
+
+void Meteo::updateAnemo4403() {
+    EventBits_t xBits;
+    static unsigned long last_update = 0;
+    static bool force_update = true;
+    while (true) {
+        if (force_update || millis() - last_update > METEO_MEASURE_DELAY) {
+            xEventGroupSetBits(xDevicesGroup, ANEMO4403_DONE); // long running
+            while (!FreqCountESP.available()) {
+                vTaskDelay(50);
+            }
+            float f = FreqCountESP.read() / (WIND_SENSOR_MEASURE / 1000.);
+            wind_speed = (f / 1.05) / 3.6;
+            // TODO wind_gust via running average
+            last_update = millis();
+            force_update = false;
+        }
+        xBits = xEventGroupWaitBits(
+            xDevicesGroup,
+            ANEMO4403_KICK,
+            pdTRUE,
+            pdFALSE,
+            pdMS_TO_TICKS(METEO_TASK_SLEEP));
+        if ((xBits & ANEMO4403_KICK) != 0) {
             force_update = true;
         }
     }
@@ -239,11 +284,14 @@ void Meteo::update(bool force) {
             xDone |= MLX90614_DONE;
             xKick |= MLX90614_KICK;
         }
-        // Long task
-        // if (HARDWARE_TSL2591) {
-        //     xDone |= TSL2591_DONE;
-        //     xKick |= TSL2591_KICK;
-        // }
+        if (HARDWARE_TSL2591) {
+            xDone |= TSL2591_DONE;
+            xKick |= TSL2591_KICK;
+        }
+        if (HARDWARE_ANEMO4403) {
+            xDone |= ANEMO4403_DONE;
+            xKick |= ANEMO4403_KICK;
+        }
         xEventGroupClearBits(xDevicesGroup, xDone);
         xEventGroupSetBits(xDevicesGroup, xKick);
         xEventGroupWaitBits(xDevicesGroup, xDone, pdFALSE, pdTRUE, pdMS_TO_TICKS(METEO_FORCE_DELAY));
@@ -324,7 +372,15 @@ void Meteo::update(bool force) {
         message += " SB:n/a SQ:n/a";
     }
 
-    // TODO ANEMO4403
+    if (HARDWARE_ANEMO4403) {
+        message += " WS: " + String(wind_speed, 1);
+        message += " WG: " + String(wind_gust, 1);
+    } else {
+        message += " WS:n/a WG:n/a";
+    }
+    message += " WD:n/a";
+
+    // TODO RG15
 
     if (logEnabled[LogMeteo] == LogOn || (logEnabled[LogMeteo] == LogSlow && millis() - last_message > logSlow[LogMeteo] * 1000)) {
         logMessage(message);

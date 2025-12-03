@@ -24,13 +24,20 @@
 // METEO
 // Sensors read cycle in ms. Always must be 3000.
 #define METEO_MEASURE_DELAY 3000
-#define METEO_TASK_DELAY 200
+#define METEO_TASK_SLEEP 200
 #define METEO_FORCE_DELAY 800
+
+// Auto gain-time change settings delay
+#define AGT_CHANGE_DELAY 50
 
 #define SAFETY_MONITOR_DELAY 3000
 
 // RAIN
 #define RAIN_SENSOR_PIN 8
+
+// WIND
+#define WIND_SENSOR_PIN 7
+#define WIND_SENSOR_MEASURE 1000
 
 // MQTT
 #define MQTT_STATUS_DELAY 20000

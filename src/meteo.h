@@ -5,6 +5,7 @@
 #include <Adafruit_MLX90614.h>
 #include <Adafruit_TSL2591.h>
 #include <Arduino.h>
+#include <FreqCountESP.h>
 #include <Wire.h>
 #include "config.h"
 #include "meteotsl.h"
@@ -28,6 +29,10 @@ static float cb_rms = 0.0;
 #define MLX90614_DONE (1UL << 7)
 #define TSL2591_KICK (1UL << 8)
 #define TSL2591_DONE (1UL << 9)
+#define ANEMO4403_KICK (1UL << 10)
+#define ANEMO4403_DONE (1UL << 11)
+#define RG15_KICK (1UL << 12)
+#define RG15_DONE (1UL << 13)
 
 #ifndef METEO_H
 #define METEO_H
@@ -142,6 +147,16 @@ class Meteo {
         instance->updateTsl2591();
     }
     void updateTsl2591(void);
+
+    // ANEMO4403 Task
+    TaskHandle_t updateAnemo4403Handle = NULL;
+    static void updateAnemo4403Wrapper(void *parameter) {
+        // Cast parameter back to the class instance pointer
+        Meteo *instance = static_cast<Meteo *>(parameter);
+        // Call the actual member function
+        instance->updateAnemo4403();
+    }
+    void updateAnemo4403(void);
 };
 
 #endif

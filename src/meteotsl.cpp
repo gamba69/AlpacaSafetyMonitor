@@ -94,7 +94,7 @@ void Meteo::setTslAGT(Adafruit_TSL2591 *tsl, int s) {
     tsl->setGain(tslAgt[s].gain);
     tsl->setTiming(tslAgt[s].time);
     tsl->getFullLuminosity();
-    vTaskDelay(50);
+    vTaskDelay(pdMS_TO_TICKS(AGT_CHANGE_DELAY));
 }
 
 TslAutoLum Meteo::getTslAGT(Adafruit_TSL2591 *tsl) {
@@ -106,13 +106,11 @@ TslAutoLum Meteo::getTslAGT(Adafruit_TSL2591 *tsl) {
         if (full > tslAgt[s].high && s > 0) {
             s--;
             setTslAGT(tsl, s);
-            vTaskDelay(pdMS_TO_TICKS(200));
             continue;
         }
         if (full < tslAgt[s].low && s < TSL_SETTINGS_SIZE - 1) {
             s++;
             setTslAGT(tsl, s);
-            vTaskDelay(pdMS_TO_TICKS(200));
             continue;
         }
         break;
