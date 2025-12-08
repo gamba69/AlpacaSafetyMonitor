@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Arduino.h>
+#include <string>
 
 void commandHelp();
 
@@ -60,6 +61,9 @@ void commandHwMlx90614Off();
 
 void commandHwTsl2591On();
 void commandHwTsl2591Off();
+
+void commandHwAnemo4403On();
+void commandHwAnemo4403Off();
 
 void commandHwUicpalOn();
 void commandHwUicpalOff();

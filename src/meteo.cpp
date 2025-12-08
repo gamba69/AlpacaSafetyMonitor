@@ -6,6 +6,7 @@ Adafruit_BMP280 bmp;
 Adafruit_AHTX0 aht;
 Adafruit_MLX90614 mlx = Adafruit_MLX90614();
 Adafruit_TSL2591 tsl = Adafruit_TSL2591(2591);
+MCPWMFreqCounter anm = MCPWMFreqCounter(WIND_SENSOR_PIN, 3000, 5000);
 
 void Meteo::logMessage(String msg, bool showtime) {
     if (logLine && logLinePart) {
@@ -95,16 +96,15 @@ void Meteo::begin() {
             1);
     }
     if (HARDWARE_ANEMO4403) {
-        FreqCountESP.begin(WIND_SENSOR_PIN, WIND_SENSOR_MEASURE);
-        // Long task
-        // xTaskCreatePinnedToCore(
-        //     Meteo::updateTsl2591Wrapper,
-        //     "updateTsl2591",
-        //     2048,
-        //     this,
-        //     1,
-        //     &updateTsl2591Handle,
-        //     1);
+        // FreqCountESP.begin(WIND_SENSOR_PIN, WIND_SENSOR_MEASURE);
+        anm.begin();
+        xTaskCreate(
+            Meteo::updateAnemo4403Wrapper,
+            "updateAnemo4403",
+            2048,
+            this,
+            1,
+            &updateAnemo4403Handle);
     }
 }
 
@@ -239,23 +239,32 @@ void Meteo::updateAnemo4403() {
     static unsigned long last_update = 0;
     static bool force_update = true;
     while (true) {
-        if (force_update || millis() - last_update > METEO_MEASURE_DELAY) {
-            xEventGroupSetBits(xDevicesGroup, ANEMO4403_DONE); // long running
-            while (!FreqCountESP.available()) {
-                vTaskDelay(50);
-            }
-            float f = FreqCountESP.read() / (WIND_SENSOR_MEASURE / 1000.);
-            wind_speed = (f / 1.05) / 3.6;
+        if (force_update || millis() - last_update > 1000) {
+
+            // while (!FreqCountESP.available()) {
+            //     vTaskDelay(50);
+            // }
+            // uint32_t c = FreqCountESP.read();
+            // Serial.println("C="+String(c));
+            // float f =  c / (WIND_SENSOR_MEASURE / 1000.);
+            // Serial.println("F="+String(f));
+            // wind_speed = (f / 1.05) / 3.6;
             // TODO wind_gust via running average
+
+            uint32_t c = anm.getCount();
+            Serial.println("C = " + String(c));
+
             last_update = millis();
             force_update = false;
+            xEventGroupSetBits(xDevicesGroup, ANEMO4403_DONE);
         }
         xBits = xEventGroupWaitBits(
             xDevicesGroup,
             ANEMO4403_KICK,
             pdTRUE,
             pdFALSE,
-            pdMS_TO_TICKS(METEO_TASK_SLEEP));
+            pdMS_TO_TICKS(1000));
+        // pdMS_TO_TICKS(METEO_TASK_SLEEP));
         if ((xBits & ANEMO4403_KICK) != 0) {
             force_update = true;
         }

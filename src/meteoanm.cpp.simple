@@ -1,0 +1,39 @@
+#include "meteoanm.h"
+#include <FunctionalInterrupt.h>
+
+void FrequencyMeter::begin() {
+    pinMode(_pin, INPUT_PULLDOWN);
+    attachInterrupt(
+        _pin,
+        std::bind(&FrequencyMeter::handleInterrupt, this),
+        FALLING);
+    _last_us = esp_timer_get_time();
+}
+
+float FrequencyMeter::getFrequency() {
+    int64_t now = esp_timer_get_time();
+    if (now - _last_us > _timeout) {
+        return 0.0f;
+    }
+    return 1000000. / _period;
+}
+
+float FrequencyMeter::getPeriod() {
+    int64_t now = esp_timer_get_time();
+    if (now - _last_us > _timeout) {
+        return 0.0f;
+    }
+    return _period / 1000000.;
+}
+
+void IRAM_ATTR FrequencyMeter::handleInterrupt() {
+    // noInterrupts();
+    int64_t now = esp_timer_get_time();
+    int64_t dt = now - _last_edge_us;
+    if (dt > _debounce) {
+        _period = dt;
+        _last_edge_us = now;
+        _last_us = now;
+    }
+    // interrupts();
+}

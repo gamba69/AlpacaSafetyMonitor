@@ -5,10 +5,11 @@
 #include <Adafruit_MLX90614.h>
 #include <Adafruit_TSL2591.h>
 #include <Arduino.h>
-#include <FreqCountESP.h>
-#include <Wire.h>
+// #include <FreqCountESP.h>
 #include "config.h"
 #include "meteotsl.h"
+#include "meteoanm.h"
+#include <Wire.h>
 
 // Circular buffer functions
 #define CB_SIZE 40

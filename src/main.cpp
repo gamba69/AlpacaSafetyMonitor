@@ -198,9 +198,6 @@ void workload(void *parameter) {
 void setup() {
     // Setup serial
     Serial.begin(115200);
-    while (!Serial) {
-        delay(50);
-    }
     Serial.println("");
     // Logging preferences
     initLogPrefs();
@@ -297,9 +294,9 @@ void setup() {
     meteo.begin();
     attachInterrupt(digitalPinToInterrupt(RAIN_SENSOR_PIN), immediateUpdate, CHANGE);
     // Watchdog
-    esp_task_wdt_deinit();
+    esp_task_wdt_deinit(); 
     esp_err_t error = esp_task_wdt_init(WATCHDOG_COUNTDOWN, true);
-    logMessage("[WATCHDOG] Initialization: %s\n", esp_err_to_name(error));
+    logMessage("[WATCHDOG] Initialization: " + String(esp_err_to_name(error)));
     // Tasks
     xInterruptsGroup = xEventGroupCreate();
     xTaskCreate(

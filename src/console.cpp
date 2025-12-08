@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include <iterator>
 #include <map>
+#include <string>
 
 std::map<std::string, std::function<void()>> console_commands;
 
@@ -26,12 +27,13 @@ void commandHelp() {
     logMessageConsole("[HELP]   log wifi on/off               - enable/disable wifi manager logging");
     logMessageConsole("[HELP]   log ota on/off                - enable/disable ota update logging");
     logMessageConsole("[HELP] Hardware settings (reboot required):");
-    logMessageConsole("[HELP]   hw bmp280 on/off   - enable/disable BMP280 sensor");
-    logMessageConsole("[HELP]   hw aht20 on/off    - enable/disable AHT20 sensor");
-    logMessageConsole("[HELP]   hw mlx90614 on/off - enable/disable MLX90614 sensor");
-    logMessageConsole("[HELP]   hw tsl2591 on/off  - enable/disable TSL2591 sensor");
-    logMessageConsole("[HELP]   hw uicpal on/off   - enable/disable UICPAL sensor");
-    logMessageConsole("[HELP]   hw rg15 on/off     - enable/disable RG-15 sensor");
+    logMessageConsole("[HELP]   hw bmp280 on/off    - enable/disable BMP280 sensor");
+    logMessageConsole("[HELP]   hw aht20 on/off     - enable/disable AHT20 sensor");
+    logMessageConsole("[HELP]   hw mlx90614 on/off  - enable/disable MLX90614 sensor");
+    logMessageConsole("[HELP]   hw tsl2591 on/off   - enable/disable TSL2591 sensor");
+    logMessageConsole("[HELP]   hw anemo4403 on/off - enable/disable ANEMO4403 sensor");
+    logMessageConsole("[HELP]   hw uicpal on/off    - enable/disable UICPAL sensor");
+    logMessageConsole("[HELP]   hw rg15 on/off      - enable/disable RG-15 sensor");
     logMessageConsole("[HELP] Alpaca settings (reboot required):");
     logMessageConsole("[HELP]   alpaca obscon on/off  - enable/disable observing conditions service");
     logMessageConsole("[HELP]   alpaca safemon on/off - enable/disable safety monitor service");
@@ -54,13 +56,14 @@ void commandHardwareState() {
     logMessageConsole("[INFO] Firmware supported hardware");
     logMessageConsole("[INFO] ---------------------------");
     logMessageConsole("[INFO] Sensors:");
-    logMessageConsole("[INFO]   DS3231   - " + String(HARDWARE_DS3231 ? "enabled " : "disabled") + " (realtime clock)");
-    logMessageConsole("[INFO]   BMP280   - " + String(HARDWARE_BMP280 ? "enabled " : "disabled") + " (temperature and pressure)");
-    logMessageConsole("[INFO]   AHT20    - " + String(HARDWARE_AHT20 ? "enabled " : "disabled") + " (temperature and humidity)");
-    logMessageConsole("[INFO]   MLX90614 - " + String(HARDWARE_MLX90614 ? "enabled " : "disabled") + " (sky temperature)");
-    logMessageConsole("[INFO]   TSL2591  - " + String(HARDWARE_TSL2591 ? "enabled " : "disabled") + " (sky brightness)");
-    logMessageConsole("[INFO]   UICPAL   - " + String(HARDWARE_UICPAL ? "enabled " : "disabled") + " (rain/snow sensor)");
-    logMessageConsole("[INFO]   RG15     - " + String(HARDWARE_RG15 ? "enabled " : "disabled") + " (rain rate sensor)");
+    logMessageConsole("[INFO]   DS3231    - " + String(HARDWARE_DS3231 ? "enabled " : "disabled") + " (realtime clock)");
+    logMessageConsole("[INFO]   BMP280    - " + String(HARDWARE_BMP280 ? "enabled " : "disabled") + " (temperature and pressure)");
+    logMessageConsole("[INFO]   AHT20     - " + String(HARDWARE_AHT20 ? "enabled " : "disabled") + " (temperature and humidity)");
+    logMessageConsole("[INFO]   MLX90614  - " + String(HARDWARE_MLX90614 ? "enabled " : "disabled") + " (sky temperature)");
+    logMessageConsole("[INFO]   TSL2591   - " + String(HARDWARE_TSL2591 ? "enabled " : "disabled") + " (sky brightness)");
+    logMessageConsole("[INFO]   ANEMO4403 - " + String(HARDWARE_ANEMO4403 ? "enabled " : "disabled") + " (wind speed)");
+    logMessageConsole("[INFO]   UICPAL    - " + String(HARDWARE_UICPAL ? "enabled " : "disabled") + " (rain/snow sensor)");
+    logMessageConsole("[INFO]   RG15      - " + String(HARDWARE_RG15 ? "enabled " : "disabled") + " (rain rate sensor)");
     logMessageConsole("[INFO] Alpaca:");
     logMessageConsole("[INFO]   Observing conditions - " + String(ALPACA_OBSCON ? "enabled" : "disabled"));
     logMessageConsole("[INFO]   Safety monitor       - " + String(ALPACA_SAFEMON ? "enabled" : "disabled"));
@@ -322,6 +325,18 @@ void commandHwTsl2591Off() {
     saveHwPrefs();
 }
 
+void commandHwAnemo4403On() {
+    logMessageConsole("[CONSOLE] ANEMO4403 enabled");
+    HARDWARE_ANEMO4403 = true;
+    saveHwPrefs();
+}
+
+void commandHwAnemo4403Off() {
+    logMessageConsole("[CONSOLE] ANEMO4403 disabled");
+    HARDWARE_ANEMO4403 = false;
+    saveHwPrefs();
+}
+
 void commandHwUicpalOn() {
     logMessageConsole("[CONSOLE] UICPAL enabled");
     HARDWARE_UICPAL = true;
@@ -393,13 +408,15 @@ void initConsoleCommands() {
     console_commands["hwmlx90614off"] = commandHwMlx90614Off;
     console_commands["hwtsl2591on"] = commandHwTsl2591On;
     console_commands["hwtsl2591off"] = commandHwTsl2591Off;
+    console_commands["hwanemo4403on"] = commandHwAnemo4403On;
+    console_commands["hwanemo4403off"] = commandHwAnemo4403Off;
     console_commands["hwuicpalon"] = commandHwUicpalOn;
     console_commands["hwuicpaloff"] = commandHwUicpalOff;
     console_commands["hwrg15on"] = commandHwRg15On;
     console_commands["hwrg15off"] = commandHwRg15Off;
 }
 
-void IRAM_ATTR processConsoleCommand(const std::string &msg) {
+void processConsoleCommand(const std::string &msg) {
     std::string cmd;
     cmd.resize(msg.size());
     std::transform(msg.begin(), msg.end(), cmd.begin(),
