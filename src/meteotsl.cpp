@@ -134,7 +134,9 @@ float Meteo::calcSqmAGT(TslAutoLum agt) {
     // float sqm = 21.57 -2.5 * log10(lux);
 
     // Официальная дока Unihedron
-    // https://darkskydanmark.dk//sites/default/files/files/2023-11/sqm-l_Instruction_sheet.pdf
+    // https://unihedron.com/projects/sqm-l/Instruction_sheet.pdf
+    // https://www.unihedron.com/projects/darksky/cd/SQM-LU-DL/SQM-LU-DL_Users_manual.pdf
+    // (в последнем документе есть конверсия NELM<->MPSAS)
     // Получение cd/m2 из mag/arcsec2
     // [cd/m2] = 10.8×104 × 10(-0.4*[mag/arcsec2])
     // Связь канделл на квадратный метр и люксов
