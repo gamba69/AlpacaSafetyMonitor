@@ -120,13 +120,13 @@ TslAutoLum Meteo::getTslAGT(Adafruit_TSL2591 *tsl) {
 
 float Meteo::calcSqmAGT(TslAutoLum agt) {
     float lux = calcLuxAGT(agt);
-    
+
     // Разные варианты конвертации, deprected, удалить позже
     // float sqm = -2.5 * log10(lux) + 18.3;
     // float sqm = (log10(lux) + 5.5917) / -0.40195;
     // float sqm = -2.5 * log10(lux * 0.1466) - 4.0;
     // говорят что это нечто иное, а люксы - ниже
-    // float sqm = log10(lux / 108000.) / -0.4; 
+    // float sqm = log10(lux / 108000.) / -0.4;
     // float sqm = log10(lux / 10.8) / -0.4;
     // типа SQM считает вот так? фигня
     // float sqm = -14.0 - 2.5 * log10(lux)
@@ -147,7 +147,7 @@ float Meteo::calcSqmAGT(TslAutoLum agt) {
     // [mag/arcsec2] = -2.5 * log10([lx]) + 13.84 что одно и то же.
     // [lx] = pi * 10.8 * 10^4 * 10^(-0.4 * [mag/arcsec2])
     // [lx] = 339292 * 10^(-0.4 * [mag/arcsec2]) что одно и то же.
-    
+
     float sqm = -2.5 * log10(lux) + 13.84;
 
     if (std::isinf(sqm)) {
