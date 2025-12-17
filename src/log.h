@@ -1,13 +1,19 @@
 #pragma once
 
+#include "main.h"
 #include <Arduino.h>
 #include <String.h>
-#include "main.h"
+
+#define LOG_SERIAL logTargets[TargetConsole]
+#define LOG_CONSOLE logTargets[TargetConsole]
+#define LOG_MQTT logTargets[TargetMQTT]
+#define LOG_LED logTargets[TargetLED]
 
 #define LOG_ENABLED_SIZE 16
 
 extern uint8_t logEnabled[LOG_ENABLED_SIZE];
 extern uint16_t logSlow[LOG_ENABLED_SIZE];
+extern uint8_t logTargets[LOG_ENABLED_SIZE];
 
 enum LogSource {
     LogMain = 0,
@@ -24,6 +30,13 @@ enum LogValues {
     LogOff = 0,
     LogOn = 1,
     LogSlow = 2
+};
+
+enum LogTarget {
+    TargetSerial = 0,
+    TargetConsole = 1,
+    TargetMQTT = 2,
+    TargetLED = 3
 };
 
 String logTime();
@@ -45,7 +58,7 @@ void logLineMeteo(String line);
 void logLinePartMeteo(String line);
 
 void logLineAlpaca(String line);
-void logLinePartAlpaca(String line) ;
+void logLinePartAlpaca(String line);
 
 void logLineObscon(String line);
 void logLinePartObscon(String line);

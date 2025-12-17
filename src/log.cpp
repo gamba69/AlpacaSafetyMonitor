@@ -17,11 +17,13 @@ Preferences logPrefs;
 
 uint8_t logEnabled[LOG_ENABLED_SIZE];
 uint16_t logSlow[LOG_ENABLED_SIZE];
+uint8_t logTargets[LOG_ENABLED_SIZE];
 
 void initLogPrefs() {
     logPrefs.begin("logPrefs", false);
     std::fill(std::begin(logEnabled), std::end(logEnabled), LogOn);
     std::fill(std::begin(logSlow), std::end(logSlow), 30);
+    std::fill(std::begin(logTargets), std::end(logTargets), LogOn);
     loadLogPrefs();
 }
 
@@ -32,23 +34,36 @@ void loadLogPrefs() {
     if (logPrefs.isKey("slow")) {
         logPrefs.getBytes("slow", logSlow, sizeof(logSlow));
     }
+    if (logPrefs.isKey("targets")) {
+        logPrefs.getBytes("targets", logTargets, sizeof(logTargets));
+    }
 }
 
 void saveLogPrefs() {
     logPrefs.putBytes("enabled", logEnabled, sizeof(logEnabled));
     logPrefs.putBytes("slow", logSlow, sizeof(logSlow));
+    logPrefs.putBytes("targets", logTargets, sizeof(logTargets));
 }
 
 String mqttLogBuffer = "";
 
 void logLine(String line, LogSource source, bool mqtt) {
     if (logEnabled[source] || source == LogConsole) {
-        Serial.println(line);
-        webSerial.println(line);
-        if (mqtt) {
-            if (mqttClient)
-                mqttClient->publish(MQTT_LOG_TOPIC, mqttLogBuffer + line);
-            mqttLogBuffer = "";
+        if (LOG_SERIAL) {
+            Serial.println(line);
+        }
+        if (LOG_CONSOLE) {
+            webSerial.println(line);
+        }
+        if (LOG_MQTT) {
+            if (mqtt) {
+                if (mqttClient)
+                    mqttClient->publish(MQTT_LOG_TOPIC, mqttLogBuffer + line);
+                mqttLogBuffer = "";
+            }
+        }
+        if (LOG_LED) {
+            // TODO
         }
     }
 }
@@ -59,10 +74,19 @@ void logLine(String line, LogSource source) {
 
 void logLinePart(String line, LogSource source, bool mqtt) {
     if (logEnabled[source] || source == LogConsole) {
-        Serial.print(line);
-        webSerial.print(line);
-        if (mqtt) {
-            mqttLogBuffer = mqttLogBuffer + line;
+        if (LOG_SERIAL) {
+            Serial.print(line);
+        }
+        if (LOG_CONSOLE) {
+            webSerial.print(line);
+        }
+        if (LOG_MQTT) {
+            if (mqtt) {
+                mqttLogBuffer = mqttLogBuffer + line;
+            }
+        }
+        if (LOG_LED) {
+            // TODO
         }
     }
 }

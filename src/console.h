@@ -7,7 +7,24 @@ void commandHelp();
 
 void commandReboot();
 
+void commandTargetState();
+
+void commandTargetSerialOn();
+void commandTargetSerialOff();
+
+void commandTargetConsoleOn();
+void commandTargetConsoleOff();
+
+void commandTargetMqttOn();
+void commandTargetMqttOff();
+
+void commandTargetLedOn();
+void commandTargetLedOff();
+
 void commandLogState();
+
+void commandLogOn();
+void commandLogOff();
 
 void commandLogMainOn();
 void commandLogMainOff();
@@ -35,9 +52,6 @@ void commandLogWifiOff();
 
 void commandLogOtaOn();
 void commandLogOtaOff();
-
-void commandLogOn();
-void commandLogOff();
 
 void commandHardwareState();
 

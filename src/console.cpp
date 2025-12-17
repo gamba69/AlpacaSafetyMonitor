@@ -12,9 +12,10 @@ void commandHelp() {
     logMessageConsole("[HELP] Available console commands");
     logMessageConsole("[HELP] --------------------------");
     logMessageConsole("[HELP] Info:");
-    logMessageConsole("[HELP]   help - this screen");
-    logMessageConsole("[HELP]   log  - show curent log settingd");
-    logMessageConsole("[HELP]   hw   - show curent log settingd");
+    logMessageConsole("[HELP]   help   - this screen");
+    logMessageConsole("[HELP]   log    - show curent log settings");
+    logMessageConsole("[HELP]   target - show curent log target settings");
+    logMessageConsole("[HELP]   hw     - show curent log settings");
     logMessageConsole("[HELP] General:");
     logMessageConsole("[HELP]   reboot            - restart esp32 ascom alpaca device");
     logMessageConsole("[HELP] Log settings:");
@@ -26,6 +27,11 @@ void commandHelp() {
     logMessageConsole("[HELP]   log safemon on/slow [nnn]/off - enable/slow, nnn seconds/disable safety monitor logging");
     logMessageConsole("[HELP]   log wifi on/off               - enable/disable wifi manager logging");
     logMessageConsole("[HELP]   log ota on/off                - enable/disable ota update logging");
+    logMessageConsole("[HELP] Log target settings:");
+    logMessageConsole("[HELP]   target serial on/off  - enable/disable serial log output");
+    logMessageConsole("[HELP]   target console on/off - enable/disable console log output");
+    logMessageConsole("[HELP]   target mqtt on/off    - enable/disable mqtt log output");
+    logMessageConsole("[HELP]   target led on/off     - enable/disable led log output");
     logMessageConsole("[HELP] Hardware settings (reboot required):");
     logMessageConsole("[HELP]   hw bmp280 on/off    - enable/disable BMP280 sensor");
     logMessageConsole("[HELP]   hw aht20 on/off     - enable/disable AHT20 sensor");
@@ -50,6 +56,15 @@ void commandLogState() {
     logMessageConsole("[INFO]  safemon - " + String(logEnabled[LogSafetyMonitor] ? (logEnabled[LogSafetyMonitor] == LogOn ? "on" : ("slow " + String(logSlow[LogSafetyMonitor]))) : "off") + " [safety monitor]");
     logMessageConsole("[INFO]  wifi    - " + String(logEnabled[LogWifi] ? "on" : "off") + " [wifi manager]");
     logMessageConsole("[INFO]  ota     - " + String(logEnabled[LogOta] ? "on" : "off") + " [update manager]");
+}
+
+void commandTargetState() {
+    logMessageConsole("[INFO] Logging target state");
+    logMessageConsole("[INFO] --------------------");
+    logMessageConsole("[INFO]  serial  - " + String(LOG_SERIAL ? "on" : "off"));
+    logMessageConsole("[INFO]  console - " + String(LOG_CONSOLE ? "on" : "off"));
+    logMessageConsole("[INFO]  mqtt    - " + String(LOG_MQTT ? "on" : "off"));
+    logMessageConsole("[INFO]  led     - " + String(LOG_LED ? "on" : "off"));
 }
 
 void commandHardwareState() {
@@ -95,6 +110,54 @@ void commandReboot() {
     logMessageConsole("[REBOOT]");
     delay(1000);
     ESP.restart();
+}
+
+void commandTargetSerialOn() {
+    logMessageConsole("[CONSOLE] Serial target logging enabled");
+    LOG_SERIAL = LogOn;
+    saveLogPrefs();
+}
+
+void commandTargetSerialOff() {
+    logMessageConsole("[CONSOLE] Serial target logging disabled");
+    LOG_SERIAL = LogOff;
+    saveLogPrefs();
+}
+
+void commandTargetConsoleOn() {
+    logMessageConsole("[CONSOLE] Console target logging enabled");
+    LOG_CONSOLE = LogOn;
+    saveLogPrefs();
+}
+
+void commandTargetConsoleOff() {
+    logMessageConsole("[CONSOLE] Console target logging disabled");
+    LOG_CONSOLE = LogOff;
+    saveLogPrefs();
+}
+
+void commandTargetMqttOn() {
+    logMessageConsole("[CONSOLE] MQTT target logging enabled");
+    LOG_MQTT = LogOn;
+    saveLogPrefs();
+}
+
+void commandTargetMqttOff() {
+    logMessageConsole("[CONSOLE] MQTT target logging disabled");
+    LOG_MQTT = LogOff;
+    saveLogPrefs();
+}
+
+void commandTargetLedOn() {
+    logMessageConsole("[CONSOLE] Led target logging enabled");
+    LOG_LED = LogOn;
+    saveLogPrefs();
+}
+
+void commandTargetLedOff() {
+    logMessageConsole("[CONSOLE] Led target logging disabled");
+    LOG_LED = LogOff;
+    saveLogPrefs();
 }
 
 void commandLogMainOn() {
@@ -366,11 +429,23 @@ void initConsoleCommands() {
     console_commands["help"] = commandHelp;
     console_commands["reboot"] = commandReboot;
 
+    console_commands["target"] = commandTargetState;
+    console_commands["targets"] = commandTargetState;
+
     console_commands["log"] = commandLogState;
     console_commands["logs"] = commandLogState;
 
     console_commands["hw"] = commandHardwareState;
     console_commands["hardware"] = commandHardwareState;
+
+    console_commands["targetserialon"] = commandTargetSerialOn;
+    console_commands["targetserialoff"] = commandTargetSerialOff;
+    console_commands["targetconsoleon"] = commandTargetConsoleOn;
+    console_commands["targetconsoleoff"] = commandTargetConsoleOff;
+    console_commands["targetmqtton"] = commandTargetMqttOn;
+    console_commands["targetmqttoff"] = commandTargetMqttOff;
+    console_commands["targetledon"] = commandTargetLedOn;
+    console_commands["targetledoff"] = commandTargetLedOff;
 
     console_commands["logmainon"] = commandLogMainOn;
     console_commands["logmainoff"] = commandLogMainOff;
