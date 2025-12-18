@@ -25,6 +25,7 @@ Meteo meteo = Meteo();
 EventGroupHandle_t xInterruptsGroup;
 
 #define UICPAL_INTERRUPT (1UL << 0)
+#define TSL2591_INTERRUPT (1UL << 1)
 
 volatile bool immediate = false;
 
@@ -259,13 +260,13 @@ void setup() {
     webSerial.begin(tcp_server);
     // WiFi Manager
     WifiManager.setLogger(LogSource::Wifi, logLine, logLinePart, logTime); // Set message logger
-    WifiManager.startBackgroundTask();                            // Run the background task to take care of our Wifi
-    WifiManager.fallbackToSoftAp(true);                           // Run a SoftAP if no known AP can be reached
-    WifiManager.attachWebServer(tcp_server);                      // Attach our API to the HTTP Webserver
+    WifiManager.startBackgroundTask();                                     // Run the background task to take care of our Wifi
+    WifiManager.fallbackToSoftAp(true);                                    // Run a SoftAP if no known AP can be reached
+    WifiManager.attachWebServer(tcp_server);                               // Attach our API to the HTTP Webserver
     WifiManager.attachUI();
     // OTA Manager
     // OtaWebUpdater.setBaseUrl(OTA_BASE_URL);    // Set the OTA Base URL for automatic updates
-    OtaWebUpdater.setLogger(LogSource::Ota, logLine, logLinePart, logTime);                               // Set message logger
+    OtaWebUpdater.setLogger(LogSource::Ota, logLine, logLinePart, logTime);                     // Set message logger
     OtaWebUpdater.setFirmware(BUILD_DATE, String(VERSION) + ", build " + String(BUILD_NUMBER)); // Set the current firmware version
     OtaWebUpdater.startBackgroundTask();                                                        // Run the background task to check for updates
     OtaWebUpdater.attachWebServer(tcp_server);                                                  // Attach our API to the Webserver
@@ -292,9 +293,11 @@ void setup() {
     // Meteo sensors
     meteo.setLogger(LogSource::Meteo, logLine, logLinePart, logTime);
     meteo.begin();
-    attachInterrupt(digitalPinToInterrupt(RAIN_SENSOR_PIN), immediateUpdate, CHANGE);
+    if (HARDWARE_UICPAL) {
+        attachInterrupt(digitalPinToInterrupt(RAIN_SENSOR_PIN), immediateUpdate, CHANGE);
+    }
     // Watchdog
-    esp_task_wdt_deinit(); 
+    esp_task_wdt_deinit();
     esp_err_t error = esp_task_wdt_init(WATCHDOG_COUNTDOWN, true);
     logMessage("[WATCHDOG] Initialization: " + String(esp_err_to_name(error)));
     // Tasks

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "main.h"
 #include <Arduino.h>
 #include <String.h>
+#include "main.h"
 
 #define LOG_SERIAL logTargets[LogTarget::Serial]
 #define LOG_CONSOLE logTargets[LogTarget::Console]

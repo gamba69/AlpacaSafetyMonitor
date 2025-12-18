@@ -1,6 +1,6 @@
-#include "log.h"
 #include <Arduino.h>
 #include <Preferences.h>
+#include "log.h"
 
 String logTime() {
     time_t now;
@@ -57,8 +57,9 @@ void logLine(String line, const int source, bool mqtt) {
         }
         if (LOG_MQTT) {
             if (mqtt) {
-                if (mqttClient)
+                if (mqttClient) {
                     mqttClient->publish(MQTT_LOG_TOPIC, mqttLogBuffer + line);
+                }
                 mqttLogBuffer = "";
             }
         }
