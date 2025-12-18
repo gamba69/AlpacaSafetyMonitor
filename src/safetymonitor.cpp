@@ -255,7 +255,7 @@ void SafetyMonitor::update(Meteo meteo) {
         message += "[" + String(getSafeUnsafeCountdown()) + "]";
     }
 
-    if (log_required || logEnabled[LogSafetyMonitor] == LogOn || (logEnabled[LogSafetyMonitor] == LogSlow && millis() - last_message > logSlow[LogSafetyMonitor] * 1000)) {
+    if (log_required || logEnabled[LogSource::SafeMon] == Log::On || (logEnabled[LogSource::SafeMon] == Log::Slow && millis() - last_message > logSlow[LogSource::SafeMon] * 1000)) {
         logMessage(message);
         last_message = millis();
     }

@@ -21,9 +21,9 @@ uint8_t logTargets[LOG_ENABLED_SIZE];
 
 void initLogPrefs() {
     logPrefs.begin("logPrefs", false);
-    std::fill(std::begin(logEnabled), std::end(logEnabled), LogOn);
+    std::fill(std::begin(logEnabled), std::end(logEnabled), Log::On);
     std::fill(std::begin(logSlow), std::end(logSlow), 30);
-    std::fill(std::begin(logTargets), std::end(logTargets), LogOn);
+    std::fill(std::begin(logTargets), std::end(logTargets), Log::On);
     loadLogPrefs();
 }
 
@@ -47,8 +47,8 @@ void saveLogPrefs() {
 
 String mqttLogBuffer = "";
 
-void logLine(String line, LogSource source, bool mqtt) {
-    if (logEnabled[source] || source == LogConsole) {
+void logLine(String line, const int source, bool mqtt) {
+    if (logEnabled[source] || source == LogSource::Console) {
         if (LOG_SERIAL) {
             Serial.println(line);
         }
@@ -68,12 +68,12 @@ void logLine(String line, LogSource source, bool mqtt) {
     }
 }
 
-void logLine(String line, LogSource source) {
+void logLine(String line, const int source) {
     logLine(line, source, true);
 }
 
-void logLinePart(String line, LogSource source, bool mqtt) {
-    if (logEnabled[source] || source == LogConsole) {
+void logLinePart(String line, int source, bool mqtt) {
+    if (logEnabled[source] || source == LogSource::Console) {
         if (LOG_SERIAL) {
             Serial.print(line);
         }
@@ -90,72 +90,72 @@ void logLinePart(String line, LogSource source, bool mqtt) {
         }
     }
 }
-void logLinePart(String line, LogSource source) {
+void logLinePart(String line, int source) {
     logLinePart(line, source, true);
 }
 
 void logLineConsole(String line) {
-    logLine(line, LogConsole, false);
+    logLine(line, LogSource::Console, false);
 }
 
 void logLinePartConsole(String line) {
-    logLinePart(line, LogConsole, false);
+    logLinePart(line, LogSource::Console, false);
 }
 
 void logLineMain(String line) {
-    logLine(line, LogMain);
+    logLine(line, LogSource::Main);
 }
 
 void logLinePartMain(String line) {
-    logLinePart(line, LogMain);
+    logLinePart(line, LogSource::Main);
 }
 
 void logLineMeteo(String line) {
-    logLine(line, LogMeteo);
+    logLine(line, LogSource::Meteo);
 }
 
 void logLinePartMeteo(String line) {
-    logLinePart(line, LogMeteo);
+    logLinePart(line, LogSource::Meteo);
 }
 
 void logLineAlpaca(String line) {
-    logLine(line, LogAlpaca);
+    logLine(line, LogSource::Alpaca);
 }
 
 void logLinePartAlpaca(String line) {
-    logLinePart(line, LogAlpaca);
+    logLinePart(line, LogSource::Alpaca);
 }
 
 void logLineObscon(String line) {
-    logLine(line, LogObservingConditions);
+    logLine(line, LogSource::ObsCon);
 }
 
 void logLinePartObscon(String line) {
-    logLinePart(line, LogObservingConditions);
+    logLinePart(line, LogSource::ObsCon);
 }
 
 void logLineSafemon(String line) {
-    logLine(line, LogSafetyMonitor);
+    logLine(line, LogSource::SafeMon);
 }
 
 void logLinePartSafemon(String line) {
-    logLinePart(line, LogSafetyMonitor);
+    logLinePart(line, LogSource::SafeMon);
 }
 
 void logLineWifi(String line) {
-    logLine(line, LogWifi);
+    logLine(line, LogSource::Wifi);
 }
 
 void logLinePartWifi(String line) {
-    logLinePart(line, LogWifi);
+    logLinePart(line, LogSource::Wifi);
 }
 
 void logLineOta(String line) {
-    logLine(line, LogOta);
+    logLine(line, LogSource::Ota);
 }
 
 void logLinePartOta(String line) {
-    logLinePart(line, LogOta);
+    logLinePart(line, LogSource::Ota);
 }
 
 void logMessage(String msg, bool showtime) {

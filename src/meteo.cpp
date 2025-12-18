@@ -391,7 +391,7 @@ void Meteo::update(bool force) {
 
     // TODO RG15
 
-    if (logEnabled[LogMeteo] == LogOn || (logEnabled[LogMeteo] == LogSlow && millis() - last_message > logSlow[LogMeteo] * 1000)) {
+    if (logEnabled[LogSource::Meteo] == Log::On || (logEnabled[LogSource::Meteo] == Log::Slow && millis() - last_message > logSlow[LogSource::Meteo] * 1000)) {
         logMessage(message);
         last_message = millis();
     }

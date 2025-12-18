@@ -4,10 +4,10 @@
 #include <Arduino.h>
 #include <String.h>
 
-#define LOG_SERIAL logTargets[TargetConsole]
-#define LOG_CONSOLE logTargets[TargetConsole]
-#define LOG_MQTT logTargets[TargetMQTT]
-#define LOG_LED logTargets[TargetLED]
+#define LOG_SERIAL logTargets[LogTarget::Serial]
+#define LOG_CONSOLE logTargets[LogTarget::Console]
+#define LOG_MQTT logTargets[LogTarget::MQTT]
+#define LOG_LED logTargets[LogTarget::LED]
 
 #define LOG_ENABLED_SIZE 16
 
@@ -15,28 +15,31 @@ extern uint8_t logEnabled[LOG_ENABLED_SIZE];
 extern uint16_t logSlow[LOG_ENABLED_SIZE];
 extern uint8_t logTargets[LOG_ENABLED_SIZE];
 
-enum LogSource {
-    LogMain = 0,
-    LogMeteo = 1,
-    LogAlpaca = 2,
-    LogObservingConditions = 3,
-    LogSafetyMonitor = 4,
-    LogWifi = 5,
-    LogOta = 6,
-    LogConsole = 7
+class LogSource {
+  public:
+    static const int Main = 0;
+    static const int Meteo = 1;
+    static const int Alpaca = 2;
+    static const int ObsCon = 3;
+    static const int SafeMon = 4;
+    static const int Wifi = 5;
+    static const int Ota = 6;
+    static const int Console = 7;
 };
 
-enum LogValues {
-    LogOff = 0,
-    LogOn = 1,
-    LogSlow = 2
+class Log {
+  public:
+    static const int Off = 0;
+    static const int On = 1;
+    static const int Slow = 2;
 };
 
-enum LogTarget {
-    TargetSerial = 0,
-    TargetConsole = 1,
-    TargetMQTT = 2,
-    TargetLED = 3
+class LogTarget {
+  public:
+    static const int Serial = 0;
+    static const int Console = 1;
+    static const int MQTT = 2;
+    static const int LED = 3;
 };
 
 String logTime();
@@ -45,8 +48,8 @@ void initLogPrefs();
 void loadLogPrefs();
 void saveLogPrefs();
 
-void logLine(String line, LogSource source);
-void logLinePart(String line, LogSource source);
+void logLine(String line, const int source);
+void logLinePart(String line, const int source);
 
 void logLineConsole(String line);
 void logLinePartConsole(String line);

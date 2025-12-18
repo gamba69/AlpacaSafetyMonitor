@@ -179,7 +179,7 @@ void ObservingConditions::update(Meteo meteo) {
 
     timelastupdate = millis();
 
-    if (logEnabled[LogObservingConditions] == LogOn || (logEnabled[LogObservingConditions] == LogSlow && millis() - last_message > logSlow[LogObservingConditions] * 1000)) {
+    if (logEnabled[LogSource::ObsCon] == Log::On || (logEnabled[LogSource::ObsCon] == Log::Slow && millis() - last_message > logSlow[LogSource::ObsCon] * 1000)) {
         logMessage(message);
         last_message = millis();
     }
