@@ -94,92 +94,28 @@ void logLinePart(String line, int source) {
     logLinePart(line, source, true);
 }
 
-void logLineConsole(String line) {
-    logLine(line, LogSource::Console, false);
-}
-
-void logLinePartConsole(String line) {
-    logLinePart(line, LogSource::Console, false);
-}
-
-void logLineMain(String line) {
-    logLine(line, LogSource::Main);
-}
-
-void logLinePartMain(String line) {
-    logLinePart(line, LogSource::Main);
-}
-
-void logLineMeteo(String line) {
-    logLine(line, LogSource::Meteo);
-}
-
-void logLinePartMeteo(String line) {
-    logLinePart(line, LogSource::Meteo);
-}
-
-void logLineAlpaca(String line) {
-    logLine(line, LogSource::Alpaca);
-}
-
-void logLinePartAlpaca(String line) {
-    logLinePart(line, LogSource::Alpaca);
-}
-
-void logLineObscon(String line) {
-    logLine(line, LogSource::ObsCon);
-}
-
-void logLinePartObscon(String line) {
-    logLinePart(line, LogSource::ObsCon);
-}
-
-void logLineSafemon(String line) {
-    logLine(line, LogSource::SafeMon);
-}
-
-void logLinePartSafemon(String line) {
-    logLinePart(line, LogSource::SafeMon);
-}
-
-void logLineWifi(String line) {
-    logLine(line, LogSource::Wifi);
-}
-
-void logLinePartWifi(String line) {
-    logLinePart(line, LogSource::Wifi);
-}
-
-void logLineOta(String line) {
-    logLine(line, LogSource::Ota);
-}
-
-void logLinePartOta(String line) {
-    logLinePart(line, LogSource::Ota);
-}
-
 void logMessage(String msg, bool showtime) {
     if (showtime)
-        logLinePartMain(logTime() + " ");
-    logLineMain(msg);
+        logLinePart(logTime() + " ", LogSource::Main);
+    logLine(msg, LogSource::Main);
 }
 
 void logMessagePart(String msg, bool showtime) {
     if (showtime)
-        logLinePartMain(logTime() + " ");
-    logLinePartMain(msg);
+        logLinePart(logTime() + " ", LogSource::Main);
+    logLinePart(msg, LogSource::Main);
 }
 
 void logMessageConsole(String msg, bool showtime) {
     if (showtime)
-        logLinePartConsole(logTime() + " ");
-    logLineConsole(msg);
+        logLinePart(logTime() + " ", LogSource::Console);
+    logLine(msg, LogSource::Console);
 }
 
 void logMessagePartConsole(String msg, bool showtime) {
     if (showtime)
-        logLinePartConsole(logTime() + " ");
-    logLinePartConsole(msg);
+        logLinePart(logTime() + " ", LogSource::Console);
+    logLinePart(msg, LogSource::Console);
 }
 
 void logMqttStatus(String special) {

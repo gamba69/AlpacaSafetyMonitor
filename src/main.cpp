@@ -258,14 +258,14 @@ void setup() {
     webSerial.setBuffer(100);
     webSerial.begin(tcp_server);
     // WiFi Manager
-    WifiManager.setLogger(logLineWifi, logLinePartWifi, logTime); // Set message logger
+    WifiManager.setLogger(LogSource::Wifi, logLine, logLinePart, logTime); // Set message logger
     WifiManager.startBackgroundTask();                            // Run the background task to take care of our Wifi
     WifiManager.fallbackToSoftAp(true);                           // Run a SoftAP if no known AP can be reached
     WifiManager.attachWebServer(tcp_server);                      // Attach our API to the HTTP Webserver
     WifiManager.attachUI();
     // OTA Manager
     // OtaWebUpdater.setBaseUrl(OTA_BASE_URL);    // Set the OTA Base URL for automatic updates
-    OtaWebUpdater.setLogger(logLineOta, logLinePartOta, logTime);                               // Set message logger
+    OtaWebUpdater.setLogger(LogSource::Ota, logLine, logLinePart, logTime);                               // Set message logger
     OtaWebUpdater.setFirmware(BUILD_DATE, String(VERSION) + ", build " + String(BUILD_NUMBER)); // Set the current firmware version
     OtaWebUpdater.startBackgroundTask();                                                        // Run the background task to check for updates
     OtaWebUpdater.attachWebServer(tcp_server);                                                  // Attach our API to the Webserver
@@ -275,22 +275,22 @@ void setup() {
     setupWebRedirects(tcp_server);
     tcp_server->begin();
     // ALPACA Tcp Server
-    alpacaServer.setLogger(logLineAlpaca, logLinePartAlpaca, logTime);
+    alpacaServer.setLogger(LogSource::Alpaca, logLine, logLinePart, logTime);
     alpacaServer.beginTcp(tcp_server, ALPACA_TCP_PORT);
     // Observing Conditions
     if (ALPACA_OBSCON) {
         observingconditions.setImmediateUpdate(immediateUpdate);
-        observingconditions.setLogger(logLineObscon, logLinePartObscon, logTime);
+        observingconditions.setLogger(LogSource::ObsCon, logLine, logLinePart, logTime);
         alpacaServer.addDevice(&observingconditions);
     }
     // Safety Monitor
     if (ALPACA_SAFEMON) {
-        safetymonitor.setLogger(logLineSafemon, logLinePartSafemon, logTime);
+        safetymonitor.setLogger(LogSource::SafeMon, logLine, logLinePart, logTime);
         alpacaServer.addDevice(&safetymonitor);
     }
     alpacaServer.loadSettings();
     // Meteo sensors
-    meteo.setLogger(logLineMeteo, logLinePartMeteo, logTime);
+    meteo.setLogger(LogSource::Meteo, logLine, logLinePart, logTime);
     meteo.begin();
     attachInterrupt(digitalPinToInterrupt(RAIN_SENSOR_PIN), immediateUpdate, CHANGE);
     // Watchdog

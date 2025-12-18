@@ -51,30 +51,6 @@ void saveLogPrefs();
 void logLine(String line, const int source);
 void logLinePart(String line, const int source);
 
-void logLineConsole(String line);
-void logLinePartConsole(String line);
-
-void logLineMain(String line);
-void logLinePartMain(String line);
-
-void logLineMeteo(String line);
-void logLinePartMeteo(String line);
-
-void logLineAlpaca(String line);
-void logLinePartAlpaca(String line);
-
-void logLineObscon(String line);
-void logLinePartObscon(String line);
-
-void logLineSafemon(String line);
-void logLinePartSafemon(String line);
-
-void logLineWifi(String line);
-void logLinePartWifi(String line);
-
-void logLineOta(String line);
-void logLinePartOta(String line);
-
 void logMessage(String msg, bool showtime = true);
 void logMessagePart(String msg, bool showtime = false);
 

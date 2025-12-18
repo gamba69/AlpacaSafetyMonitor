@@ -7,8 +7,8 @@
 #include <Arduino.h>
 // #include <FreqCountESP.h>
 #include "config.h"
-#include "meteotsl.h"
 #include "meteoanm.h"
+#include "meteotsl.h"
 #include <Wire.h>
 
 // Circular buffer functions
@@ -66,17 +66,19 @@ class Meteo {
     // const std::string &getName() const;
     void begin();
     // Set current logger
-    void setLogger(std::function<void(String)> logLineCallback = nullptr, std::function<void(String)> logLinePartCallback = nullptr, std::function<String()> logTimeCallback = nullptr);
+    void setLogger(const int source, std::function<void(String, const int)> logLineCallback = nullptr, std::function<void(String, const int)> logLinePartCallback = nullptr, std::function<String()> logTimeCallback = nullptr);
 
   private:
     // Last log message
     unsigned long last_message = 0;
     // Logger println
-    std::function<void(String)> logLine = nullptr;
+    std::function<void(String, const int)> logLine = nullptr;
     // Logger print
-    std::function<void(String)> logLinePart = nullptr;
+    std::function<void(String, const int)> logLinePart = nullptr;
     // Logger time function
     std::function<String()> logTime = nullptr;
+    // Logger source
+    int logSource;
     // Print a log message, can be overwritten
     virtual void logMessage(String msg, bool showtime = true);
     // Print a part of log message, can be overwritten
