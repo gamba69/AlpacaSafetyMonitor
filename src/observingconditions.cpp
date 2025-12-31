@@ -399,8 +399,8 @@ void ObservingConditions::aWriteJson(JsonObject &root) {
     obj_instant_state[F("Sky_Quality,_m/saszro")] = OBSCON_SKYQUALITY ? String(skyquality, 1) : "n/a";
     obj_instant_state[F("Sky_Brightness,_luxzro")] = OBSCON_SKYBRIGHTNESS ? smart_round(skybrightness) : "n/a";
     obj_instant_state[F("Wind_Direction,_°zro")] = OBSCON_WINDDIR ? String(winddir, 0) : "n/a";
-    obj_instant_state[F("Wind_Speed,_m/szro")] = OBSCON_WINDSPEED ? String(windspeed, 0) : "n/a";
-    obj_instant_state[F("Wind_Gust,_m/szro")] = OBSCON_WINDGUST ? String(windgust, 0) : "n/a";
+    obj_instant_state[F("Wind_Speed,_m/szro")] = OBSCON_WINDSPEED ? String(windspeed, 1) : "n/a";
+    obj_instant_state[F("Wind_Gust,_m/szro")] = OBSCON_WINDGUST ? String(windgust, 1) : "n/a";
     obj_instant_state[F("Updated,_secs/agozro")] = String(((float)millis() - (float)timelastupdate) / 1000., 1);
 
     // averaged
