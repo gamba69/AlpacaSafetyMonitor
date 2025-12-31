@@ -6,7 +6,7 @@ Adafruit_BMP280 bmp;
 Adafruit_AHTX0 aht;
 Adafruit_MLX90614 mlx = Adafruit_MLX90614();
 Adafruit_TSL2591 tsl = Adafruit_TSL2591(2591);
-MCPWMFreqCounter anm = MCPWMFreqCounter(WIND_SENSOR_PIN, 3000, 5000);
+PCNTFrequencyCounter anm = PCNTFrequencyCounter((gpio_num_t)WIND_SENSOR_PIN);
 
 void Meteo::logMessage(String msg, bool showtime) {
     if (logLine && logLinePart) {
@@ -241,19 +241,9 @@ void Meteo::updateAnemo4403() {
     static bool force_update = true;
     while (true) {
         if (force_update || millis() - last_update > 1000) {
-
-            // while (!FreqCountESP.available()) {
-            //     vTaskDelay(50);
-            // }
-            // uint32_t c = FreqCountESP.read();
-            // Serial.println("C="+String(c));
-            // float f =  c / (WIND_SENSOR_MEASURE / 1000.);
-            // Serial.println("F="+String(f));
-            // wind_speed = (f / 1.05) / 3.6;
+            float f = anm.getFrequency(3000);
+            wind_speed = (f / 1.05) / 3.6;
             // TODO wind_gust via running average
-
-            uint32_t c = anm.getCount();
-            Serial.println("C = " + String(c));
 
             last_update = millis();
             force_update = false;
