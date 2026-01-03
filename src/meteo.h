@@ -5,11 +5,11 @@
 #include <Adafruit_MLX90614.h>
 #include <Adafruit_TSL2591.h>
 #include <Arduino.h>
-// #include <FreqCountESP.h>
+#include <RunningAverage.h>
+#include <Wire.h>
 #include "config.h"
 #include "meteoanm.h"
 #include "meteotsl.h"
-#include <Wire.h>
 
 // Circular buffer functions
 #define CB_SIZE 40
@@ -40,6 +40,7 @@ static float cb_rms = 0.0;
 
 class Meteo {
   public:
+    RunningAverage wind_gust_ra = RunningAverage(40);
     // attributes
     volatile float
         rain_rate,

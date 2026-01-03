@@ -336,7 +336,7 @@ void ObservingConditions::aGetWindDirection(AsyncWebServerRequest *request) {
 
 void ObservingConditions::aGetWindGust(AsyncWebServerRequest *request) {
     if (OBSCON_WINDGUST) {
-        // Wind gust not averaged, ASCOM
+        // Wind gust not averaged, ASCOM (https://ascom-standards.org/newdocs/observingconditions.html#ObservingConditions.WindGust)
         float value = windgust;
         value = round(10. * value) / 10.;
         _alpacaServer->respond(request, value);
@@ -418,7 +418,7 @@ void ObservingConditions::aWriteJson(JsonObject &root) {
     obj_averaged_state[F("Sky_Brightness,_luxzro")] = OBSCON_SKYBRIGHTNESS ? smart_round(skybrightness_ra.getAverageLast(_averaging > skybrightness_ra.getCount() ? skybrightness_ra.getCount() : _averaging)) : "n/a";
     obj_averaged_state[F("Wind_Direction,_°zro")] = OBSCON_WINDDIR ? String(winddir_ra.getAverageLast(_averaging > winddir_ra.getCount() ? winddir_ra.getCount() : _averaging), 1) : "n/a";
     obj_averaged_state[F("Wind_Speed,_m/szro")] = OBSCON_WINDSPEED ? String(windspeed_ra.getAverageLast(_averaging > windspeed_ra.getCount() ? windspeed_ra.getCount() : _averaging), 1) : "n/a";
-    // not averaged, ASCOM
-    obj_averaged_state[F("Wind_Gust,_m/szro")] = OBSCON_WINDGUST ? String(windgust_ra.getAverageLast(_averaging > windgust_ra.getCount() ? windgust_ra.getCount() : _averaging), 1) : "n/a";
+    // Wind gust not averaged, ASCOM (https://ascom-standards.org/newdocs/observingconditions.html#ObservingConditions.WindGust)
+    obj_averaged_state[F("Wind_Gust,_m/szro")] = OBSCON_WINDGUST ? String(windgust, 1) : "n/a";
     obj_averaged_state[F("Updated,_secs/agozro")] = String(((float)millis() - (float)timelastupdate) / 1000., 1);
 }

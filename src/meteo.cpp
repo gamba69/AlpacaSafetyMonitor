@@ -53,6 +53,7 @@ void Meteo::begin() {
             1,
             &updateUicpalHandle);
     }
+    // TODO RG15
     if (HARDWARE_BMP280) {
         bmp.begin(I2C_BMP_ADDR);
         xTaskCreate(
@@ -73,6 +74,7 @@ void Meteo::begin() {
             1,
             &updateAht20Handle);
     }
+     // TODO SHT45
     if (HARDWARE_MLX90614) {
         mlx.begin(I2C_MLX_ADDR);
         xTaskCreate(
@@ -97,7 +99,6 @@ void Meteo::begin() {
             1);
     }
     if (HARDWARE_ANEMO4403) {
-        // FreqCountESP.begin(WIND_SENSOR_PIN, WIND_SENSOR_MEASURE);
         anm.begin();
         xTaskCreate(
             Meteo::updateAnemo4403Wrapper,
@@ -243,7 +244,11 @@ void Meteo::updateAnemo4403() {
         if (force_update || millis() - last_update > 1000) {
             float f = anm.getFrequency(3000);
             wind_speed = (f / 1.05) / 3.6;
-            // TODO wind_gust via running average
+            wind_gust_ra.add(wind_speed);
+            // TODO different cycles fro wind_speed (custom)
+            // and wind_gust (always 3 sec per 2 minutes max)
+            // 40 values max - every 3 sec on 2 minutes
+            wind_gust = wind_gust_ra.getMaxInBufferLast(40);
 
             last_update = millis();
             force_update = false;
