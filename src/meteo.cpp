@@ -74,7 +74,7 @@ void Meteo::begin() {
             1,
             &updateAht20Handle);
     }
-     // TODO SHT45
+    // TODO SHT45
     if (HARDWARE_MLX90614) {
         mlx.begin(I2C_MLX_ADDR);
         xTaskCreate(
@@ -101,12 +101,19 @@ void Meteo::begin() {
     if (HARDWARE_ANEMO4403) {
         anm.begin();
         xTaskCreate(
-            Meteo::updateAnemo4403Wrapper,
-            "updateAnemo4403",
+            Meteo::updateAnemo4403SpeedWrapper,
+            "updateAnemo4403Speed",
             2048,
             this,
             1,
-            &updateAnemo4403Handle);
+            &updateAnemo4403SpeedHandle);
+        xTaskCreate(
+            Meteo::updateAnemo4403GustWrapper,
+            "updateAnemo4403Gust",
+            2048,
+            this,
+            1,
+            &updateAnemo4403GustHandle);
     }
 }
 
@@ -236,20 +243,17 @@ void Meteo::updateTsl2591() {
     }
 }
 
-void Meteo::updateAnemo4403() {
+void Meteo::updateAnemo4403Speed() {
     EventBits_t xBits;
     static unsigned long last_update = 0;
     static bool force_update = true;
     while (true) {
-        if (force_update || millis() - last_update > 1000) {
-            float f = anm.getFrequency(3000);
-            wind_speed = (f / 1.05) / 3.6;
-            wind_gust_ra.add(wind_speed);
-            // TODO different cycles fro wind_speed (custom)
-            // and wind_gust (always 3 sec per 2 minutes max)
+        if (force_update || millis() - last_update > METEO_MEASURE_DELAY) {
+            // Different cycles for wind_speed (custom)
+            // and wind_gust (always 3 sec then 2 minutes max)
             // 40 values max - every 3 sec on 2 minutes
-            wind_gust = wind_gust_ra.getMaxInBufferLast(40);
-
+            float f = anm.getFrequency(METEO_MEASURE_DELAY);
+            wind_speed = (f / 1.05) / 3.6;
             last_update = millis();
             force_update = false;
             xEventGroupSetBits(xDevicesGroup, ANEMO4403_DONE);
@@ -259,11 +263,24 @@ void Meteo::updateAnemo4403() {
             ANEMO4403_KICK,
             pdTRUE,
             pdFALSE,
-            pdMS_TO_TICKS(1000));
-        // pdMS_TO_TICKS(METEO_TASK_SLEEP));
+            pdMS_TO_TICKS(METEO_TASK_SLEEP));
         if ((xBits & ANEMO4403_KICK) != 0) {
             force_update = true;
         }
+    }
+}
+
+void Meteo::updateAnemo4403Gust() {
+    // Forced not used
+    while (true) {
+        // Different cycles for wind_speed (custom)
+        // and wind_gust (always 3 sec then 2 minutes max)
+        // 40 values max - every 3 sec on 2 minutes
+        float f = anm.getFrequency(METEO_MEASURE_DELAY);
+        float s = (f / 1.05) / 3.6;
+        wind_gust_ra.add(s);
+        wind_gust = wind_gust_ra.getMaxInBufferLast(40);
+        vTaskDelay(pdMS_TO_TICKS(METEO_TASK_SLEEP));
     }
 }
 
@@ -302,6 +319,7 @@ void Meteo::update(bool force) {
         xEventGroupWaitBits(xDevicesGroup, xDone, pdFALSE, pdTRUE, pdMS_TO_TICKS(METEO_FORCE_DELAY));
     }
 
+    // TODO RG15
     if (HARDWARE_UICPAL) {
         message += " RR:" + String(rain_rate, 1);
     } else {
@@ -384,8 +402,6 @@ void Meteo::update(bool force) {
         message += " WS:n/a WG:n/a";
     }
     message += " WD:n/a";
-
-    // TODO RG15
 
     if (logEnabled[LogSource::Meteo] == Log::On || (logEnabled[LogSource::Meteo] == Log::Slow && millis() - last_message > logSlow[LogSource::Meteo] * 1000)) {
         logMessage(message);

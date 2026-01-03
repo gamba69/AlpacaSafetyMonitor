@@ -152,15 +152,25 @@ class Meteo {
     }
     void updateTsl2591(void);
 
-    // ANEMO4403 Task
-    TaskHandle_t updateAnemo4403Handle = NULL;
-    static void updateAnemo4403Wrapper(void *parameter) {
+    // ANEMO4403 Wind Speed Task
+    TaskHandle_t updateAnemo4403SpeedHandle = NULL;
+    static void updateAnemo4403SpeedWrapper(void *parameter) {
         // Cast parameter back to the class instance pointer
         Meteo *instance = static_cast<Meteo *>(parameter);
         // Call the actual member function
-        instance->updateAnemo4403();
+        instance->updateAnemo4403Speed();
     }
-    void updateAnemo4403(void);
+    void updateAnemo4403Speed(void);
+
+    // ANEMO4403 Wind Gust Task
+    TaskHandle_t updateAnemo4403GustHandle = NULL;
+    static void updateAnemo4403GustWrapper(void *parameter) {
+        // Cast parameter back to the class instance pointer
+        Meteo *instance = static_cast<Meteo *>(parameter);
+        // Call the actual member function
+        instance->updateAnemo4403Gust();
+    }
+    void updateAnemo4403Gust(void);
 };
 
 #endif
