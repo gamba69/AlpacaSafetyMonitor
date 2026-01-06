@@ -2,8 +2,10 @@
 #include "hardware.h"
 #include "log.h"
 #include <Arduino.h>
+#include <algorithm>
 #include <iterator>
 #include <map>
+#include <sstream>
 #include <string>
 
 std::map<std::string, std::function<void()>> console_commands;
@@ -489,6 +491,50 @@ void initConsoleCommands() {
     console_commands["hwuicpaloff"] = commandHwUicpalOff;
     console_commands["hwrg15on"] = commandHwRg15On;
     console_commands["hwrg15off"] = commandHwRg15Off;
+}
+
+TempHumiWeightCommand parseTempHumiWeightCommand(const std::string &input) {
+    TempHumiWeightCommand result = {"", {0}, 0, false};
+    std::string str = input;
+    std::transform(str.begin(), str.end(), str.begin(), ::tolower);
+    for (char &c : str) {
+        if (c == ',' || c == ';' || c == '/') {
+            c = ' ';
+        }
+    }
+    std::istringstream iss(str);
+    std::string w1, w2;
+    if (!(iss >> w1 >> w2)) {
+        return result;
+    }
+    std::string cmd = (w1.find("temp") == 0 ? "temp" : w1.find("humi") == 0 ? "humi"
+                                                                            : "");
+    if (cmd.empty()) {
+        return result;
+    }
+    if (w2 == "weight") {
+        cmd += "weight";
+    } else if (w2.find("sht") == 0) {
+        cmd += "sht";
+    } else if (w2.find("aht") == 0) {
+        cmd += "aht";
+    } else if (w2.find("bmp") == 0) {
+        cmd += "bmp";
+    } else {
+        return result;
+    }
+    float v;
+    while (iss >> v && result.valueCount < 3) {
+        result.values[result.valueCount++] = v;
+    }
+    int expected = (cmd == "tempweight" ? 3 : cmd == "humiweight" ? 2
+                                                                  : 1);
+    if (result.valueCount != expected) {
+        return result;
+    }
+    result.command = cmd;
+    result.success = true;
+    return result;
 }
 
 void processConsoleCommand(const std::string &msg) {

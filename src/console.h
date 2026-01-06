@@ -3,6 +3,13 @@
 #include <Arduino.h>
 #include <string>
 
+struct TempHumiWeightCommand {
+    std::string command;
+    float values[3];
+    int valueCount;
+    bool success;
+};
+
 void commandHelp();
 
 void commandReboot();
