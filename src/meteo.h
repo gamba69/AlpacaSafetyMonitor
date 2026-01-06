@@ -40,7 +40,6 @@ static float cb_rms = 0.0;
 
 class Meteo {
   public:
-    RunningAverage wind_gust_ra = RunningAverage(40);
     // attributes
     volatile float
         rain_rate,
@@ -70,6 +69,7 @@ class Meteo {
     void setLogger(const int source, std::function<void(String, const int)> logLineCallback = nullptr, std::function<void(String, const int)> logLinePartCallback = nullptr, std::function<String()> logTimeCallback = nullptr);
 
   private:
+    RunningAverage wind_gust_ra = RunningAverage(40);
     // Last log message
     unsigned long last_message = 0;
     // Logger println

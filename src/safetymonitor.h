@@ -101,7 +101,7 @@ class SafetyMonitor : public AlpacaSafetyMonitor {
     int getSafeUnsafeCountdown();
 
     bool begin();
-    void update(Meteo meteo);
+    void update(Meteo*);
 
     // alpaca getters
     void aGetDescription(AsyncWebServerRequest *request) override;

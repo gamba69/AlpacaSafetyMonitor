@@ -167,14 +167,14 @@ void workload(void *parameter) {
         // update observingconditions every refresh without blocking webserver
         if (ALPACA_OBSCON) {
             if (immediate || (millis() > observingConditionsLastRan + (1000 * observingconditions.getRefresh()))) {
-                observingconditions.update(meteo);
+                observingconditions.update(&meteo);
                 observingConditionsLastRan = millis();
             }
         }
         // update safetymonitor every METEO_MEASURE_DELAY without blocking webserver
         if (ALPACA_SAFEMON) {
             if (immediate || (millis() > safetyMonitorLastRan + SAFETY_MONITOR_DELAY)) {
-                safetymonitor.update(meteo);
+                safetymonitor.update(&meteo);
                 safetyMonitorLastRan = millis();
             }
         }

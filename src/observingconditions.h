@@ -71,7 +71,7 @@ class ObservingConditions : public AlpacaObservingConditions {
     void setLogger(const int, std::function<void(String, const int)> logLineCallback = nullptr, std::function<void(String, const int)> logLinePartCallback = nullptr, std::function<String()> logTimeCallback = nullptr);
 
     bool begin();
-    void update(Meteo meteo);
+    void update(Meteo*);
 
     // getters
     int getRefresh() { return _refresh; }

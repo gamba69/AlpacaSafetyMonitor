@@ -276,11 +276,11 @@ void Meteo::updateAnemo4403Gust() {
         // Different cycles for wind_speed (custom)
         // and wind_gust (always 3 sec then 2 minutes max)
         // 40 values max - every 3 sec on 2 minutes
-        float f = anm.getFrequency(METEO_MEASURE_DELAY);
+        float f = anm.getFrequency(3000);
         float s = (f / 1.05) / 3.6;
         wind_gust_ra.add(s);
-        wind_gust = wind_gust_ra.getMaxInBufferLast(40);
-        vTaskDelay(pdMS_TO_TICKS(METEO_TASK_SLEEP));
+        wind_gust = wind_gust_ra.getMaxInBuffer();
+        vTaskDelay(pdMS_TO_TICKS(3000));
     }
 }
 
