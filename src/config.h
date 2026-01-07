@@ -44,7 +44,7 @@
 #define MQTT_LOG_TOPIC "safetymonitor/log"
 
 // LEDS
-#define PIN_WIFI_LED 21
+#define LED_PIN 21
 
 // WATCHDOG
 #define WATCHDOG_COUNTDOWN 5

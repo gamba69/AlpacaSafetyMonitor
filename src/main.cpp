@@ -1,3 +1,4 @@
+#include <jled.h>
 #include "main.h"
 #include "console.h"
 #include "hardware.h"
@@ -10,6 +11,7 @@ RTC_DS3231 rtc;
 
 WebSerial webSerial;
 PicoMQTT::Client *mqttClient = nullptr;
+JLed led = JLed(LED_PIN).LowActive();
 
 WIFIMANAGER WifiManager;
 OTAWEBUPDATER OtaWebUpdater;
@@ -137,6 +139,8 @@ void workload(void *parameter) {
     static int lastMqttStatus = 0;
     esp_task_wdt_add(NULL);
     while (true) {
+        // led work always
+        led.Update();
         // do not continue regular operation as long as a OTA is running
         // reason: background workload can cause upgrade issues that we want to avoid!
         if (OtaWebUpdater.otaIsRunning) {
@@ -188,7 +192,7 @@ void workload(void *parameter) {
             await,
             pdTRUE,
             pdFALSE,
-            pdMS_TO_TICKS(200));
+            pdMS_TO_TICKS(50));
         if ((xBits & await) != 0) {
             immediate = true;
         }
@@ -322,7 +326,6 @@ void loop() {
 }
 
 void setup_wifi() {
-    // pinMode(PIN_WIFI_LED, OUTPUT);
     logMessagePart(F("[MAIN] Setup WiFi "), true);
     WiFi.begin(WIFISSID, WIFIPASS);
     int pause = 10000;

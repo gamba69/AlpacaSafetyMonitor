@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <Preferences.h>
 #include "log.h"
+#include "main.h"
 
 String logTime() {
     time_t now;
@@ -65,6 +66,9 @@ void logLine(String line, const int source, bool mqtt) {
         }
         if (LOG_LED) {
             // TODO
+            if(line.indexOf("[METEO][DATA]") != -1) {
+                led.Blink(50,50).Repeat(3);
+            }
         }
     }
 }
