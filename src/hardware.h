@@ -6,6 +6,7 @@
 
 #define HARDWARE_BMP280 hwEnabled[hwBmp280]
 #define HARDWARE_AHT20 hwEnabled[hwAht20]
+#define HARDWARE_SHT45 hwEnabled[hwSht45]
 #define HARDWARE_MLX90614 hwEnabled[hwMlx90614]
 #define HARDWARE_TSL2591 hwEnabled[hwTsl2591]
 #define HARDWARE_UICPAL hwEnabled[hwUicpal]
@@ -51,6 +52,7 @@ enum Hardware {
     hwAnemo4403 = 5,
     hwRg15 = 6,
     hwDs3231 = 7,
+    hwSht45 = 8,
 
     alpacaObscon = 10,
     alpacaSafemon = 11,

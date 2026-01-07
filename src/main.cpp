@@ -1,6 +1,7 @@
 #include "main.h"
 #include "console.h"
 #include "hardware.h"
+#include "weights.h"
 #include "log.h"
 #include "secrets.h"
 #include "version.h"
@@ -204,6 +205,8 @@ void setup() {
     initLogPrefs();
     // Hardware preferences
     initHwPrefs();
+    // Temperature and humidity calculation preferences
+    initThWeightsPrefs();
     // System Timezone
     setenv("TZ", RTC_TIMEZONE, 1);
     tzset();

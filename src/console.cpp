@@ -1,6 +1,7 @@
 #include "console.h"
 #include "hardware.h"
 #include "log.h"
+#include "weights.h"
 #include <Arduino.h>
 #include <algorithm>
 #include <iterator>
@@ -18,6 +19,8 @@ void commandHelp() {
     logMessageConsole("[HELP]   log    - show curent log settings");
     logMessageConsole("[HELP]   target - show curent log target settings");
     logMessageConsole("[HELP]   hw     - show curent log settings");
+    logMessageConsole("[HELP]   temp   - show curent temperature calc weights");
+    logMessageConsole("[HELP]   humi   - show curent humidity calc weights");
     logMessageConsole("[HELP] General:");
     logMessageConsole("[HELP]   reboot            - restart esp32 ascom alpaca device");
     logMessageConsole("[HELP] Log settings:");
@@ -37,11 +40,21 @@ void commandHelp() {
     logMessageConsole("[HELP] Hardware settings (reboot required):");
     logMessageConsole("[HELP]   hw bmp280 on/off    - enable/disable BMP280 sensor");
     logMessageConsole("[HELP]   hw aht20 on/off     - enable/disable AHT20 sensor");
+    logMessageConsole("[HELP]   hw sht45 on/off     - enable/disable SHT45 sensor");
     logMessageConsole("[HELP]   hw mlx90614 on/off  - enable/disable MLX90614 sensor");
     logMessageConsole("[HELP]   hw tsl2591 on/off   - enable/disable TSL2591 sensor");
     logMessageConsole("[HELP]   hw anemo4403 on/off - enable/disable ANEMO4403 sensor");
     logMessageConsole("[HELP]   hw uicpal on/off    - enable/disable UICPAL sensor");
     logMessageConsole("[HELP]   hw rg15 on/off      - enable/disable RG-15 sensor");
+    logMessageConsole("[HELP] Temperature calc weights:");
+    logMessageConsole("[HELP]   temp sht n.nn - set SHT45 temperature calc weight");
+    logMessageConsole("[HELP]   temp aht n.nn - set AHT20 temperature calc weight");
+    logMessageConsole("[HELP]   temp bmp n.nn - set BMP280 temperature calc weight");
+    logMessageConsole("[HELP]   temp weight n.nn n.nn n.nn - set SHT45/AHT20/BMP280 temperature calc weights at once");
+    logMessageConsole("[HELP] Humidity calc weights:");
+    logMessageConsole("[HELP]   humi sht n.nn - set SHT45 humidity calc weight");
+    logMessageConsole("[HELP]   humi aht n.nn - set AHT20 humidity calc weight");
+    logMessageConsole("[HELP]   humi weight n.nn n.nn - set SHT45/AHT20 humidity calc weights at once");
     logMessageConsole("[HELP] Alpaca settings (reboot required):");
     logMessageConsole("[HELP]   alpaca obscon on/off  - enable/disable observing conditions service");
     logMessageConsole("[HELP]   alpaca safemon on/off - enable/disable safety monitor service");
@@ -76,6 +89,7 @@ void commandHardwareState() {
     logMessageConsole("[INFO]   DS3231    - " + String(HARDWARE_DS3231 ? "enabled " : "disabled") + " (realtime clock)");
     logMessageConsole("[INFO]   BMP280    - " + String(HARDWARE_BMP280 ? "enabled " : "disabled") + " (temperature and pressure)");
     logMessageConsole("[INFO]   AHT20     - " + String(HARDWARE_AHT20 ? "enabled " : "disabled") + " (temperature and humidity)");
+    logMessageConsole("[INFO]   SHT45     - " + String(HARDWARE_SHT45 ? "enabled " : "disabled") + " (temperature and humidity)");
     logMessageConsole("[INFO]   MLX90614  - " + String(HARDWARE_MLX90614 ? "enabled " : "disabled") + " (sky temperature)");
     logMessageConsole("[INFO]   TSL2591   - " + String(HARDWARE_TSL2591 ? "enabled " : "disabled") + " (sky brightness)");
     logMessageConsole("[INFO]   ANEMO4403 - " + String(HARDWARE_ANEMO4403 ? "enabled " : "disabled") + " (wind speed)");
@@ -105,6 +119,21 @@ void commandHardwareState() {
     logMessageConsole("[INFO]   Dew point       - " + String(SAFEMON_DEWPOINT ? "enabled" : "disabled"));
     logMessageConsole("[INFO]   Sky temperature - " + String(SAFEMON_SKYTEMP ? "enabled" : "disabled"));
     logMessageConsole("[INFO]   Wind speed      - " + String(SAFEMON_WINDSPEED ? "enabled" : "disabled"));
+}
+
+void commandTempWeightState() {
+    logMessageConsole("[INFO] Temperature calc weights");
+    logMessageConsole("[INFO] ------------------------");
+    logMessageConsole("[INFO]  SHT45  - " + String(T_NORM_WEIGHT_SHT45) + " [" + String(T_WEIGHT_SHT45) + "]");
+    logMessageConsole("[INFO]  AHT20  - " + String(T_NORM_WEIGHT_AHT20) + " [" + String(T_WEIGHT_AHT20) + "]");
+    logMessageConsole("[INFO]  BMP280 - " + String(T_NORM_WEIGHT_BMP280) + " [" + String(T_WEIGHT_BMP280) + "]");
+}
+
+void commandHumiWeightState() {
+    logMessageConsole("[INFO] Humidity calc weights");
+    logMessageConsole("[INFO] ---------------------");
+    logMessageConsole("[INFO]  SHT45  - " + String(H_NORM_WEIGHT_SHT45) + " [" + String(H_WEIGHT_SHT45) + "]");
+    logMessageConsole("[INFO]  AHT20  - " + String(H_NORM_WEIGHT_AHT20) + " [" + String(H_WEIGHT_AHT20) + "]");
 }
 
 void commandReboot() {
@@ -366,6 +395,18 @@ void commandHwAht20Off() {
     saveHwPrefs();
 }
 
+void commandHwSht45On() {
+    logMessageConsole("[CONSOLE] SHT45 enabled");
+    HARDWARE_SHT45 = true;
+    saveHwPrefs();
+}
+
+void commandHwSht45Off() {
+    logMessageConsole("[CONSOLE] SHT45 disabled");
+    HARDWARE_SHT45 = false;
+    saveHwPrefs();
+}
+
 void commandHwMlx90614On() {
     logMessageConsole("[CONSOLE] MLX90614 enabled");
     HARDWARE_MLX90614 = true;
@@ -426,6 +467,36 @@ void commandHwRg15Off() {
     saveHwPrefs();
 }
 
+void commandTempWeightBmp280(float weight) {
+    T_WEIGHT_BMP280 = weight;
+    saveThWeightsPrefs();
+    // logMessageConsole("[CONSOLE] BMP280 temperature calc weight " + String(T_NORM_WEIGHT_BMP280) + " [" + String(T_WEIGHT_BMP280) + "]");
+}
+
+void commandTempWeightAht20(float weight) {
+    T_WEIGHT_AHT20 = weight;
+    saveThWeightsPrefs();
+    // logMessageConsole("[CONSOLE] AHT20 temperature calc weight " + String(T_NORM_WEIGHT_AHT20) + " [" + String(T_WEIGHT_AHT20) + "]");
+}
+
+void commandTempWeightSht45(float weight) {
+    T_WEIGHT_SHT45 = weight;
+    saveThWeightsPrefs();
+    // logMessageConsole("[CONSOLE] SHT45 temperature calc weight " + String(T_NORM_WEIGHT_SHT45) + " [" + String(T_WEIGHT_SHT45) + "]");
+}
+
+void commandHumiWeightAht20(float weight) {
+    H_WEIGHT_AHT20 = weight;
+    saveThWeightsPrefs();
+    // logMessageConsole("[CONSOLE] AHT20 humidity calc weight " + String(H_NORM_WEIGHT_AHT20) + " [" + String(H_WEIGHT_AHT20) + "]");
+}
+
+void commandHumiWeightSht45(float weight) {
+    H_WEIGHT_SHT45 = weight;
+    saveThWeightsPrefs();
+    // logMessageConsole("[CONSOLE] SHT45 humidity calc weight " + String(H_NORM_WEIGHT_SHT45) + " [" + String(H_WEIGHT_SHT45) + "]");
+}
+
 void initConsoleCommands() {
 
     console_commands["help"] = commandHelp;
@@ -439,6 +510,12 @@ void initConsoleCommands() {
 
     console_commands["hw"] = commandHardwareState;
     console_commands["hardware"] = commandHardwareState;
+
+    console_commands["temp"] = commandTempWeightState;
+    console_commands["temperature"] = commandTempWeightState;
+
+    console_commands["humi"] = commandHumiWeightState;
+    console_commands["humidity"] = commandHumiWeightState;
 
     console_commands["targetserialon"] = commandTargetSerialOn;
     console_commands["targetserialoff"] = commandTargetSerialOff;
@@ -481,6 +558,8 @@ void initConsoleCommands() {
     console_commands["hwbmp280off"] = commandHwBmp280Off;
     console_commands["hwaht20on"] = commandHwAht20On;
     console_commands["hwaht20off"] = commandHwAht20Off;
+    console_commands["hwsht45on"] = commandHwSht45On;
+    console_commands["hwsht45off"] = commandHwSht45Off;
     console_commands["hwmlx90614on"] = commandHwMlx90614On;
     console_commands["hwmlx90614off"] = commandHwMlx90614Off;
     console_commands["hwtsl2591on"] = commandHwTsl2591On;
@@ -507,12 +586,13 @@ TempHumiWeightCommand parseTempHumiWeightCommand(const std::string &input) {
     if (!(iss >> w1 >> w2)) {
         return result;
     }
-    std::string cmd = (w1.find("temp") == 0 ? "temp" : w1.find("humi") == 0 ? "humi"
-                                                                            : "");
+    std::string cmd = (w1.find("temp") == 0   ? "temp"
+                       : w1.find("humi") == 0 ? "humi"
+                                              : "");
     if (cmd.empty()) {
         return result;
     }
-    if (w2 == "weight") {
+    if (w2.find("weight") == 0) {
         cmd += "weight";
     } else if (w2.find("sht") == 0) {
         cmd += "sht";
@@ -527,8 +607,9 @@ TempHumiWeightCommand parseTempHumiWeightCommand(const std::string &input) {
     while (iss >> v && result.valueCount < 3) {
         result.values[result.valueCount++] = v;
     }
-    int expected = (cmd == "tempweight" ? 3 : cmd == "humiweight" ? 2
-                                                                  : 1);
+    int expected = (cmd == "tempweight"   ? 3
+                    : cmd == "humiweight" ? 2
+                                          : 1);
     if (result.valueCount != expected) {
         return result;
     }
@@ -538,6 +619,43 @@ TempHumiWeightCommand parseTempHumiWeightCommand(const std::string &input) {
 }
 
 void processConsoleCommand(const std::string &msg) {
+    // Temp and humi calc weights commmands
+    TempHumiWeightCommand c = parseTempHumiWeightCommand(msg);
+    if (c.success) {
+        if (c.command == "tempweight") {
+            commandTempWeightSht45(c.values[0]);
+            commandTempWeightAht20(c.values[1]);
+            commandTempWeightBmp280(c.values[2]);
+            commandTempWeightState();
+        }
+        if (c.command == "tempsht") {
+            commandTempWeightSht45(c.values[0]);
+            commandTempWeightState();
+        }
+        if (c.command == "tempaht") {
+            commandTempWeightAht20(c.values[0]);
+            commandTempWeightState();
+        }
+        if (c.command == "tempbmp") {
+            commandTempWeightBmp280(c.values[0]);
+            commandTempWeightState();
+        }
+        if (c.command == "humiweight") {
+            commandHumiWeightSht45(c.values[0]);
+            commandHumiWeightAht20(c.values[1]);
+            commandHumiWeightState();
+        }
+        if (c.command == "humisht") {
+            commandHumiWeightSht45(c.values[0]);
+            commandHumiWeightState();
+        }
+        if (c.command == "humiaht") {
+            commandHumiWeightAht20(c.values[0]);
+            commandHumiWeightState();
+        }
+        return;
+    }
+    // Slow log commands
     std::string cmd;
     cmd.resize(msg.size());
     std::transform(msg.begin(), msg.end(), cmd.begin(),
@@ -556,6 +674,7 @@ void processConsoleCommand(const std::string &msg) {
         commandLogSafemonSlowDelay(static_cast<uint16_t>(std::stoul(cmd.substr(14))));
         return;
     }
+    // Commands
     auto it = console_commands.find(cmd);
     if (it != console_commands.end()) {
         it->second(); // Execute the associated function

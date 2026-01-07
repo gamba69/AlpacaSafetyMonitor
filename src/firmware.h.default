@@ -2,10 +2,11 @@
 #define FIRMWARE_DS3231         true
 #define FIRMWARE_BMP280         true
 #define FIRMWARE_AHT20          true
+#define FIRMWARE_SHT45          true
 #define FIRMWARE_MLX90614       true
 #define FIRMWARE_TSL2591        true
 #define FIRMWARE_UICPAL         true
 #define FIRMWARE_ANEMO4403      true
-#define FIRMWARE_RG15           true
+#define FIRMWARE_RG15           false
 #define FIRMWARE_ALPACA_OBSCON  true
 #define FIRMWARE_ALPACA_SAFEMON true

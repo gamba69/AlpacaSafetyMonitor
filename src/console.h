@@ -77,6 +77,9 @@ void commandHwBmp280Off();
 void commandHwAht20On();
 void commandHwAht20Off();
 
+void commandHwSht45On();
+void commandHwSht45Off();
+
 void commandHwMlx90614On();
 void commandHwMlx90614Off();
 
@@ -91,6 +94,15 @@ void commandHwUicpalOff();
 
 void commandHwRg15On();
 void commandHwRg15Off();
+
+void commandTempWeightState();
+void commandTempWeightBmp280(float);
+void commandTempWeightAht20(float);
+void commandTempWeightSht45(float);
+
+void commandHumiWeightState();
+void commandHumiWeightAht20(float);
+void commandHumiWeightSht45(float);
 
 void initConsoleCommands();
 void IRAM_ATTR processConsoleCommand(const std::string &msg);
