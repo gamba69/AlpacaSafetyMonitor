@@ -4,6 +4,7 @@
 #include <Adafruit_BMP280.h>
 #include <Adafruit_MLX90614.h>
 #include <Adafruit_TSL2591.h>
+#include <SHT4x.h>
 #include <Arduino.h>
 #include <RunningAverage.h>
 #include <Wire.h>
@@ -26,14 +27,16 @@ static float cb_rms = 0.0;
 #define BMP280_DONE (1UL << 3)
 #define AHT20_KICK (1UL << 4)
 #define AHT20_DONE (1UL << 5)
-#define MLX90614_KICK (1UL << 6)
-#define MLX90614_DONE (1UL << 7)
-#define TSL2591_KICK (1UL << 8)
-#define TSL2591_DONE (1UL << 9)
-#define ANEMO4403_KICK (1UL << 10)
-#define ANEMO4403_DONE (1UL << 11)
-#define RG15_KICK (1UL << 12)
-#define RG15_DONE (1UL << 13)
+#define SHT45_KICK (1UL << 6)
+#define SHT45_DONE (1UL << 7)
+#define MLX90614_KICK (1UL << 8)
+#define MLX90614_DONE (1UL << 9)
+#define TSL2591_KICK (1UL << 10)
+#define TSL2591_DONE (1UL << 11)
+#define ANEMO4403_KICK (1UL << 12)
+#define ANEMO4403_DONE (1UL << 13)
+#define RG15_KICK (1UL << 14)
+#define RG15_DONE (1UL << 15)
 
 #ifndef METEO_H
 #define METEO_H
@@ -47,11 +50,14 @@ class Meteo {
         bmp_pressure,
         aht_temperature,
         aht_humidity,
+        sht_temperature,
+        sht_humidity,
         mlx_tempamb,
         mlx_tempobj,
         sky_temperature,
         noise_db,
         amb_temperature,
+        amb_humidity,
         dew_point,
         cloud_cover,
         sky_quality,
@@ -69,6 +75,9 @@ class Meteo {
     void setLogger(const int source, std::function<void(String, const int)> logLineCallback = nullptr, std::function<void(String, const int)> logLinePartCallback = nullptr, std::function<String()> logTimeCallback = nullptr);
 
   private:
+    // Formatting
+    String trimmed(float, int);
+    // Wind gust calculation
     RunningAverage wind_gust_ra = RunningAverage(40);
     // Last log message
     unsigned long last_message = 0;
@@ -131,6 +140,16 @@ class Meteo {
         instance->updateAht20();
     }
     void updateAht20(void);
+
+    // SHT45 Task
+    TaskHandle_t updateSht45Handle = NULL;
+    static void updateSht45Wrapper(void *parameter) {
+        // Cast parameter back to the class instance pointer
+        Meteo *instance = static_cast<Meteo *>(parameter);
+        // Call the actual member function
+        instance->updateSht45();
+    }
+    void updateSht45(void);
 
     // MLX90614 Task
     TaskHandle_t updateMlx90614Handle = NULL;

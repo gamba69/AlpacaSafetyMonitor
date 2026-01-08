@@ -69,7 +69,7 @@ void ObservingConditions::update(Meteo* meteo) {
     }
 
     if (OBSCON_HUMIDITY) {
-        humidity = meteo->aht_humidity;
+        humidity = meteo->amb_humidity;
         humidity_ra.add(humidity);
         message += " H:" + String(humidity, 0) + "/" + String(humidity_ra.getAverageLast(_averaging > humidity_ra.getCount() ? humidity_ra.getCount() : _averaging), 0);
     } else {

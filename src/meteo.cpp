@@ -1,9 +1,11 @@
 #include "meteo.h"
 #include "hardware.h"
 #include "helpers.h"
+#include "weights.h"
 
 Adafruit_BMP280 bmp;
 Adafruit_AHTX0 aht;
+SHT4x sht;
 Adafruit_MLX90614 mlx = Adafruit_MLX90614();
 Adafruit_TSL2591 tsl = Adafruit_TSL2591(2591);
 PCNTFrequencyCounter anm = PCNTFrequencyCounter((gpio_num_t)WIND_SENSOR_PIN);
@@ -74,7 +76,18 @@ void Meteo::begin() {
             1,
             &updateAht20Handle);
     }
-    // TODO SHT45
+    if (HARDWARE_SHT45) {
+        sht.begin();
+        // potentially slow
+        xTaskCreatePinnedToCore(
+            Meteo::updateSht45Wrapper,
+            "updateSht45",
+            2048,
+            this,
+            1,
+            &updateSht45Handle,
+            1);
+    }
     if (HARDWARE_MLX90614) {
         mlx.begin(I2C_MLX_ADDR);
         xTaskCreate(
@@ -88,7 +101,7 @@ void Meteo::begin() {
     if (HARDWARE_TSL2591) {
         tsl.begin();
         beginTslAGT(&tsl);
-        // Long task
+        // potentially slow
         xTaskCreatePinnedToCore(
             Meteo::updateTsl2591Wrapper,
             "updateTsl2591",
@@ -124,7 +137,7 @@ void Meteo::updateUicpal() {
     while (true) {
         if (force_update || millis() - last_update > METEO_MEASURE_DELAY) {
             if (digitalRead(RAIN_SENSOR_PIN)) {
-                rain_rate = 1;
+                rain_rate = 0.1;
             } else {
                 rain_rate = 0;
             }
@@ -194,14 +207,50 @@ void Meteo::updateAht20() {
     }
 }
 
+void Meteo::updateSht45() {
+    EventBits_t xBits;
+    static unsigned long last_update = 0;
+    static bool force_update = true;
+    while (true) {
+        if (force_update || millis() - last_update > METEO_MEASURE_DELAY) {
+            // TODO Smart with heating
+            if (sht.read()) {
+                sht_temperature = sht.getTemperature();
+                sht_humidity = sht.getHumidity();
+            } else {
+                // TODO print error?
+            }
+            last_update = millis();
+            force_update = false;
+            xEventGroupSetBits(xDevicesGroup, SHT45_DONE);
+        }
+        xBits = xEventGroupWaitBits(
+            xDevicesGroup,
+            SHT45_KICK,
+            pdTRUE,
+            pdFALSE,
+            pdMS_TO_TICKS(METEO_TASK_SLEEP));
+        if ((xBits & SHT45_KICK) != 0) {
+            force_update = true;
+        }
+    }
+}
+
 void Meteo::updateMlx90614() {
     EventBits_t xBits;
     static unsigned long last_update = 0;
     static bool force_update = true;
     while (true) {
         if (force_update || millis() - last_update > METEO_MEASURE_DELAY) {
-            mlx_tempamb = mlx.readAmbientTempC();
-            mlx_tempobj = mlx.readObjectTempC();
+            float val;
+            val = mlx.readAmbientTempC();
+            if (val != NAN) {
+                mlx_tempamb = val;
+            }
+            val = mlx.readObjectTempC();
+            if (val != NAN) {
+                mlx_tempobj = val;
+            }
             last_update = millis();
             force_update = false;
             xEventGroupSetBits(xDevicesGroup, MLX90614_DONE);
@@ -271,7 +320,7 @@ void Meteo::updateAnemo4403Speed() {
 }
 
 void Meteo::updateAnemo4403Gust() {
-    // Forced not used
+    // May not be forced at all
     while (true) {
         // Different cycles for wind_speed (custom)
         // and wind_gust (always 3 sec then 2 minutes max)
@@ -284,52 +333,71 @@ void Meteo::updateAnemo4403Gust() {
     }
 }
 
+String Meteo::trimmed(float v, int p) {
+    String s = String(v, p);
+    s.replace(" ", "");
+    return s;
+}
+
 void Meteo::update(bool force) {
     String message = "[METEO][DATA]";
 
     if (force) {
         EventBits_t xDone;
         EventBits_t xKick;
+        EventBits_t xWait;
         if (HARDWARE_UICPAL) {
             xDone |= UICPAL_DONE;
             xKick |= UICPAL_KICK;
+            xWait |= UICPAL_DONE;
         }
         if (HARDWARE_BMP280) {
             xDone |= BMP280_DONE;
             xKick |= BMP280_KICK;
+            xWait |= BMP280_DONE;
         }
         if (HARDWARE_AHT20) {
             xDone |= AHT20_DONE;
             xKick |= AHT20_KICK;
+            xWait |= AHT20_DONE;
+        }
+        if (HARDWARE_SHT45) {
+            xDone |= SHT45_DONE;
+            xKick |= SHT45_KICK;
+            // xWait |= SHT45_DONE; // potentially slow
         }
         if (HARDWARE_MLX90614) {
             xDone |= MLX90614_DONE;
             xKick |= MLX90614_KICK;
+            xWait |= MLX90614_DONE;
         }
         if (HARDWARE_TSL2591) {
             xDone |= TSL2591_DONE;
             xKick |= TSL2591_KICK;
+            // xWait |= TSL2591_DONE; // potentially slow
         }
         if (HARDWARE_ANEMO4403) {
             xDone |= ANEMO4403_DONE;
             xKick |= ANEMO4403_KICK;
+            xWait |= ANEMO4403_DONE;
         }
+        // TODO RG15
         xEventGroupClearBits(xDevicesGroup, xDone);
         xEventGroupSetBits(xDevicesGroup, xKick);
-        xEventGroupWaitBits(xDevicesGroup, xDone, pdFALSE, pdTRUE, pdMS_TO_TICKS(METEO_FORCE_DELAY));
+        xEventGroupWaitBits(xDevicesGroup, xWait, pdFALSE, pdTRUE, pdMS_TO_TICKS(METEO_FORCE_DELAY));
     }
 
     // TODO RG15
     if (HARDWARE_UICPAL) {
-        message += " RR:" + String(rain_rate, 1);
+        message += " RR:" + trimmed(rain_rate, 1);
     } else {
         rain_rate = 0;
         message += " RR:n/a";
     }
 
     if (HARDWARE_BMP280) {
-        message += " TB:" + String(bmp_temperature, 1);
-        message += " PB:" + String(bmp_pressure, 0);
+        message += " TB:" + trimmed(bmp_temperature, 1);
+        message += " PB:" + trimmed(bmp_pressure, 0);
     } else {
         bmp_temperature = 0;
         bmp_pressure = 0;
@@ -337,48 +405,50 @@ void Meteo::update(bool force) {
     }
 
     if (HARDWARE_AHT20) {
-        message += " TA:" + String(aht_temperature, 1);
-        message += " HA:" + String(aht_humidity, 0);
+        message += " TA:" + trimmed(aht_temperature, 1);
+        message += " HA:" + trimmed(aht_humidity, 0);
     } else {
         aht_temperature = 0;
         aht_humidity = 0;
         message += " TA:n/a HA:n/a";
     }
 
-    if (HARDWARE_BMP280 && HARDWARE_AHT20) {
-        amb_temperature = (bmp_temperature + aht_temperature) / 2;
-    } else if (HARDWARE_BMP280 && !HARDWARE_AHT20) {
-        amb_temperature = bmp_temperature;
-    } else if (!HARDWARE_BMP280 && HARDWARE_AHT20) {
-        amb_temperature = aht_temperature;
+    if (HARDWARE_SHT45) {
+        message += " TS:" + trimmed(sht_temperature, 1);
+        message += " HS:" + trimmed(sht_humidity, 0);
     } else {
-        amb_temperature = 0;
+        sht_temperature = 0;
+        sht_humidity = 0;
+        message += " TS:n/a HS:n/a";
     }
 
-    if (HARDWARE_AHT20) {
-        dew_point = amb_temperature - (100 - aht_humidity) / 5.;
-        message += " DP:" + String(dew_point, 1);
+    amb_temperature = T_NORM_WEIGHT_BMP280 * bmp_temperature + T_NORM_WEIGHT_AHT20 * aht_temperature + T_NORM_WEIGHT_SHT45 * sht_temperature;
+    amb_humidity = H_NORM_WEIGHT_AHT20 * aht_humidity + H_NORM_WEIGHT_SHT45 * sht_humidity;
+
+    if (HARDWARE_AHT20 || HARDWARE_SHT45) {
+        dew_point = amb_temperature - (100 - amb_humidity) / 5.;
+        message += " DP:" + trimmed(dew_point, 1);
     } else {
         dew_point = 0;
         message += " DP:n/a";
     }
 
     if (HARDWARE_MLX90614) {
-        message += " MA:" + String(mlx_tempamb, 1);
-        message += " MO:" + String(mlx_tempobj, 1);
+        message += " MA:" + trimmed(mlx_tempamb, 1);
+        message += " MO:" + trimmed(mlx_tempobj, 1);
         sky_temperature = tsky_calc(mlx_tempobj, mlx_tempamb);
-        message += " ST:" + String(sky_temperature);
+        message += " ST:" + trimmed(sky_temperature, 1);
         // add tempsky value to circular buffer and calculate
         // Turbulence (noise dB) / Seeing estimation
         cb_add(sky_temperature);
         noise_db = cb_noise_db_calc();
-        message += " TR:" + String(noise_db, 1);
+        message += " TR:" + trimmed(noise_db, 1);
         cloud_cover = 100. + (sky_temperature * 6.);
         if (cloud_cover > 100.)
             cloud_cover = 100.;
         if (cloud_cover < 0.)
             cloud_cover = 0.;
-        message += " CC:" + String(cloud_cover, 0);
+        message += " CC:" + trimmed(cloud_cover, 0);
     } else {
         mlx_tempamb = 0;
         mlx_tempobj = 0;
@@ -389,15 +459,15 @@ void Meteo::update(bool force) {
     }
 
     if (HARDWARE_TSL2591) {
-        message += " SB: " + smart_round(sky_brightness);
-        message += " SQ: " + String(sky_quality, 1);
+        message += " SB:" + smart_round(sky_brightness);
+        message += " SQ:" + trimmed(sky_quality, 1);
     } else {
         message += " SB:n/a SQ:n/a";
     }
 
     if (HARDWARE_ANEMO4403) {
-        message += " WS: " + String(wind_speed, 1);
-        message += " WG: " + String(wind_gust, 1);
+        message += " WS:" + trimmed(wind_speed, 1);
+        message += " WG:" + trimmed(wind_gust, 1);
     } else {
         message += " WS:n/a WG:n/a";
     }

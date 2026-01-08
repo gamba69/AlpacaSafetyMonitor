@@ -158,7 +158,7 @@ void SafetyMonitor::update(Meteo* meteo) {
     }
     // Humidity
     if (SAFEMON_HUMIDITY) {
-        humidity = meteo->aht_humidity;
+        humidity = meteo->amb_humidity;
         bool prev_safe = humi_safe;
         humi_safe = (humi_prove ? (humidity < humi_lower_limit ? true : (humidity >= humi_lower_limit ? false : humi_safe)) : true);
         if (humi_safe != prev_safe) {
