@@ -1,7 +1,7 @@
-#include <Arduino.h>
-#include <Preferences.h>
 #include "log.h"
 #include "main.h"
+#include <Arduino.h>
+#include <Preferences.h>
 
 String logTime() {
     time_t now;
@@ -49,6 +49,7 @@ void saveLogPrefs() {
 String mqttLogBuffer = "";
 
 void logLine(String line, const int source, bool mqtt) {
+    static bool usual = true;
     if (logEnabled[source] || source == LogSource::Console) {
         if (LOG_SERIAL) {
             Serial.println(line);
@@ -65,9 +66,19 @@ void logLine(String line, const int source, bool mqtt) {
             }
         }
         if (LOG_LED) {
-            // TODO
-            if(line.indexOf("[METEO][DATA]") != -1) {
-                led.Blink(50,50).Repeat(3);
+            if (line.indexOf("[WIFI][EVENT] AP mode started!") != -1) {
+                usual = false;
+                led.Blink(1200, 200).Forever();
+            }
+            if (line.indexOf("[WIFI][EVENT] AP mode stopped!") != -1) {
+                usual = true;
+                led.Off();
+            }
+            if (usual && line.indexOf("[METEO][DATA]") != -1) {
+                led.Blink(50, 10).Repeat(1);
+            }
+            if(usual && line.indexOf("[WIFI][STATUS] Connected to known") != -1) {
+                led.Blink(50, 100).Repeat(4);
             }
         }
     }

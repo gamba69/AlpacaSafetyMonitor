@@ -361,7 +361,7 @@ void SafetyMonitor::aWriteJson(JsonObject &root) {
     obj_config[F("R___zda_upper_limitzc_zdgC")] = skytemp_upper_limit;
     obj_config[F("S_Wind_Speedzc_prove")] = wind_prove;
     obj_config[F("T___zda_lower_limitzc_mzss")] = wind_lower_limit;
-    obj_config[F("U___zda_upper_limitzc_zdgC")] = wind_upper_limit;
+    obj_config[F("U___zda_upper_limitzc_mzss")] = wind_upper_limit;
     // State
     // 🟢 🟡 🔵 🔴 ⚫ "⠀"
     // 🟩 🟨 🟦 🟥 ⬛
