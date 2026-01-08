@@ -1,16 +1,17 @@
 #pragma once
 
+#include "config.h"
+#include "meteoanm.h"
+#include "meteotsl.h"
 #include <Adafruit_AHTX0.h>
 #include <Adafruit_BMP280.h>
 #include <Adafruit_MLX90614.h>
 #include <Adafruit_TSL2591.h>
-#include <SHT4x.h>
 #include <Arduino.h>
+#include <RG15.h>
 #include <RunningAverage.h>
+#include <SHT4x.h>
 #include <Wire.h>
-#include "config.h"
-#include "meteoanm.h"
-#include "meteotsl.h"
 
 // Circular buffer functions
 #define CB_SIZE 40
@@ -43,28 +44,21 @@ static float cb_rms = 0.0;
 
 class Meteo {
   public:
+    Meteo() = default;
+    Meteo(Meteo &&) = delete;
+    Meteo(const Meteo &) = delete;
     // attributes
-    volatile float
-        rain_rate,
-        bmp_temperature,
-        bmp_pressure,
-        aht_temperature,
-        aht_humidity,
-        sht_temperature,
-        sht_humidity,
-        mlx_tempamb,
-        mlx_tempobj,
-        sky_temperature,
-        noise_db,
-        amb_temperature,
-        amb_humidity,
-        dew_point,
-        cloud_cover,
-        sky_quality,
-        sky_brightness,
-        wind_direction,
-        wind_speed,
-        wind_gust;
+    volatile struct {
+        float uicpal_rate, rg15_rate, rain_rate;
+        float bmp_temperature, bmp_pressure;
+        float aht_temperature, aht_humidity;
+        float sht_temperature, sht_humidity;
+        float temperature, humidity, dew_point;
+        float mlx_tempamb, mlx_tempobj, sky_temperature, cloud_cover;
+        float noise_db;
+        float sky_quality, sky_brightness;
+        float wind_direction, wind_speed, wind_gust;
+    } sensors = {0};
     // methods
     void update(bool force = false);
     //  setters
@@ -120,6 +114,16 @@ class Meteo {
         instance->updateUicpal();
     }
     void updateUicpal(void);
+
+    // RG15 Task
+    TaskHandle_t updateRg15Handle = NULL;
+    static void updateRg15Wrapper(void *parameter) {
+        // Cast parameter back to the class instance pointer
+        Meteo *instance = static_cast<Meteo *>(parameter);
+        // Call the actual member function
+        instance->updateRg15();
+    }
+    void updateRg15(void);
 
     // BMP280 Task
     TaskHandle_t updateBmp280Handle = NULL;

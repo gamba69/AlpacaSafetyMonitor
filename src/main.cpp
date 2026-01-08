@@ -22,8 +22,7 @@ AlpacaServer alpacaServer("Alpaca_ESP32", (VERSION + String(", build ") + BUILD_
 
 SafetyMonitor safetymonitor = SafetyMonitor();
 ObservingConditions observingconditions = ObservingConditions();
-
-Meteo meteo = Meteo();
+Meteo meteo;
 
 EventGroupHandle_t xInterruptsGroup;
 

@@ -49,7 +49,7 @@ void ObservingConditions::update(Meteo* meteo) {
     String message = "[OBSERVING][DATA]";
 
     if (OBSCON_RAINRATE) {
-        rainrate = meteo->rain_rate;
+        rainrate = meteo->sensors.rain_rate;
         rainrate_ra.add(rainrate);
         message += " RR:" + String(rainrate, 1) + "/" + String(rainrate_ra.getAverageLast(_averaging > rainrate_ra.getCount() ? rainrate_ra.getCount() : _averaging), 1);
     } else {
@@ -59,7 +59,7 @@ void ObservingConditions::update(Meteo* meteo) {
     }
 
     if (OBSCON_TEMPERATURE) {
-        temperature = meteo->amb_temperature;
+        temperature = meteo->sensors.temperature;
         temperature_ra.add(temperature);
         message += " T:" + String(temperature, 1) + "/" + String(temperature_ra.getAverageLast(_averaging > temperature_ra.getCount() ? temperature_ra.getCount() : _averaging), 1);
     } else {
@@ -69,7 +69,7 @@ void ObservingConditions::update(Meteo* meteo) {
     }
 
     if (OBSCON_HUMIDITY) {
-        humidity = meteo->amb_humidity;
+        humidity = meteo->sensors.humidity;
         humidity_ra.add(humidity);
         message += " H:" + String(humidity, 0) + "/" + String(humidity_ra.getAverageLast(_averaging > humidity_ra.getCount() ? humidity_ra.getCount() : _averaging), 0);
     } else {
@@ -79,7 +79,7 @@ void ObservingConditions::update(Meteo* meteo) {
     }
 
     if (OBSCON_PRESSURE) {
-        pressure = meteo->bmp_pressure;
+        pressure = meteo->sensors.bmp_pressure;
         pressure_ra.add(pressure);
         message += " P:" + String(pressure, 0) + "/" + String(pressure_ra.getAverageLast(_averaging > pressure_ra.getCount() ? pressure_ra.getCount() : _averaging), 0);
     } else {
@@ -89,7 +89,7 @@ void ObservingConditions::update(Meteo* meteo) {
     }
 
     if (OBSCON_DEWPOINT) {
-        dewpoint = meteo->dew_point;
+        dewpoint = meteo->sensors.dew_point;
         dewpoint_ra.add(dewpoint);
         message += " DP:" + String(dewpoint, 1) + "/" + String(dewpoint_ra.getAverageLast(_averaging > dewpoint_ra.getCount() ? dewpoint_ra.getCount() : _averaging), 1);
     } else {
@@ -99,7 +99,7 @@ void ObservingConditions::update(Meteo* meteo) {
     }
 
     if (OBSCON_SKYTEMP) {
-        skytemp = meteo->sky_temperature;
+        skytemp = meteo->sensors.sky_temperature;
         skytemp_ra.add(skytemp);
         message += " ST:" + String(skytemp, 1) + "/" + String(skytemp_ra.getAverageLast(_averaging > skytemp_ra.getCount() ? skytemp_ra.getCount() : _averaging), 1);
     } else {
@@ -109,7 +109,7 @@ void ObservingConditions::update(Meteo* meteo) {
     }
 
     if (OBSCON_FWHM) {
-        noisedb = meteo->noise_db;
+        noisedb = meteo->sensors.noise_db;
         noisedb_ra.add(noisedb);
         message += " TR:" + String(noisedb, 1) + "/" + String(noisedb_ra.getAverageLast(_averaging > noisedb_ra.getCount() ? noisedb_ra.getCount() : _averaging), 1);
     } else {
@@ -119,7 +119,7 @@ void ObservingConditions::update(Meteo* meteo) {
     }
 
     if (OBSCON_CLOUDCOVER) {
-        cloudcover = meteo->cloud_cover;
+        cloudcover = meteo->sensors.cloud_cover;
         cloudcover_ra.add(cloudcover);
         message += " CC:" + String(cloudcover, 0) + "/" + String(cloudcover_ra.getAverageLast(_averaging > cloudcover_ra.getCount() ? cloudcover_ra.getCount() : _averaging), 0);
     } else {
@@ -129,7 +129,7 @@ void ObservingConditions::update(Meteo* meteo) {
     }
 
     if (OBSCON_SKYQUALITY) {
-        skyquality = meteo->sky_quality;
+        skyquality = meteo->sensors.sky_quality;
         skyquality_ra.add(skyquality);
         message += " SQ:" + String(skyquality, 1) + "/" + String(skyquality_ra.getAverageLast(_averaging > skyquality_ra.getCount() ? skyquality_ra.getCount() : _averaging), 1);
     } else {
@@ -139,7 +139,7 @@ void ObservingConditions::update(Meteo* meteo) {
     }
 
     if (OBSCON_SKYBRIGHTNESS) {
-        skybrightness = meteo->sky_brightness;
+        skybrightness = meteo->sensors.sky_brightness;
         skybrightness_ra.add(skybrightness);
         message += " SB:" + smart_round(skybrightness) + "/" + smart_round(skybrightness_ra.getAverageLast(_averaging > skybrightness_ra.getCount() ? skybrightness_ra.getCount() : _averaging));
     } else {
@@ -149,7 +149,7 @@ void ObservingConditions::update(Meteo* meteo) {
     }
 
     if (OBSCON_WINDDIR) {
-        winddir = meteo->wind_direction;
+        winddir = meteo->sensors.wind_direction;
         winddir_ra.add(winddir);
         message += " WD:" + String(winddir, 1) + "/" + String(winddir_ra.getAverageLast(_averaging > winddir_ra.getCount() ? winddir_ra.getCount() : _averaging), 1);
     } else {
@@ -159,7 +159,7 @@ void ObservingConditions::update(Meteo* meteo) {
     }
 
     if (OBSCON_WINDSPEED) {
-        windspeed = meteo->wind_speed;
+        windspeed = meteo->sensors.wind_speed;
         windspeed_ra.add(windspeed);
         message += " WS:" + String(windspeed, 1) + "/" + String(windspeed_ra.getAverageLast(_averaging > windspeed_ra.getCount() ? windspeed_ra.getCount() : _averaging), 1);
     } else {
@@ -169,7 +169,7 @@ void ObservingConditions::update(Meteo* meteo) {
     }
 
     if (OBSCON_WINDGUST) {
-        windgust = meteo->wind_gust;
+        windgust = meteo->sensors.wind_gust;
         windgust_ra.add(windgust);
         message += " WG:" + String(windgust, 1) + "/" + String(windgust_ra.getAverageLast(_averaging > windgust_ra.getCount() ? windgust_ra.getCount() : _averaging), 1);
     } else {

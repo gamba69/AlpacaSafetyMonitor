@@ -90,7 +90,7 @@ void SafetyMonitor::update(Meteo* meteo) {
     // Rain
     if (SAFEMON_RAINRATE) {
         if (!rain_init) {
-            rainrate = meteo->rain_rate;
+            rainrate = meteo->sensors.rain_rate;
             if (rainrate > 0) {
                 rainrate_prev = rainrate;
                 rainrate_curr = rainrate;
@@ -102,8 +102,8 @@ void SafetyMonitor::update(Meteo* meteo) {
             }
             rain_init = true;
         }
-        if (meteo->rain_rate > 0) {
-            rainrate_curr = meteo->rain_rate;
+        if (meteo->sensors.rain_rate > 0) {
+            rainrate_curr = meteo->sensors.rain_rate;
         } else {
             rainrate_curr = 0;
         }
@@ -143,7 +143,7 @@ void SafetyMonitor::update(Meteo* meteo) {
     }
     // Temperature
     if (SAFEMON_TEMPERATURE) {
-        temperature = meteo->amb_temperature;
+        temperature = meteo->sensors.temperature;
         bool prev_safe = temp_safe;
         temp_safe = (temp_prove ? (temperature > temp_upper_limit ? true : (temperature <= temp_lower_limit ? false : temp_safe)) : true);
         if (temp_safe != prev_safe) {
@@ -158,7 +158,7 @@ void SafetyMonitor::update(Meteo* meteo) {
     }
     // Humidity
     if (SAFEMON_HUMIDITY) {
-        humidity = meteo->amb_humidity;
+        humidity = meteo->sensors.humidity;
         bool prev_safe = humi_safe;
         humi_safe = (humi_prove ? (humidity < humi_lower_limit ? true : (humidity >= humi_lower_limit ? false : humi_safe)) : true);
         if (humi_safe != prev_safe) {
@@ -173,7 +173,7 @@ void SafetyMonitor::update(Meteo* meteo) {
     }
     // Dew Point Delta
     if (SAFEMON_DEWPOINT) {
-        dewpoint = meteo->dew_point;
+        dewpoint = meteo->sensors.dew_point;
         dewpoint_delta = (temperature - dewpoint > 0 ? temperature - dewpoint : 0);
         bool prev_safe = dewdelta_safe;
         dewdelta_safe = (dewdelta_prove ? (dewpoint_delta > dewdelta_upper_limit ? true : (dewpoint_delta <= dewdelta_lower_limit ? false : dewdelta_safe)) : true);
@@ -190,7 +190,7 @@ void SafetyMonitor::update(Meteo* meteo) {
     }
     // Sky Temperature
     if (SAFEMON_SKYTEMP) {
-        skytemp = meteo->sky_temperature;
+        skytemp = meteo->sensors.sky_temperature;
         bool prev_safe = skytemp_safe;
         skytemp_safe = (skytemp_prove ? (skytemp < skytemp_lower_limit ? true : (skytemp >= skytemp_upper_limit ? false : skytemp_safe)) : true);
         if (skytemp_safe != prev_safe) {
@@ -205,7 +205,7 @@ void SafetyMonitor::update(Meteo* meteo) {
     }
     // Wind Speed
     if (SAFEMON_WINDSPEED) {
-        windspeed = meteo->wind_speed;
+        windspeed = meteo->sensors.wind_speed;
         bool prev_safe = wind_safe;
         wind_safe = (wind_prove ? (windspeed < wind_lower_limit ? true : (windspeed >= wind_upper_limit ? false : wind_safe)) : true);
         if (wind_safe != prev_safe) {
