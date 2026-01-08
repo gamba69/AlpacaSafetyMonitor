@@ -66,6 +66,9 @@ void logLine(String line, const int source, bool mqtt) {
             }
         }
         if (LOG_LED) {
+            if (line.indexOf("[OTA] Begin firmware upgrade") != -1) {
+                led.Blink(50, 100).Forever();
+            }
             if (line.indexOf("[WIFI][EVENT] AP mode started!") != -1) {
                 usual = false;
                 led.Blink(1200, 200).Forever();
