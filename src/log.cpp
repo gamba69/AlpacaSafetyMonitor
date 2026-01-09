@@ -48,8 +48,28 @@ void saveLogPrefs() {
 
 String mqttLogBuffer = "";
 
-void logLine(String line, const int source, bool mqtt) {
+void logLed(String line) {
     static bool usual = true;
+    if (line.indexOf("[OTA] Begin firmware upgrade") != -1) {
+        led.Blink(50, 100).Forever();
+    }
+    if (line.indexOf("[WIFI][EVENT] AP mode started!") != -1) {
+        usual = false;
+        led.Blink(1200, 200).Forever();
+    }
+    if (line.indexOf("[WIFI][EVENT] AP mode stopped!") != -1) {
+        usual = true;
+        led.Off();
+    }
+    if (usual && line.indexOf("[METEO][DATA]") != -1) {
+        led.Blink(50, 10).Repeat(1);
+    }
+    if (usual && line.indexOf("[WIFI][STATUS] Connected to known") != -1) {
+        led.Blink(50, 100).Repeat(4);
+    }
+}
+
+void logLine(String line, const int source, bool mqtt) {
     if (logEnabled[source] || source == LogSource::Console) {
         if (LOG_SERIAL) {
             Serial.println(line);
@@ -66,23 +86,7 @@ void logLine(String line, const int source, bool mqtt) {
             }
         }
         if (LOG_LED) {
-            if (line.indexOf("[OTA] Begin firmware upgrade") != -1) {
-                led.Blink(50, 100).Forever();
-            }
-            if (line.indexOf("[WIFI][EVENT] AP mode started!") != -1) {
-                usual = false;
-                led.Blink(1200, 200).Forever();
-            }
-            if (line.indexOf("[WIFI][EVENT] AP mode stopped!") != -1) {
-                usual = true;
-                led.Off();
-            }
-            if (usual && line.indexOf("[METEO][DATA]") != -1) {
-                led.Blink(50, 10).Repeat(1);
-            }
-            if(usual && line.indexOf("[WIFI][STATUS] Connected to known") != -1) {
-                led.Blink(50, 100).Repeat(4);
-            }
+            logLed(line);
         }
     }
 }
@@ -105,7 +109,7 @@ void logLinePart(String line, int source, bool mqtt) {
             }
         }
         if (LOG_LED) {
-            // TODO
+            logLed(line);
         }
     }
 }
