@@ -12,7 +12,7 @@ def get_src_hash():
     hash_md5 = hashlib.md5()
     for root, dirs, files in os.walk("src"):
         for file in sorted(files):
-            if file.endswith(('.cpp', '.c', '.h', '.hpp')) and file not in IGNORE_FILES:
+            if file.endswith(('.cpp', '.c', '.h', '.hpp', '.default')) and file not in IGNORE_FILES:
                 filepath = os.path.join(root, file)
                 with open(filepath, 'rb') as f:
                     hash_md5.update(f.read())
