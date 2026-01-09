@@ -44,7 +44,7 @@ void Meteo::begin() {
     if (HARDWARE_UICPAL) {
         pinMode(RAIN_SENSOR_PIN, INPUT_PULLDOWN);
         if (digitalRead(RAIN_SENSOR_PIN)) {
-            sensors.uicpal_rate = 0.1;
+            sensors.uicpal_rate = 0.02;
         } else {
             sensors.uicpal_rate = 0;
         }
@@ -153,7 +153,7 @@ void Meteo::updateUicpal() {
     while (true) {
         if (force_update || millis() - last_update > METEO_MEASURE_DELAY) {
             if (digitalRead(RAIN_SENSOR_PIN)) {
-                sensors.uicpal_rate = 0.1;
+                sensors.uicpal_rate = 0.02;
             } else {
                 sensors.uicpal_rate = 0;
             }
@@ -286,7 +286,8 @@ void Meteo::updateSht45() {
     while (true) {
         if (force_update || millis() - last_update > METEO_MEASURE_DELAY) {
             // potentially long running
-            // TODO Smart with heating
+            // TODO Smart with heating - simple NOT working!
+            // Need to be heat, wait (stabilize?), read
             if (sht.read()) {
                 sensors.sht_temperature = sht.getTemperature();
                 sensors.sht_humidity = sht.getHumidity();
@@ -384,6 +385,7 @@ void Meteo::updateTsl2591() {
     while (true) {
         if (force_update || millis() - last_update > METEO_MEASURE_DELAY) {
             // potentially long running
+            // TODO Interrupt, long delay (not METEO_MEASURE_DELAY!)
             TslAutoLum agt = getTslAGT(&tsl);
             sensors.sky_brightness = calcLuxAGT(agt);
             sensors.sky_quality = calcSqmAGT(agt);
@@ -503,14 +505,14 @@ void Meteo::update(bool force) {
     }
 
     if (HARDWARE_UICPAL) {
-        message += " UR:" + trimmed(sensors.uicpal_rate, 1);
+        message += " UR:" + trimmed(sensors.uicpal_rate, 2);
     } else {
         sensors.uicpal_rate = 0;
         message += " UR:n/a";
     }
 
     if (HARDWARE_RG15) {
-        message += " RR:" + trimmed(sensors.rg15_rate, 1);
+        message += " RR:" + trimmed(sensors.rg15_rate, 2);
     } else {
         sensors.rg15_rate = 0;
         message += " RR:n/a";

@@ -132,7 +132,7 @@ void SafetyMonitor::update(Meteo* meteo) {
         }
         rain_safe = (rain_prove ? (rainrate_state == RainRateState::DRY || rainrate_state == RainRateState::AWAIT_WET ? true : false) : true);
         String rain_info = (rain_prove ? (rain_safe ? "S" : "U") : "P");
-        message += " R:" + rain_info + "/" + String(rainrate, 1);
+        message += " R:" + rain_info + "/" + String(rainrate, 2);
         if (rainrate_state == RainRateState::AWAIT_WET || rainrate_state == RainRateState::AWAIT_DRY) {
             message += "[" + String(getRainRateCountdown()) + "]";
         }
@@ -389,7 +389,7 @@ void SafetyMonitor::aWriteJson(JsonObject &root) {
         }
     }
     obj_state[rain_state_icon + ("_Rainzro")] = !rain_safe;
-    obj_state[indent + "_Rate,_mmzshzro"] = SAFEMON_RAINRATE ? String(rainrate, 1) : "n/a";
+    obj_state[indent + "_Rate,_mmzshzro"] = SAFEMON_RAINRATE ? String(rainrate, 2) : "n/a";
     if (getRainRateCountdown() > 0) {
         obj_state["X_" + indent + "_Countndown,_szro"] = getRainRateCountdown();
     }

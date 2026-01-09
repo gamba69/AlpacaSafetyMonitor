@@ -51,7 +51,7 @@ void ObservingConditions::update(Meteo* meteo) {
     if (OBSCON_RAINRATE) {
         rainrate = meteo->sensors.rain_rate;
         rainrate_ra.add(rainrate);
-        message += " RR:" + String(rainrate, 1) + "/" + String(rainrate_ra.getAverageLast(_averaging > rainrate_ra.getCount() ? rainrate_ra.getCount() : _averaging), 1);
+        message += " RR:" + String(rainrate, 2) + "/" + String(rainrate_ra.getAverageLast(_averaging > rainrate_ra.getCount() ? rainrate_ra.getCount() : _averaging), 2);
     } else {
         rainrate = 0;
         rainrate_ra.add(rainrate);
@@ -217,7 +217,7 @@ void ObservingConditions::aGetRainRate(AsyncWebServerRequest *request) {
     if (OBSCON_RAINRATE) {
         float value = rainrate_ra.getAverageLast(
             _averaging > rainrate_ra.getCount() ? rainrate_ra.getCount() : _averaging);
-        value = round(10. * value) / 10.;
+        value = round(100. * value) / 100.;
         _alpacaServer->respond(request, value);
     } else {
         _alpacaServer->respond(request, nullptr, AlpacaNotImplementedException, "Not Implemented");
@@ -387,7 +387,7 @@ void ObservingConditions::aWriteJson(JsonObject &root) {
 
     // instant
     JsonObject obj_instant_state = root[F("Instant State (Latest)")].to<JsonObject>();
-    obj_instant_state[F("Rain_Rate,_mm/hzro")] = OBSCON_RAINRATE ? String(rainrate, 1) : "n/a";
+    obj_instant_state[F("Rain_Rate,_mm/hzro")] = OBSCON_RAINRATE ? String(rainrate, 2) : "n/a";
     obj_instant_state[F("Temperature,_°Czro")] = OBSCON_TEMPERATURE ? String(temperature, 1) : "n/a";
     obj_instant_state[F("Humidity,_zpzro")] = OBSCON_HUMIDITY ? String(humidity, 0) : "n/a";
     obj_instant_state[F("Dewpoint,_°Czro")] = OBSCON_DEWPOINT ? String(dewpoint, 1) : "n/a";
@@ -405,7 +405,7 @@ void ObservingConditions::aWriteJson(JsonObject &root) {
 
     // averaged
     JsonObject obj_averaged_state = root[F("Averaged State (ASCOM)")].to<JsonObject>();
-    obj_averaged_state[F("Rain_Rate,_mm/hzro")] = OBSCON_RAINRATE ? String(rainrate_ra.getAverageLast(_averaging > rainrate_ra.getCount() ? rainrate_ra.getCount() : _averaging), 1) : "n/a";
+    obj_averaged_state[F("Rain_Rate,_mm/hzro")] = OBSCON_RAINRATE ? String(rainrate_ra.getAverageLast(_averaging > rainrate_ra.getCount() ? rainrate_ra.getCount() : _averaging), 2) : "n/a";
     obj_averaged_state[F("Temperature,_°Czro")] = OBSCON_TEMPERATURE ? String(temperature_ra.getAverageLast(_averaging > temperature_ra.getCount() ? temperature_ra.getCount() : _averaging), 1) : "n/a";
     obj_averaged_state[F("Humidity,_zpzro")] = OBSCON_HUMIDITY ? String(humidity_ra.getAverageLast(_averaging > humidity_ra.getCount() ? humidity_ra.getCount() : _averaging), 0) : "n/a";
     obj_averaged_state[F("Dewpoint,_°Czro")] = OBSCON_DEWPOINT ? String(dewpoint_ra.getAverageLast(_averaging > dewpoint_ra.getCount() ? dewpoint_ra.getCount() : _averaging), 1) : "n/a";
