@@ -1,5 +1,5 @@
 # noinspection PyUnresolvedReferences
-Import("env")
+Import("env") # type: ignore
 import os
 import hashlib
 import datetime
