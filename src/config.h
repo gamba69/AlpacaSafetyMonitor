@@ -28,7 +28,7 @@
 #define METEO_FORCE_DELAY 800
 
 // Auto gain-time change settings delay
-#define AGT_CHANGE_DELAY 50
+#define AUTO_GAIN_CHANGE_DELAY 50
 
 #define SAFETY_MONITOR_DELAY 3000
 

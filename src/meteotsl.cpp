@@ -79,47 +79,47 @@ float tslGainAsMulti(tsl2591Gain_t g) {
     }
 }
 
-void Meteo::beginTslAGT(Adafruit_TSL2591 *tsl) {
-    tslAgt[0] = TslSetting(TSL2591_GAIN_LOW, TSL2591_INTEGRATIONTIME_100MS, 1843, 35020);
-    tslAgt[1] = TslSetting(TSL2591_GAIN_LOW, TSL2591_INTEGRATIONTIME_600MS, 3277, 62258);
-    tslAgt[2] = TslSetting(TSL2591_GAIN_MED, TSL2591_INTEGRATIONTIME_200MS, 3277, 62258);
-    tslAgt[3] = TslSetting(TSL2591_GAIN_HIGH, TSL2591_INTEGRATIONTIME_100MS, 1843, 35020);
-    tslAgt[4] = TslSetting(TSL2591_GAIN_HIGH, TSL2591_INTEGRATIONTIME_600MS, 3277, 62258);
-    tslAgt[5] = TslSetting(TSL2591_GAIN_MAX, TSL2591_INTEGRATIONTIME_200MS, 3277, 62258);
-    tslAgt[6] = TslSetting(TSL2591_GAIN_MAX, TSL2591_INTEGRATIONTIME_600MS, 3277, 62258);
-    setTslAGT(tsl, TSL_SETTINGS_SIZE / 2);
+void Meteo::beginTslAutoGain(Adafruit_TSL2591 *tsl) {
+    autoGainSettings[0] = TSL2591Settings(TSL2591_GAIN_LOW, TSL2591_INTEGRATIONTIME_100MS, 1843, 35020);
+    autoGainSettings[1] = TSL2591Settings(TSL2591_GAIN_LOW, TSL2591_INTEGRATIONTIME_600MS, 3277, 62258);
+    autoGainSettings[2] = TSL2591Settings(TSL2591_GAIN_MED, TSL2591_INTEGRATIONTIME_200MS, 3277, 62258);
+    autoGainSettings[3] = TSL2591Settings(TSL2591_GAIN_HIGH, TSL2591_INTEGRATIONTIME_100MS, 1843, 35020);
+    autoGainSettings[4] = TSL2591Settings(TSL2591_GAIN_HIGH, TSL2591_INTEGRATIONTIME_600MS, 3277, 62258);
+    autoGainSettings[5] = TSL2591Settings(TSL2591_GAIN_MAX, TSL2591_INTEGRATIONTIME_200MS, 3277, 62258);
+    autoGainSettings[6] = TSL2591Settings(TSL2591_GAIN_MAX, TSL2591_INTEGRATIONTIME_600MS, 3277, 62258);
+    setTslAutoGain(tsl, TSL_SETTINGS_SIZE / 2);
 }
 
-void Meteo::setTslAGT(Adafruit_TSL2591 *tsl, int s) {
-    tsl->setGain(tslAgt[s].gain);
-    tsl->setTiming(tslAgt[s].time);
+void Meteo::setTslAutoGain(Adafruit_TSL2591 *tsl, int s) {
+    tsl->setGain(autoGainSettings[s].gain);
+    tsl->setTiming(autoGainSettings[s].time);
     tsl->getFullLuminosity();
-    vTaskDelay(pdMS_TO_TICKS(AGT_CHANGE_DELAY));
+    vTaskDelay(pdMS_TO_TICKS(AUTO_GAIN_CHANGE_DELAY));
 }
 
-TslAutoLum Meteo::getTslAGT(Adafruit_TSL2591 *tsl) {
+TSL2591Data Meteo::getTslAutoGain(Adafruit_TSL2591 *tsl) {
     int s = TSL_SETTINGS_SIZE / 2;
     uint32_t lum, full;
     while (true) {
         lum = tsl->getFullLuminosity();
         full = lum & 0xFFFF;
-        if (full > tslAgt[s].high && s > 0) {
+        if (full > autoGainSettings[s].high && s > 0) {
             s--;
-            setTslAGT(tsl, s);
+            setTslAutoGain(tsl, s);
             continue;
         }
-        if (full < tslAgt[s].low && s < TSL_SETTINGS_SIZE - 1) {
+        if (full < autoGainSettings[s].low && s < TSL_SETTINGS_SIZE - 1) {
             s++;
-            setTslAGT(tsl, s);
+            setTslAutoGain(tsl, s);
             continue;
         }
         break;
     }
-    return TslAutoLum(tslAgt[s].gain, tslAgt[s].time, lum);
+    return TSL2591Data(autoGainSettings[s].gain, autoGainSettings[s].time, lum);
 }
 
-float Meteo::calcSqmAGT(TslAutoLum agt) {
-    float lux = calcLuxAGT(agt);
+float Meteo::calcSqmAutoGain(TSL2591Data tslData) {
+    float lux = calcLuxAutoGain(tslData);
 
     // Разные варианты конвертации, deprected, удалить позже
     // float sqm = -2.5 * log10(lux) + 18.3;
@@ -156,16 +156,16 @@ float Meteo::calcSqmAGT(TslAutoLum agt) {
     return sqm;
 }
 
-float Meteo::calcLuxAGT(TslAutoLum agt) {
+float Meteo::calcLuxAutoGain(TSL2591Data tslData) {
     float atime, again;
     float cpl, lux;
-    uint16_t ch1 = agt.luminosity >> 16;
-    uint16_t ch0 = agt.luminosity & 0xFFFF;
+    uint16_t ch1 = tslData.luminosity >> 16;
+    uint16_t ch0 = tslData.luminosity & 0xFFFF;
     if ((ch0 == 0xFFFF) | (ch1 == 0xFFFF)) {
         return -1;
     }
-    atime = tslTimeAsMillis(agt.time);
-    again = tslGainAsMulti(agt.gain);
+    atime = tslTimeAsMillis(tslData.time);
+    again = tslGainAsMulti(tslData.gain);
     // cpl = (ATIME * AGAIN) / DF
     cpl = (atime * again) / TSL2591_LUX_DF;
     // Original lux calculation (for reference sake)

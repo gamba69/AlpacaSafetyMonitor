@@ -116,7 +116,7 @@ void Meteo::begin() {
     }
     if (HARDWARE_TSL2591) {
         tsl.begin();
-        beginTslAGT(&tsl);
+        beginTslAutoGain(&tsl);
         // potentially long running
         xTaskCreatePinnedToCore(
             Meteo::updateTsl2591Wrapper,
@@ -386,9 +386,9 @@ void Meteo::updateTsl2591() {
         if (force_update || millis() - last_update > METEO_MEASURE_DELAY) {
             // potentially long running
             // TODO Interrupt, long delay (not METEO_MEASURE_DELAY!)
-            TslAutoLum agt = getTslAGT(&tsl);
-            sensors.sky_brightness = calcLuxAGT(agt);
-            sensors.sky_quality = calcSqmAGT(agt);
+            TSL2591Data tslData = getTslAutoGain(&tsl);
+            sensors.sky_brightness = calcLuxAutoGain(tslData);
+            sensors.sky_quality = calcSqmAutoGain(tslData);
             last_update = millis();
             force_update = false;
             xEventGroupSetBits(xDevicesGroup, TSL2591_DONE);

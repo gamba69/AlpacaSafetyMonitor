@@ -96,12 +96,12 @@ class Meteo {
     float cb_noise_db_calc();
     float cb_snr_calc();
 
-    TslSetting tslAgt[TSL_SETTINGS_SIZE];
-    void beginTslAGT(Adafruit_TSL2591 *);
-    void setTslAGT(Adafruit_TSL2591 *, int);
-    TslAutoLum getTslAGT(Adafruit_TSL2591 *);
-    float calcLuxAGT(TslAutoLum);
-    float calcSqmAGT(TslAutoLum);
+    TSL2591Settings autoGainSettings[TSL_SETTINGS_SIZE];
+    void beginTslAutoGain(Adafruit_TSL2591 *);
+    void setTslAutoGain(Adafruit_TSL2591 *, int);
+    TSL2591Data getTslAutoGain(Adafruit_TSL2591 *);
+    float calcLuxAutoGain(TSL2591Data);
+    float calcSqmAutoGain(TSL2591Data);
 
     EventGroupHandle_t xDevicesGroup;
 
