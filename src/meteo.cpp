@@ -5,7 +5,7 @@
 
 Adafruit_BMP280 bmp;
 Adafruit_AHTX0 aht;
-SHT4x sht;
+SHT45AutoHeat sht;
 Adafruit_MLX90614 mlx = Adafruit_MLX90614();
 Adafruit_TSL2591 tsl = Adafruit_TSL2591(2591);
 PCNTFrequencyCounter anm = PCNTFrequencyCounter((gpio_num_t)WIND_SENSOR_PIN);
@@ -288,12 +288,19 @@ void Meteo::updateSht45() {
             // potentially long running
             // TODO Smart with heating - simple NOT working!
             // Need to be heat, wait (stabilize?), read
-            if (sht.read()) {
-                sensors.sht_temperature = sht.getTemperature();
-                sensors.sht_humidity = sht.getHumidity();
+            SHT45Data measure = sht.readData();
+            if (measure.valid) {
+                sensors.sht_temperature = measure.temperature;
+                sensors.sht_humidity = measure.humidity;
             } else {
-                int error = sht.getError();
+                int error = measure.error;
                 switch (error) {
+                case -1:
+                    logMessage("[METEO][SHT45] Heating active");
+                    break;
+                case -2:
+                    logMessage("[METEO][SHT45] Timeout");
+                    break;
                 case SHT4x_OK:
                     logMessage("[METEO][SHT45] No error occurred (you shouldn't see this)");
                     break;

@@ -8,6 +8,7 @@ struct SHT45Data {
     float temperature;
     float humidity;
     bool valid;
+    int error; // 0 = no error
 };
 
 struct HeatingParams {

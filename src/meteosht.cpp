@@ -1,30 +1,30 @@
 #include "meteosht.h"
 
 /*
- * Таблица оптимальных интервалов подогрева
- *
- * Источник: Sensirion Application Note
+ * Optimal heating intervals table
+ * 
+ * Source: Sensirion Application Note
  * "Using the Integrated Heater of SHT4x in High-Humidity Environments"
  * https://sensirion.com/resource/application_note/sht4x_heater_usage
- *
+ * 
  * ┌──────────────┬─────────────────┬──────────────────┬──────────┬──────────────┬────────┐
- * │ Влажность RH │ Интервал нагрева│ Длительность     │ Мощность │ Охлаждение   │ Циклы  │
+ * │ Humidity RH  │ Heating Interval│ Duration         │ Power    │ Cooldown     │ Cycles │
  * ├──────────────┼─────────────────┼──────────────────┼──────────┼──────────────┼────────┤
- * │ < 60%        │ Не требуется    │ -                │ -        │ -            │ 0      │
- * │ 60-75%       │ 30-60 минут     │ 1 сек            │ LOW      │ 8-10 сек     │ 1      │
- * │ 75-85%       │ 15-30 минут     │ 1 сек            │ MEDIUM   │ 10-12 сек    │ 1      │
- * │ 85-95%       │ 10-15 минут     │ 1 сек            │ HIGH     │ 12-15 сек    │ 1      │
- * │ > 95%        │ 5-10 минут      │ 1 сек × 2-3 раза │ HIGH     │ 15-20 сек    │ 3      │
+ * │ < 60%        │ Not required    │ -                │ -        │ -            │ 0      │
+ * │ 60-75%       │ 30-60 minutes   │ 1 sec            │ LOW      │ 8-10 sec     │ 1      │
+ * │ 75-85%       │ 15-30 minutes   │ 1 sec            │ MEDIUM   │ 10-12 sec    │ 1      │
+ * │ 85-95%       │ 10-15 minutes   │ 1 sec            │ HIGH     │ 12-15 sec    │ 1      │
+ * │ > 95%        │ 5-10 minutes    │ 1 sec × 2-3 times│ HIGH     │ 15-20 sec    │ 3      │
  * └──────────────┴─────────────────┴──────────────────┴──────────┴──────────────┴────────┘
- *
- * Мощности нагревателя:
+ * 
+ * Heater power levels:
  *   LOW    - 20 mW  (SHT4x_MEASUREMENT_LONG_LOW_HEAT)
  *   MEDIUM - 110 mW (SHT4x_MEASUREMENT_LONG_MEDIUM_HEAT)
  *   HIGH   - 200 mW (SHT4x_MEASUREMENT_LONG_HIGH_HEAT)
- *
- * Duty cycle: 10% (время нагрева / общее время)
- * Между циклами: duty-cycle пауза (1 сек нагрев + 9 сек пауза)
- * После всех циклов: полное охлаждение согласно таблице
+ * 
+ * Duty cycle: 10% (heating time / total time)
+ * Between cycles: duty-cycle pause (1 sec heat + 9 sec pause)
+ * After all cycles: full cooldown according to table
  */
 
 const HeatingParams SHT45AutoHeat::table[5] = {
@@ -63,14 +63,20 @@ bool SHT45AutoHeat::begin() {
 }
 
 SHT45Data SHT45AutoHeat::readData() {
-    SHT45Data d = {0, 0, false};
+    SHT45Data d = {0, 0, false, 0};
     if (xSemaphoreTake(semaphore, 0) != pdTRUE) {
+        d.error = -1; // heating
         return d;
     }
     sht.requestData(SHT4x_MEASUREMENT_SLOW);
     uint32_t start = millis();
     while (!sht.dataReady() && millis() - start < 20) {
         vTaskDelay(pdMS_TO_TICKS(1));
+    }
+    if (!sht.dataReady()) {
+        d.error = -2; // timeout
+        xSemaphoreGive(semaphore);
+        return d;
     }
     if (sht.readData(true)) {
         d.temperature = sht.getTemperature();
@@ -79,6 +85,9 @@ SHT45Data SHT45AutoHeat::readData() {
         if (d.valid) {
             humidity = d.humidity;
         }
+        d.error = sht.getError();
+    } else {
+        d.error = sht.getError();
     }
     xSemaphoreGive(semaphore);
     return d;

@@ -3,6 +3,7 @@
 #include "config.h"
 #include "meteoanm.h"
 #include "meteotsl.h"
+#include "meteosht.h"
 #include <Adafruit_AHTX0.h>
 #include <Adafruit_BMP280.h>
 #include <Adafruit_MLX90614.h>
@@ -10,7 +11,6 @@
 #include <Arduino.h>
 #include <RG15.h>
 #include <RunningAverage.h>
-#include <SHT4x.h>
 #include <Wire.h>
 
 // Circular buffer functions
