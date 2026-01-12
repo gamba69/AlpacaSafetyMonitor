@@ -3,6 +3,8 @@
 #include <Adafruit_TSL2591.h>
 
 #define TSL_SETTINGS_SIZE 7
+#define TSL_INTERRUPT_LOWER_PERCENT 8.798916064  // -8.798916064%
+#define TSL_INTERRUPT_UPPER_PERCENT 9.647819614  // +9.647819614%
 
 class TSL2591Settings {
   public:
@@ -27,14 +29,16 @@ class TSL2591AutoGain {
     Adafruit_TSL2591 tsl;
     TSL2591Settings settings[TSL_SETTINGS_SIZE];
     int currentIndex;
-    float timeAsMillis(tsl2591IntegrationTime_t t);
-    float gainAsMulti(tsl2591Gain_t g);
-    void setAutoGain(int index);
+    float timeAsMillis(tsl2591IntegrationTime_t);
+    float gainAsMulti(tsl2591Gain_t);
+    void setAutoGain(int);
+    void updateInterrupt(uint16_t);
 
   public:
     TSL2591AutoGain();
     bool begin();
     TSL2591Data getData();
-    float calculateLux(const TSL2591Data &data);
-    float calculateSQM(const TSL2591Data &data);
+    float calculateLux(const TSL2591Data&);
+    float calculateSQM(const TSL2591Data&);
+    void clearInterrupt();
 };

@@ -29,11 +29,33 @@ void Meteo::logMessagePart(String msg, bool showtime) {
     }
 }
 
+void Meteo::logTechMessage(String msg, bool showtime) {
+    if (logLine && logLinePart) {
+        if (logTime && showtime) {
+            logLinePart(logTime() + " ", LogSource::Tech);
+        }
+        logLine(msg, LogSource::Tech);
+    }
+}
+
+void Meteo::logTechMessagePart(String msg, bool showtime) {
+    if (logLinePart) {
+        if (logTime && showtime) {
+            logLinePart(logTime() + " ", LogSource::Tech);
+        }
+        logLinePart(msg, LogSource::Tech);
+    }
+}
+
 void Meteo::setLogger(const int logSrc, std::function<void(String, const int)> logLineCallback, std::function<void(String, const int)> logLinePartCallback, std::function<String()> logTimeCallback) {
     logSource = logSrc;
     logLine = logLineCallback;
     logLinePart = logLinePartCallback;
     logTime = logTimeCallback;
+}
+
+void Meteo::clearTslInterrupt() {
+    tsl.clearInterrupt();
 }
 
 void Meteo::begin() {
@@ -185,28 +207,28 @@ void Meteo::updateRg15() {
                 int error = rg15.getErrorCode();
                 switch (error) {
                 case 0:
-                    logMessage("[METEO][RG15] No error occurred (you shouldn't see this)");
+                    logTechMessage("[TECH][RG15] No error occurred (you shouldn't see this)");
                     break;
                 case 1:
-                    logMessage("[METEO][RG15] Serial connection does not exist!");
+                    logTechMessage("[TECH][RG15] Serial connection does not exist!");
                     break;
                 case 2:
-                    logMessage("[METEO][RG15] Serial connection could not write!");
+                    logTechMessage("[TECH][RG15] Serial connection could not write!");
                     break;
                 case 3:
-                    logMessage("[METEO][RG15] Response is invalid!");
+                    logTechMessage("[TECH][RG15] Response is invalid!");
                     break;
                 case 4:
-                    logMessage("[METEO][RG15] Response timed out!");
+                    logTechMessage("[TECH][RG15] Response timed out!");
                     break;
                 case 5:
-                    logMessage("[METEO][RG15] Baud rate not supported!");
+                    logTechMessage("[TECH][RG15] Baud rate not supported!");
                     break;
                 case 6:
-                    logMessage("[METEO][RG15] Parsing failed!");
+                    logTechMessage("[TECH][RG15] Parsing failed!");
                     break;
                 case 7:
-                    logMessage("[METEO][RG15] Unit does not match!");
+                    logTechMessage("[TECH][RG15] Unit does not match!");
                     break;
                 default:
                     break;
@@ -295,43 +317,43 @@ void Meteo::updateSht45() {
                 int error = measure.error;
                 switch (error) {
                 case -1:
-                    logMessage("[METEO][SHT45] Heating active");
+                    logTechMessage("[TECH][SHT45] Heating active");
                     break;
                 case -2:
-                    logMessage("[METEO][SHT45] Timeout");
+                    logTechMessage("[TECH][SHT45] Timeout");
                     break;
                 case SHT4x_OK:
-                    logMessage("[METEO][SHT45] No error occurred (you shouldn't see this)");
+                    logTechMessage("[TECH][SHT45] No error occurred (you shouldn't see this)");
                     break;
                 case SHT4x_ERR_WRITECMD:
-                    logMessage("[METEO][SHT45] Write command error!");
+                    logTechMessage("[TECH][SHT45] Write command error!");
                     break;
                 case SHT4x_ERR_READBYTES:
-                    logMessage("[METEO][SHT45] Read bytes error!");
+                    logTechMessage("[TECH][SHT45] Read bytes error!");
                     break;
                 case SHT4x_ERR_HEATER_OFF:
-                    logMessage("[METEO][SHT45] Heater off error!");
+                    logTechMessage("[TECH][SHT45] Heater off error!");
                     break;
                 case SHT4x_ERR_NOT_CONNECT:
-                    logMessage("[METEO][SHT45] Not connected error!");
+                    logTechMessage("[TECH][SHT45] Not connected error!");
                     break;
                 case SHT4x_ERR_CRC_TEMP:
-                    logMessage("[METEO][SHT45] Temperature CRC error!");
+                    logTechMessage("[TECH][SHT45] Temperature CRC error!");
                     break;
                 case SHT4x_ERR_CRC_HUM:
-                    logMessage("[METEO][SHT45] Humidity CRC error!");
+                    logTechMessage("[TECH][SHT45] Humidity CRC error!");
                     break;
                 case SHT4x_ERR_HEATER_COOLDOWN:
-                    logMessage("[METEO][SHT45] Heater cooldown error!");
+                    logTechMessage("[TECH][SHT45] Heater cooldown error!");
                     break;
                 case SHT4x_ERR_HEATER_ON:
-                    logMessage("[METEO][SHT45] Heater on error!");
+                    logTechMessage("[TECH][SHT45] Heater on error!");
                     break;
                 case SHT4x_ERR_SERIAL_NUMBER_CRC:
-                    logMessage("[METEO][SHT45] Serial number CRC error!");
+                    logTechMessage("[TECH][SHT45] Serial number CRC error!");
                     break;
                 case 0x8B:
-                    logMessage("[METEO][SHT45] Invalid address error!");
+                    logTechMessage("[TECH][SHT45] Invalid address error!");
                     break;
                 default:
                     break;

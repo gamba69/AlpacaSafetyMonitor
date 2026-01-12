@@ -129,16 +129,28 @@ void logMessagePart(String msg, bool showtime) {
     logLinePart(msg, LogSource::Main);
 }
 
-void logMessageConsole(String msg, bool showtime) {
+void logConsoleMessage(String msg, bool showtime) {
     if (showtime)
         logLinePart(logTime() + " ", LogSource::Console);
     logLine(msg, LogSource::Console);
 }
 
-void logMessagePartConsole(String msg, bool showtime) {
+void logConsoleMessagePart(String msg, bool showtime) {
     if (showtime)
         logLinePart(logTime() + " ", LogSource::Console);
     logLinePart(msg, LogSource::Console);
+}
+
+void logTechMessage(String msg, bool showtime) {
+    if (showtime)
+        logLinePart(logTime() + " ", LogSource::Tech);
+    logLine(msg, LogSource::Tech);
+}
+
+void logTechMessagePart(String msg, bool showtime) {
+    if (showtime)
+        logLinePart(logTime() + " ", LogSource::Tech);
+    logLinePart(msg, LogSource::Tech);
 }
 
 void logMqttStatus(String special) {

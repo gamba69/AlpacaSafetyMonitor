@@ -1,11 +1,11 @@
-#include <jled.h>
 #include "main.h"
 #include "console.h"
 #include "hardware.h"
-#include "weights.h"
 #include "log.h"
 #include "secrets.h"
 #include "version.h"
+#include "weights.h"
+#include <jled.h>
 
 RTC_DS3231 rtc;
 
@@ -119,11 +119,23 @@ void setupWebRedirects(AsyncWebServer *webServer) {
     });
 }
 
-void IRAM_ATTR immediateUpdate() {
+void IRAM_ATTR uicpalInterruptHandler() {
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     xEventGroupSetBitsFromISR(xInterruptsGroup, UICPAL_INTERRUPT, &xHigherPriorityTaskWoken);
     if (xHigherPriorityTaskWoken) {
         portYIELD_FROM_ISR();
+    }
+}
+
+void IRAM_ATTR tslInterruptHandler() {
+    static unsigned long last = 0;
+    if (millis() - last > 1000) {
+        last = millis();
+        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+        xEventGroupSetBitsFromISR(xInterruptsGroup, TSL2591_INTERRUPT, &xHigherPriorityTaskWoken);
+        if (xHigherPriorityTaskWoken) {
+            portYIELD_FROM_ISR();
+        }
     }
 }
 
@@ -185,14 +197,21 @@ void workload(void *parameter) {
         immediate = false;
         esp_task_wdt_reset();
         taskYIELD();
-        EventBits_t await = UICPAL_INTERRUPT;
+        EventBits_t await = UICPAL_INTERRUPT | TSL2591_INTERRUPT;
+        xEventGroupClearBits(xInterruptsGroup, await);
         EventBits_t xBits = xEventGroupWaitBits(
             xInterruptsGroup,
             await,
             pdTRUE,
             pdFALSE,
             pdMS_TO_TICKS(50));
-        if ((xBits & await) != 0) {
+        if ((xBits & UICPAL_INTERRUPT) != 0) {
+            logTechMessage("[TECH][UICPAL] Interrupt received (immediate update)");
+            immediate = true;
+        }
+        if ((xBits & TSL2591_INTERRUPT) != 0) {
+            meteo.clearTslInterrupt();
+            logTechMessage("[TECH][TSL2591] Interrupt received (immediate update)");
             immediate = true;
         }
     }
@@ -286,7 +305,7 @@ void setup() {
     alpacaServer.beginTcp(tcp_server, ALPACA_TCP_PORT);
     // Observing Conditions
     if (ALPACA_OBSCON) {
-        observingconditions.setImmediateUpdate(immediateUpdate);
+        observingconditions.setImmediateUpdate(uicpalInterruptHandler);
         observingconditions.setLogger(LogSource::ObsCon, logLine, logLinePart, logTime);
         alpacaServer.addDevice(&observingconditions);
     }
@@ -300,7 +319,10 @@ void setup() {
     meteo.setLogger(LogSource::Meteo, logLine, logLinePart, logTime);
     meteo.begin();
     if (HARDWARE_UICPAL) {
-        attachInterrupt(digitalPinToInterrupt(RAIN_SENSOR_PIN), immediateUpdate, CHANGE);
+        attachInterrupt(digitalPinToInterrupt(RAIN_SENSOR_PIN), uicpalInterruptHandler, CHANGE);
+    }
+    if (HARDWARE_TSL2591) {
+        attachInterrupt(digitalPinToInterrupt(TSL_SENSOR_PIN), tslInterruptHandler, RISING);
     }
     // Watchdog
     esp_task_wdt_deinit();

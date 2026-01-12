@@ -60,6 +60,9 @@ void commandLogWifiOff();
 void commandLogOtaOn();
 void commandLogOtaOff();
 
+void commandLogTechOn();
+void commandLogTechOff();
+
 void commandHardwareState();
 
 void commandAlpacaObsconOn();

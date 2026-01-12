@@ -66,6 +66,7 @@ class Meteo {
     void begin();
     // Set current logger
     void setLogger(const int source, std::function<void(String, const int)> logLineCallback = nullptr, std::function<void(String, const int)> logLinePartCallback = nullptr, std::function<String()> logTimeCallback = nullptr);
+    void clearTslInterrupt();
 
   private:
     // Formatting
@@ -86,6 +87,10 @@ class Meteo {
     virtual void logMessage(String msg, bool showtime = true);
     // Print a part of log message, can be overwritten
     virtual void logMessagePart(String msg, bool showtime = false);
+    // Print a log tech message, can be overwritten
+    virtual void logTechMessage(String msg, bool showtime = true);
+    // Print a part of log tech message, can be overwritten
+    virtual void logTechMessagePart(String msg, bool showtime = false);
 
     // CB functions
     float tsky_calc(float ts, float ta);
@@ -96,11 +101,6 @@ class Meteo {
     float cb_snr_calc();
 
     TSL2591Settings autoGainSettings[TSL_SETTINGS_SIZE];
-    void beginTslAutoGain(Adafruit_TSL2591 *);
-    void setTslAutoGain(Adafruit_TSL2591 *, int);
-    TSL2591Data getTslAutoGain(Adafruit_TSL2591 *);
-    float calcLuxAutoGain(TSL2591Data);
-    float calcSqmAutoGain(TSL2591Data);
 
     EventGroupHandle_t xDevicesGroup;
 

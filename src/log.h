@@ -25,6 +25,7 @@ class LogSource {
     static const int Wifi = 5;
     static const int Ota = 6;
     static const int Console = 7;
+    static const int Tech = 8;
 };
 
 class Log {
@@ -54,7 +55,10 @@ void logLinePart(String line, const int source);
 void logMessage(String msg, bool showtime = true);
 void logMessagePart(String msg, bool showtime = false);
 
-void logMessageConsole(String msg, bool showtime = true);
-void logMessagePartConsole(String msg, bool showtime = false);
+void logConsoleMessage(String msg, bool showtime = true);
+void logConsoleMessagePart(String msg, bool showtime = false);
+
+void logTechMessage(String msg, bool showtime = true);
+void logTechMessagePart(String msg, bool showtime = false);
 
 void logMqttStatus(String special = "");

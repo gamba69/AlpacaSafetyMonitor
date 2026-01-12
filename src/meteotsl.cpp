@@ -59,6 +59,8 @@ bool TSL2591AutoGain::begin() {
     settings[5] = TSL2591Settings(TSL2591_GAIN_MAX, TSL2591_INTEGRATIONTIME_200MS, 3277, 62258);
     settings[6] = TSL2591Settings(TSL2591_GAIN_MAX, TSL2591_INTEGRATIONTIME_600MS, 3277, 62258);
     setAutoGain(currentIndex);
+    tsl.clearInterrupt();
+    tsl.registerInterrupt(0, 0, TSL2591_PERSIST_ANY);
     return true;
 }
 
@@ -67,6 +69,23 @@ void TSL2591AutoGain::setAutoGain(int index) {
     tsl.setTiming(settings[index].time);
     tsl.getFullLuminosity();
     vTaskDelay(pdMS_TO_TICKS(AUTO_GAIN_CHANGE_DELAY));
+}
+
+void TSL2591AutoGain::updateInterrupt(uint16_t channel0) {
+    float lowerThreshold = channel0 * (1.0 - TSL_INTERRUPT_LOWER_PERCENT / 100.0);
+    float upperThreshold = channel0 * (1.0 + TSL_INTERRUPT_UPPER_PERCENT / 100.0);
+    uint16_t low = max((uint16_t)lowerThreshold, (uint16_t)settings[currentIndex].low);
+    uint16_t high = min((uint16_t)upperThreshold, (uint16_t)settings[currentIndex].high);
+    if (low >= high) {
+        low = settings[currentIndex].low;
+        high = settings[currentIndex].high;
+    }
+    tsl.clearInterrupt();
+    tsl.registerInterrupt(low, high, TSL2591_PERSIST_ANY);
+}
+
+void TSL2591AutoGain::clearInterrupt() {
+    tsl.clearInterrupt();
 }
 
 TSL2591Data TSL2591AutoGain::getData() {
@@ -86,7 +105,7 @@ TSL2591Data TSL2591AutoGain::getData() {
         break;
     }
     currentIndex = s;
-    // TODO Set interrupt
+    updateInterrupt(lum & 0xFFFF);
     return TSL2591Data(settings[s].gain, settings[s].time, lum);
 }
 
