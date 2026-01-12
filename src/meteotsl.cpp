@@ -80,7 +80,11 @@ void TSL2591AutoGain::updateInterrupt(uint16_t channel0) {
         low = settings[currentIndex].low;
         high = settings[currentIndex].high;
     }
-    tsl.clearInterrupt();
+    // tsl.clearInterrupt();
+    Serial.println("IDX = " + String(currentIndex));
+    Serial.println("CH0 = " + String(channel0));
+    Serial.println("L = " + String(low));
+    Serial.println("H = " + String(high));
     tsl.registerInterrupt(low, high, TSL2591_PERSIST_ANY);
 }
 
