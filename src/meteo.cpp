@@ -6,9 +6,9 @@
 Adafruit_BMP280 bmp;
 Adafruit_AHTX0 aht;
 SHT45AutoHeat sht;
-Adafruit_MLX90614 mlx = Adafruit_MLX90614();
-Adafruit_TSL2591 tsl = Adafruit_TSL2591(2591);
-PCNTFrequencyCounter anm = PCNTFrequencyCounter((gpio_num_t)WIND_SENSOR_PIN);
+Adafruit_MLX90614 mlx;
+TSL2591AutoGain tsl;
+PCNTFrequencyCounter anm((gpio_num_t)WIND_SENSOR_PIN);
 RG15 rg15(Serial0);
 
 void Meteo::logMessage(String msg, bool showtime) {
@@ -116,7 +116,6 @@ void Meteo::begin() {
     }
     if (HARDWARE_TSL2591) {
         tsl.begin();
-        beginTslAutoGain(&tsl);
         // potentially long running
         xTaskCreatePinnedToCore(
             Meteo::updateTsl2591Wrapper,
@@ -393,9 +392,9 @@ void Meteo::updateTsl2591() {
         if (force_update || millis() - last_update > METEO_MEASURE_DELAY) {
             // potentially long running
             // TODO Interrupt, long delay (not METEO_MEASURE_DELAY!)
-            TSL2591Data tslData = getTslAutoGain(&tsl);
-            sensors.sky_brightness = calcLuxAutoGain(tslData);
-            sensors.sky_quality = calcSqmAutoGain(tslData);
+            TSL2591Data tslData = tsl.getData();
+            sensors.sky_brightness = tsl.calculateLux(tslData);
+            sensors.sky_quality = tsl.calculateSQM(tslData);
             last_update = millis();
             force_update = false;
             xEventGroupSetBits(xDevicesGroup, TSL2591_DONE);

@@ -1,6 +1,5 @@
 #include "meteotsl.h"
-#include "hardware.h"
-#include "meteo.h"
+#include <cmath>
 
 /*
     channel_0 (full) should probably never be less than channel_1 (ir)
@@ -45,82 +44,107 @@
     https://cdn-learn.adafruit.com/assets/assets/000/078/658/original/TSL2591_DS000338_6-00.pdf?1564168468
 */
 
-float tslTimeAsMillis(tsl2591IntegrationTime_t t) {
-    switch (t) {
-    case TSL2591_INTEGRATIONTIME_100MS:
-        return 100.0F;
-    case TSL2591_INTEGRATIONTIME_200MS:
-        return 200.0F;
-    case TSL2591_INTEGRATIONTIME_300MS:
-        return 300.0F;
-    case TSL2591_INTEGRATIONTIME_400MS:
-        return 400.0F;
-    case TSL2591_INTEGRATIONTIME_500MS:
-        return 500.0F;
-    case TSL2591_INTEGRATIONTIME_600MS:
-        return 600.0F;
-    default: // 100ms
-        return 100.0F;
+TSL2591AutoGain::TSL2591AutoGain() : tsl(2591), currentIndex(3) {}
+
+bool TSL2591AutoGain::begin() {
+    if (!tsl.begin()) {
+        return false;
     }
+    tsl.enable();
+    settings[0] = TSL2591Settings(TSL2591_GAIN_LOW, TSL2591_INTEGRATIONTIME_100MS, 1843, 35020);
+    settings[1] = TSL2591Settings(TSL2591_GAIN_LOW, TSL2591_INTEGRATIONTIME_600MS, 3277, 62258);
+    settings[2] = TSL2591Settings(TSL2591_GAIN_MED, TSL2591_INTEGRATIONTIME_200MS, 3277, 62258);
+    settings[3] = TSL2591Settings(TSL2591_GAIN_HIGH, TSL2591_INTEGRATIONTIME_100MS, 1843, 35020);
+    settings[4] = TSL2591Settings(TSL2591_GAIN_HIGH, TSL2591_INTEGRATIONTIME_600MS, 3277, 62258);
+    settings[5] = TSL2591Settings(TSL2591_GAIN_MAX, TSL2591_INTEGRATIONTIME_200MS, 3277, 62258);
+    settings[6] = TSL2591Settings(TSL2591_GAIN_MAX, TSL2591_INTEGRATIONTIME_600MS, 3277, 62258);
+    setAutoGain(currentIndex);
+    return true;
 }
 
-float tslGainAsMulti(tsl2591Gain_t g) {
-    switch (g) {
-    case TSL2591_GAIN_LOW:
-        return 1.0F;
-    case TSL2591_GAIN_MED:
-        return 25.0F;
-    case TSL2591_GAIN_HIGH:
-        return 428.0F;
-    case TSL2591_GAIN_MAX:
-        return 9876.0F;
-    default:
-        return 1.0F;
-    }
-}
-
-void Meteo::beginTslAutoGain(Adafruit_TSL2591 *tsl) {
-    autoGainSettings[0] = TSL2591Settings(TSL2591_GAIN_LOW, TSL2591_INTEGRATIONTIME_100MS, 1843, 35020);
-    autoGainSettings[1] = TSL2591Settings(TSL2591_GAIN_LOW, TSL2591_INTEGRATIONTIME_600MS, 3277, 62258);
-    autoGainSettings[2] = TSL2591Settings(TSL2591_GAIN_MED, TSL2591_INTEGRATIONTIME_200MS, 3277, 62258);
-    autoGainSettings[3] = TSL2591Settings(TSL2591_GAIN_HIGH, TSL2591_INTEGRATIONTIME_100MS, 1843, 35020);
-    autoGainSettings[4] = TSL2591Settings(TSL2591_GAIN_HIGH, TSL2591_INTEGRATIONTIME_600MS, 3277, 62258);
-    autoGainSettings[5] = TSL2591Settings(TSL2591_GAIN_MAX, TSL2591_INTEGRATIONTIME_200MS, 3277, 62258);
-    autoGainSettings[6] = TSL2591Settings(TSL2591_GAIN_MAX, TSL2591_INTEGRATIONTIME_600MS, 3277, 62258);
-    setTslAutoGain(tsl, TSL_SETTINGS_SIZE / 2);
-}
-
-void Meteo::setTslAutoGain(Adafruit_TSL2591 *tsl, int s) {
-    tsl->setGain(autoGainSettings[s].gain);
-    tsl->setTiming(autoGainSettings[s].time);
-    tsl->getFullLuminosity();
+void TSL2591AutoGain::setAutoGain(int index) {
+    tsl.setGain(settings[index].gain);
+    tsl.setTiming(settings[index].time);
+    tsl.getFullLuminosity();
     vTaskDelay(pdMS_TO_TICKS(AUTO_GAIN_CHANGE_DELAY));
 }
 
-TSL2591Data Meteo::getTslAutoGain(Adafruit_TSL2591 *tsl) {
-    int s = TSL_SETTINGS_SIZE / 2;
-    uint32_t lum, full;
+TSL2591Data TSL2591AutoGain::getData() {
+    int s = currentIndex;
+    uint32_t lum;
     while (true) {
-        lum = tsl->getFullLuminosity();
-        full = lum & 0xFFFF;
-        if (full > autoGainSettings[s].high && s > 0) {
-            s--;
-            setTslAutoGain(tsl, s);
+        lum = tsl.getFullLuminosity();
+        uint32_t full = lum & 0xFFFF;
+        if (full > settings[s].high && s > 0) {
+            setAutoGain(--s);
             continue;
         }
-        if (full < autoGainSettings[s].low && s < TSL_SETTINGS_SIZE - 1) {
-            s++;
-            setTslAutoGain(tsl, s);
+        if (full < settings[s].low && s < TSL_SETTINGS_SIZE - 1) {
+            setAutoGain(++s);
             continue;
         }
         break;
     }
-    return TSL2591Data(autoGainSettings[s].gain, autoGainSettings[s].time, lum);
+    currentIndex = s;
+    // TODO Set interrupt
+    return TSL2591Data(settings[s].gain, settings[s].time, lum);
 }
 
-float Meteo::calcSqmAutoGain(TSL2591Data tslData) {
-    float lux = calcLuxAutoGain(tslData);
+float TSL2591AutoGain::timeAsMillis(tsl2591IntegrationTime_t t) {
+    switch (t) {
+    case TSL2591_INTEGRATIONTIME_100MS:
+        return 100.0;
+    case TSL2591_INTEGRATIONTIME_200MS:
+        return 200.0;
+    case TSL2591_INTEGRATIONTIME_300MS:
+        return 300.0;
+    case TSL2591_INTEGRATIONTIME_400MS:
+        return 400.0;
+    case TSL2591_INTEGRATIONTIME_500MS:
+        return 500.0;
+    case TSL2591_INTEGRATIONTIME_600MS:
+        return 600.0;
+    default:
+        return 100.0;
+    }
+}
 
+float TSL2591AutoGain::gainAsMulti(tsl2591Gain_t g) {
+    switch (g) {
+    case TSL2591_GAIN_LOW:
+        return 1.0;
+    case TSL2591_GAIN_MED:
+        return 25.0;
+    case TSL2591_GAIN_HIGH:
+        return 428.0;
+    case TSL2591_GAIN_MAX:
+        return 9876.0;
+    default:
+        return 1.0;
+    }
+}
+
+float TSL2591AutoGain::calculateLux(const TSL2591Data &data) {
+    uint16_t ch1 = data.luminosity >> 16;
+    uint16_t ch0 = data.luminosity & 0xFFFF;
+    if (ch0 == 0xFFFF || ch1 == 0xFFFF) {
+        return -1;
+    }
+    // Original lux calculation (for reference sake)
+    // float lux1 = ( (float)ch0 - (TSL2591_LUX_COEFB * (float)ch1) ) / cpl;
+    // float lux2 = ( ( TSL2591_LUX_COEFC * (float)ch0 ) - ( TSL2591_LUX_COEFD *
+    // (float)ch1 ) ) / cpl; lux = lux1 > lux2 ? lux1 : lux2;
+    // Alternate lux calculation 1
+    // See: https://github.com/adafruit/Adafruit_TSL2591_Library/issues/14
+    // Alternate lux calculation 2
+    // lux = ( (float)ch0 - ( 1.7F * (float)ch1 ) ) / cpl;
+    // Signal I2C had no errors
+    float cpl = (timeAsMillis(data.time) * gainAsMulti(data.gain)) / TSL2591_LUX_DF;
+    return ((float)ch0 - (float)ch1) * (1.0 - (float)ch1 / (float)ch0) / cpl;
+}
+
+float TSL2591AutoGain::calculateSQM(const TSL2591Data &data) {
+    float lux = calculateLux(data);
     // Разные варианты конвертации, deprected, удалить позже
     // float sqm = -2.5 * log10(lux) + 18.3;
     // float sqm = (log10(lux) + 5.5917) / -0.40195;
@@ -132,7 +156,6 @@ float Meteo::calcSqmAutoGain(TSL2591Data tslData) {
     // float sqm = -14.0 - 2.5 * log10(lux)
     // Вот такой еще есть вариант
     // float sqm = 21.57 -2.5 * log10(lux);
-
     // Официальная дока Unihedron
     // https://unihedron.com/projects/sqm-l/Instruction_sheet.pdf
     // https://www.unihedron.com/projects/darksky/cd/SQM-LU-DL/SQM-LU-DL_Users_manual.pdf
@@ -147,36 +170,6 @@ float Meteo::calcSqmAutoGain(TSL2591Data tslData) {
     // [mag/arcsec2] = -2.5 * log10([lx]) + 13.84 что одно и то же.
     // [lx] = pi * 10.8 * 10^4 * 10^(-0.4 * [mag/arcsec2])
     // [lx] = 339292 * 10^(-0.4 * [mag/arcsec2]) что одно и то же.
-
     float sqm = -2.5 * log10(lux) + 13.84;
-
-    if (std::isinf(sqm)) {
-        sqm = 25.;
-    }
-    return sqm;
-}
-
-float Meteo::calcLuxAutoGain(TSL2591Data tslData) {
-    float atime, again;
-    float cpl, lux;
-    uint16_t ch1 = tslData.luminosity >> 16;
-    uint16_t ch0 = tslData.luminosity & 0xFFFF;
-    if ((ch0 == 0xFFFF) | (ch1 == 0xFFFF)) {
-        return -1;
-    }
-    atime = tslTimeAsMillis(tslData.time);
-    again = tslGainAsMulti(tslData.gain);
-    // cpl = (ATIME * AGAIN) / DF
-    cpl = (atime * again) / TSL2591_LUX_DF;
-    // Original lux calculation (for reference sake)
-    // float lux1 = ( (float)ch0 - (TSL2591_LUX_COEFB * (float)ch1) ) / cpl;
-    // float lux2 = ( ( TSL2591_LUX_COEFC * (float)ch0 ) - ( TSL2591_LUX_COEFD *
-    // (float)ch1 ) ) / cpl; lux = lux1 > lux2 ? lux1 : lux2;
-    // Alternate lux calculation 1
-    // See: https://github.com/adafruit/Adafruit_TSL2591_Library/issues/14
-    lux = (((float)ch0 - (float)ch1)) * (1.0F - ((float)ch1 / (float)ch0)) / cpl;
-    // Alternate lux calculation 2
-    // lux = ( (float)ch0 - ( 1.7F * (float)ch1 ) ) / cpl;
-    // Signal I2C had no errors
-    return lux;
+    return std::isinf(sqm) ? 25.0 : sqm;
 }

@@ -24,6 +24,7 @@
 // METEO
 // Sensors read cycle in ms. Always must be 3000.
 #define METEO_MEASURE_DELAY 3000
+#define METEO_BRIGHTNESS_MEASURE_DELAY 60000
 #define METEO_TASK_SLEEP 200
 #define METEO_FORCE_DELAY 800
 
@@ -31,6 +32,9 @@
 #define AUTO_GAIN_CHANGE_DELAY 50
 
 #define SAFETY_MONITOR_DELAY 3000
+
+// BRIGHTNESS
+#define TSL_SENSOR_PIN 3
 
 // RAIN
 #define RAIN_SENSOR_PIN 8

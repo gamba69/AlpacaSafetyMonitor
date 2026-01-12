@@ -7,7 +7,6 @@
 #include <Adafruit_AHTX0.h>
 #include <Adafruit_BMP280.h>
 #include <Adafruit_MLX90614.h>
-#include <Adafruit_TSL2591.h>
 #include <Arduino.h>
 #include <RG15.h>
 #include <RunningAverage.h>
