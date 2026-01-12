@@ -11,7 +11,7 @@ RTC_DS3231 rtc;
 
 WebSerial webSerial;
 PicoMQTT::Client *mqttClient = nullptr;
-JLed led = JLed(LED_PIN).LowActive();
+JLed led = JLed(LED_PIN).LowActive().Off();
 
 WIFIMANAGER WifiManager;
 OTAWEBUPDATER OtaWebUpdater;
