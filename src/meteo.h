@@ -66,7 +66,6 @@ class Meteo {
     void begin();
     // Set current logger
     void setLogger(const int source, std::function<void(String, const int)> logLineCallback = nullptr, std::function<void(String, const int)> logLinePartCallback = nullptr, std::function<String()> logTimeCallback = nullptr);
-    void clearTslInterrupt();
 
   private:
     // Formatting

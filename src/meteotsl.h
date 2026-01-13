@@ -27,18 +27,18 @@ class TSL2591Data {
 class TSL2591AutoGain {
   private:
     Adafruit_TSL2591 tsl;
+    bool useInterrupt = false;
     TSL2591Settings settings[TSL_SETTINGS_SIZE];
     int currentIndex;
     float timeAsMillis(tsl2591IntegrationTime_t);
     float gainAsMulti(tsl2591Gain_t);
     void setAutoGain(int);
-    void updateInterrupt(uint16_t);
+    void setThresholds(uint16_t);
 
   public:
-    TSL2591AutoGain();
+    TSL2591AutoGain(bool interrupt = false) : tsl(2591), currentIndex(3), useInterrupt(interrupt) {}
     bool begin();
     TSL2591Data getData();
     float calculateLux(const TSL2591Data&);
     float calculateSQM(const TSL2591Data&);
-    void clearInterrupt();
 };

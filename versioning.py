@@ -1,16 +1,18 @@
 # noinspection PyUnresolvedReferences
 Import("env") # type: ignore
+from itertools import chain
 import os
 import hashlib
 import datetime
 
 version = "3.0"  # Your desired major.minor version
 IGNORE_FILES = ['firmware.h', 'secrets.h', 'version.h']
+SOURCE_PATHS = ['src', 'lib']
 
 def get_src_hash():
     """Calculate sources hash"""
     hash_md5 = hashlib.md5()
-    for root, dirs, files in os.walk("src"):
+    for root, dirs, files in chain.from_iterable(os.walk(path) for path in SOURCE_PATHS):
         for file in sorted(files):
             if file.endswith(('.cpp', '.c', '.h', '.hpp', '.default')) and file not in IGNORE_FILES:
                 filepath = os.path.join(root, file)

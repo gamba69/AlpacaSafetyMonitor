@@ -7,7 +7,7 @@ Adafruit_BMP280 bmp;
 Adafruit_AHTX0 aht;
 SHT45AutoHeat sht;
 Adafruit_MLX90614 mlx;
-TSL2591AutoGain tsl;
+TSL2591AutoGain tsl(true);
 PCNTFrequencyCounter anm((gpio_num_t)WIND_SENSOR_PIN);
 RG15 rg15(Serial0);
 
@@ -52,10 +52,6 @@ void Meteo::setLogger(const int logSrc, std::function<void(String, const int)> l
     logLine = logLineCallback;
     logLinePart = logLinePartCallback;
     logTime = logTimeCallback;
-}
-
-void Meteo::clearTslInterrupt() {
-    tsl.clearInterrupt();
 }
 
 void Meteo::begin() {

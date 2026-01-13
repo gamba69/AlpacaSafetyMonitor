@@ -44,8 +44,6 @@
     https://cdn-learn.adafruit.com/assets/assets/000/078/658/original/TSL2591_DS000338_6-00.pdf?1564168468
 */
 
-TSL2591AutoGain::TSL2591AutoGain() : tsl(2591), currentIndex(3) {}
-
 bool TSL2591AutoGain::begin() {
     if (!tsl.begin()) {
         return false;
@@ -59,8 +57,11 @@ bool TSL2591AutoGain::begin() {
     settings[5] = TSL2591Settings(TSL2591_GAIN_MAX, TSL2591_INTEGRATIONTIME_200MS, 3277, 62258);
     settings[6] = TSL2591Settings(TSL2591_GAIN_MAX, TSL2591_INTEGRATIONTIME_600MS, 3277, 62258);
     setAutoGain(currentIndex);
-    tsl.clearInterrupt();
-    tsl.registerInterrupt(0, 0, TSL2591_PERSIST_ANY);
+    if (useInterrupt) {
+        pinMode(TSL_SENSOR_PIN, INPUT_PULLUP);
+        tsl.clearInterrupt();
+        tsl.registerInterrupt(0, 0, TSL2591_PERSIST_ANY);
+    }
     return true;
 }
 
@@ -71,7 +72,7 @@ void TSL2591AutoGain::setAutoGain(int index) {
     vTaskDelay(pdMS_TO_TICKS(AUTO_GAIN_CHANGE_DELAY));
 }
 
-void TSL2591AutoGain::updateInterrupt(uint16_t channel0) {
+void TSL2591AutoGain::setThresholds(uint16_t channel0) {
     float lowerThreshold = channel0 * (1.0 - TSL_INTERRUPT_LOWER_PERCENT / 100.0);
     float upperThreshold = channel0 * (1.0 + TSL_INTERRUPT_UPPER_PERCENT / 100.0);
     uint16_t low = max((uint16_t)lowerThreshold, (uint16_t)settings[currentIndex].low);
@@ -80,16 +81,8 @@ void TSL2591AutoGain::updateInterrupt(uint16_t channel0) {
         low = settings[currentIndex].low;
         high = settings[currentIndex].high;
     }
-    // tsl.clearInterrupt();
-    Serial.println("IDX = " + String(currentIndex));
-    Serial.println("CH0 = " + String(channel0));
-    Serial.println("L = " + String(low));
-    Serial.println("H = " + String(high));
-    tsl.registerInterrupt(low, high, TSL2591_PERSIST_ANY);
-}
-
-void TSL2591AutoGain::clearInterrupt() {
     tsl.clearInterrupt();
+    tsl.registerInterrupt(low, high, TSL2591_PERSIST_ANY);
 }
 
 TSL2591Data TSL2591AutoGain::getData() {
@@ -109,7 +102,9 @@ TSL2591Data TSL2591AutoGain::getData() {
         break;
     }
     currentIndex = s;
-    updateInterrupt(lum & 0xFFFF);
+    if (useInterrupt) {
+        setThresholds(lum & 0xFFFF);
+    }
     return TSL2591Data(settings[s].gain, settings[s].time, lum);
 }
 

@@ -129,7 +129,7 @@ void IRAM_ATTR uicpalInterruptHandler() {
 
 void IRAM_ATTR tslInterruptHandler() {
     static unsigned long last = 0;
-    if (millis() - last > 1000) {
+    if (millis() - last > 500) {
         last = millis();
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
         xEventGroupSetBitsFromISR(xInterruptsGroup, TSL2591_INTERRUPT, &xHigherPriorityTaskWoken);
@@ -210,7 +210,6 @@ void workload(void *parameter) {
             immediate = true;
         }
         if ((xBits & TSL2591_INTERRUPT) != 0) {
-            meteo.clearTslInterrupt();
             logTechMessage("[TECH][TSL2591] Interrupt received (immediate update)");
             immediate = true;
         }
@@ -322,7 +321,7 @@ void setup() {
         attachInterrupt(digitalPinToInterrupt(RAIN_SENSOR_PIN), uicpalInterruptHandler, CHANGE);
     }
     if (HARDWARE_TSL2591) {
-        attachInterrupt(digitalPinToInterrupt(TSL_SENSOR_PIN), tslInterruptHandler, RISING);
+        attachInterrupt(digitalPinToInterrupt(TSL_SENSOR_PIN), tslInterruptHandler, FALLING);
     }
     // Watchdog
     esp_task_wdt_deinit();
