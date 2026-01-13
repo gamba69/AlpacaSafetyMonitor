@@ -52,6 +52,8 @@ void Meteo::setLogger(const int logSrc, std::function<void(String, const int)> l
     logLine = logLineCallback;
     logLinePart = logLinePartCallback;
     logTime = logTimeCallback;
+    tsl.setLogger(LogSource::Tech, logLine, logLinePart, logTime);
+    sht.setLogger(LogSource::Tech, logLine, logLinePart, logTime);
 }
 
 void Meteo::begin() {
@@ -313,10 +315,10 @@ void Meteo::updateSht45() {
                 int error = measure.error;
                 switch (error) {
                 case -1:
-                    logTechMessage("[TECH][SHT45] Heating active");
+                    logTechMessage("[TECH][SHT45] Heating active, skip!");
                     break;
                 case -2:
-                    logTechMessage("[TECH][SHT45] Timeout");
+                    logTechMessage("[TECH][SHT45] Timeout error!");
                     break;
                 case SHT4x_OK:
                     logTechMessage("[TECH][SHT45] No error occurred (you shouldn't see this)");

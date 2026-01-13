@@ -65,6 +65,31 @@ bool TSL2591AutoGain::begin() {
     return true;
 }
 
+void TSL2591AutoGain::logMessage(String msg, bool showtime) {
+    if (logLine && logLinePart) {
+        if (logTime && showtime) {
+            logLinePart(logTime() + " ", logSource);
+        }
+        logLine(msg, logSource);
+    }
+}
+
+void TSL2591AutoGain::logMessagePart(String msg, bool showtime) {
+    if (logLinePart) {
+        if (logTime && showtime) {
+            logLinePart(logTime() + " ", logSource);
+        }
+        logLinePart(msg, logSource);
+    }
+}
+
+void TSL2591AutoGain::setLogger(const int logSrc, std::function<void(String, const int)> logLineCallback, std::function<void(String, const int)> logLinePartCallback, std::function<String()> logTimeCallback) {
+    logSource = logSrc;
+    logLine = logLineCallback;
+    logLinePart = logLinePartCallback;
+    logTime = logTimeCallback;
+}
+
 void TSL2591AutoGain::setAutoGain(int index) {
     tsl.setGain(settings[index].gain);
     tsl.setTiming(settings[index].time);
@@ -85,7 +110,42 @@ void TSL2591AutoGain::setThresholds(uint16_t channel0) {
     tsl.registerInterrupt(low, high, TSL2591_PERSIST_ANY);
 }
 
+String TSL2591AutoGain::gainAsString(tsl2591Gain_t gain) {
+    switch (gain) {
+    case TSL2591_GAIN_LOW:
+        return "TSL2591_GAIN_LOW (1x)";
+    case TSL2591_GAIN_MED:
+        return "TSL2591_GAIN_MED (25x)";
+    case TSL2591_GAIN_HIGH:
+        return "TSL2591_GAIN_HIGH (428x)";
+    case TSL2591_GAIN_MAX:
+        return "TSL2591_GAIN_MAX (9876x)";
+    default:
+        return "";
+    }
+}
+
+String TSL2591AutoGain::timeAsString(tsl2591IntegrationTime_t time) {
+    switch (time) {
+    case TSL2591_INTEGRATIONTIME_100MS:
+        return "TSL2591_INTEGRATIONTIME_100MS";
+    case TSL2591_INTEGRATIONTIME_200MS:
+        return "TSL2591_INTEGRATIONTIME_200MS";
+    case TSL2591_INTEGRATIONTIME_300MS:
+        return "TSL2591_INTEGRATIONTIME_300MS";
+    case TSL2591_INTEGRATIONTIME_400MS:
+        return "TSL2591_INTEGRATIONTIME_400MS";
+    case TSL2591_INTEGRATIONTIME_500MS:
+        return "TSL2591_INTEGRATIONTIME_500MS";
+    case TSL2591_INTEGRATIONTIME_600MS:
+        return "TSL2591_INTEGRATIONTIME_600MS";
+    default:
+        return "";
+    }
+}
+
 TSL2591Data TSL2591AutoGain::getData() {
+    int previousIndex = currentIndex;
     int s = currentIndex;
     uint32_t lum;
     while (true) {
@@ -102,6 +162,9 @@ TSL2591Data TSL2591AutoGain::getData() {
         break;
     }
     currentIndex = s;
+    if (previousIndex != currentIndex) {
+        logMessage("[TECH][TSL2591] Auto gain changed to #" + String(currentIndex + 1) + " " + gainAsString(settings[s].gain) + " " + timeAsString(settings[s].time));
+    }
     if (useInterrupt) {
         setThresholds(lum & 0xFFFF);
     }

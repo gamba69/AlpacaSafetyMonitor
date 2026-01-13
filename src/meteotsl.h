@@ -3,8 +3,8 @@
 #include <Adafruit_TSL2591.h>
 
 #define TSL_SETTINGS_SIZE 7
-#define TSL_INTERRUPT_LOWER_PERCENT 8.798916064  // -8.798916064%
-#define TSL_INTERRUPT_UPPER_PERCENT 9.647819614  // +9.647819614%
+#define TSL_INTERRUPT_LOWER_PERCENT 8.798916064 // -8.798916064%
+#define TSL_INTERRUPT_UPPER_PERCENT 9.647819614 // +9.647819614%
 
 class TSL2591Settings {
   public:
@@ -34,11 +34,20 @@ class TSL2591AutoGain {
     float gainAsMulti(tsl2591Gain_t);
     void setAutoGain(int);
     void setThresholds(uint16_t);
+    std::function<void(String, const int)> logLine = nullptr;
+    std::function<void(String, const int)> logLinePart = nullptr;
+    std::function<String()> logTime = nullptr;
+    int logSource;
+    virtual void logMessage(String msg, bool showtime = true);
+    virtual void logMessagePart(String msg, bool showtime = false);
+    String gainAsString(tsl2591Gain_t);
+    String timeAsString(tsl2591IntegrationTime_t);
 
   public:
     TSL2591AutoGain(bool interrupt = false) : tsl(2591), currentIndex(3), useInterrupt(interrupt) {}
     bool begin();
     TSL2591Data getData();
-    float calculateLux(const TSL2591Data&);
-    float calculateSQM(const TSL2591Data&);
+    float calculateLux(const TSL2591Data &);
+    float calculateSQM(const TSL2591Data &);
+    void setLogger(const int source, std::function<void(String, const int)> logLineCallback = nullptr, std::function<void(String, const int)> logLinePartCallback = nullptr, std::function<String()> logTimeCallback = nullptr);
 };

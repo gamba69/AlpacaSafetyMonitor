@@ -2,11 +2,11 @@
 
 /*
  * Optimal heating intervals table
- * 
+ *
  * Source: Sensirion Application Note
  * "Using the Integrated Heater of SHT4x in High-Humidity Environments"
  * https://sensirion.com/resource/application_note/sht4x_heater_usage
- * 
+ *
  * ┌──────────────┬─────────────────┬──────────────────┬──────────┬──────────────┬────────┐
  * │ Humidity RH  │ Heating Interval│ Duration         │ Power    │ Cooldown     │ Cycles │
  * ├──────────────┼─────────────────┼──────────────────┼──────────┼──────────────┼────────┤
@@ -16,12 +16,12 @@
  * │ 85-95%       │ 10-15 minutes   │ 1 sec            │ HIGH     │ 12-15 sec    │ 1      │
  * │ > 95%        │ 5-10 minutes    │ 1 sec × 2-3 times│ HIGH     │ 15-20 sec    │ 3      │
  * └──────────────┴─────────────────┴──────────────────┴──────────┴──────────────┴────────┘
- * 
+ *
  * Heater power levels:
  *   LOW    - 20 mW  (SHT4x_MEASUREMENT_LONG_LOW_HEAT)
  *   MEDIUM - 110 mW (SHT4x_MEASUREMENT_LONG_MEDIUM_HEAT)
  *   HIGH   - 200 mW (SHT4x_MEASUREMENT_LONG_HIGH_HEAT)
- * 
+ *
  * Duty cycle: 10% (heating time / total time)
  * Between cycles: duty-cycle pause (1 sec heat + 9 sec pause)
  * After all cycles: full cooldown according to table
@@ -29,10 +29,10 @@
 
 const HeatingParams SHT45AutoHeat::table[5] = {
     {0, 60, 0, 0, SHT4x_MEASUREMENT_SLOW, 0, 0},
-    {60, 75, 30 * 60 * 1000, 60 * 60 * 1000, SHT4x_MEASUREMENT_LONG_LOW_HEAT, 9000, 1},
-    {75, 85, 15 * 60 * 1000, 30 * 60 * 1000, SHT4x_MEASUREMENT_LONG_MEDIUM_HEAT, 11000, 1},
-    {85, 95, 10 * 60 * 1000, 15 * 60 * 1000, SHT4x_MEASUREMENT_LONG_HIGH_HEAT, 13500, 1},
-    {95, 100, 5 * 60 * 1000, 10 * 60 * 1000, SHT4x_MEASUREMENT_LONG_HIGH_HEAT, 17500, 3},
+    {60, 75, 30 * 60 * 1000, 60 * 60 * 1000, SHT4x_MEASUREMENT_LONG_LOW_HEAT, 10000, 1},
+    {75, 85, 15 * 60 * 1000, 30 * 60 * 1000, SHT4x_MEASUREMENT_LONG_MEDIUM_HEAT, 12000, 1},
+    {85, 95, 10 * 60 * 1000, 15 * 60 * 1000, SHT4x_MEASUREMENT_LONG_HIGH_HEAT, 15000, 1},
+    {95, 100, 5 * 60 * 1000, 10 * 60 * 1000, SHT4x_MEASUREMENT_LONG_HIGH_HEAT, 20000, 3},
 };
 
 SHT45AutoHeat::SHT45AutoHeat() {
@@ -45,6 +45,31 @@ SHT45AutoHeat::~SHT45AutoHeat() {
     if (semaphore) {
         vSemaphoreDelete(semaphore);
     }
+}
+
+void SHT45AutoHeat::logMessage(String msg, bool showtime) {
+    if (logLine && logLinePart) {
+        if (logTime && showtime) {
+            logLinePart(logTime() + " ", logSource);
+        }
+        logLine(msg, logSource);
+    }
+}
+
+void SHT45AutoHeat::logMessagePart(String msg, bool showtime) {
+    if (logLinePart) {
+        if (logTime && showtime) {
+            logLinePart(logTime() + " ", logSource);
+        }
+        logLinePart(msg, logSource);
+    }
+}
+
+void SHT45AutoHeat::setLogger(const int logSrc, std::function<void(String, const int)> logLineCallback, std::function<void(String, const int)> logLinePartCallback, std::function<String()> logTimeCallback) {
+    logSource = logSrc;
+    logLine = logLineCallback;
+    logLinePart = logLinePartCallback;
+    logTime = logTimeCallback;
 }
 
 bool SHT45AutoHeat::begin() {
@@ -93,6 +118,31 @@ SHT45Data SHT45AutoHeat::readData() {
     return d;
 }
 
+String SHT45AutoHeat::cmdAsString(uint8_t command) {
+    switch (command) {
+    case SHT4x_MEASUREMENT_SLOW:
+        return "SHT4x_MEASUREMENT_SLOW";
+    case SHT4x_MEASUREMENT_MEDIUM:
+        return "SHT4x_MEASUREMENT_MEDIUM";
+    case SHT4x_MEASUREMENT_FAST:
+        return "SHT4x_MEASUREMENT_FAST";
+    case SHT4x_MEASUREMENT_LONG_HIGH_HEAT:
+        return "SHT4x_MEASUREMENT_LONG_HIGH_HEAT";
+    case SHT4x_MEASUREMENT_SHORT_HIGH_HEAT:
+        return "SHT4x_MEASUREMENT_SHORT_HIGH_HEAT";
+    case SHT4x_MEASUREMENT_LONG_MEDIUM_HEAT:
+        return "SHT4x_MEASUREMENT_LONG_MEDIUM_HEAT";
+    case SHT4x_MEASUREMENT_SHORT_MEDIUM_HEAT:
+        return "SHT4x_MEASUREMENT_SHORT_MEDIUM_HEAT";
+    case SHT4x_MEASUREMENT_LONG_LOW_HEAT:
+        return "SHT4x_MEASUREMENT_LONG_LOW_HEAT";
+    case SHT4x_MEASUREMENT_SHORT_LOW_HEAT:
+        return "SHT4x_MEASUREMENT_SHORT_LOW_HEAT";
+    default:
+        return "";
+    }
+}
+
 void SHT45AutoHeat::taskWrapper(void *p) {
     ((SHT45AutoHeat *)p)->heatingTask();
 }
@@ -112,7 +162,13 @@ void SHT45AutoHeat::heatingTask() {
         uint32_t interval = p->intervalMax -
                             (uint32_t)((p->intervalMax - p->intervalMin) *
                                        (humidity - p->humMin) / (p->humMax - p->humMin));
+        if (interval == 0) {
+            vTaskDelay(pdMS_TO_TICKS(1000));
+            continue;
+        }
         if (now - lastHeat >= interval) {
+            logMessage("[TECH][SHT45] Heating creep on humidity " + String(humidity, 0) + "%, after " + String(interval / (60 * 1000)) + "m, " + cmdAsString(p->cmd) + ", x" + String(p->cycles) + ", cooldown " + String(p->cooldown / 1000, 0) + "s");
+            vTaskDelay(pdMS_TO_TICKS(500));
             xSemaphoreTake(semaphore, portMAX_DELAY);
             for (uint8_t i = 0; i < p->cycles; i++) {
                 doHeat(p->cmd);

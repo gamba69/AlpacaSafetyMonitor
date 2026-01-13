@@ -206,11 +206,11 @@ void workload(void *parameter) {
             pdFALSE,
             pdMS_TO_TICKS(50));
         if ((xBits & UICPAL_INTERRUPT) != 0) {
-            logTechMessage("[TECH][UICPAL] Interrupt received (immediate update)");
+            logTechMessage("[TECH][UICPAL] Rain state changed, immediate update");
             immediate = true;
         }
         if ((xBits & TSL2591_INTERRUPT) != 0) {
-            logTechMessage("[TECH][TSL2591] Interrupt received (immediate update)");
+            logTechMessage("[TECH][TSL2591] Thresholds exceeded, immediate update");
             immediate = true;
         }
     }
