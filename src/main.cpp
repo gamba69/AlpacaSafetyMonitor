@@ -28,8 +28,10 @@ EventGroupHandle_t xInterruptsGroup;
 
 #define UICPAL_INTERRUPT (1UL << 0)
 #define TSL2591_INTERRUPT (1UL << 1)
+#define TSL2591_READY (1UL << 2)
 
 volatile bool immediate = false;
+volatile bool readiness = false;
 
 void setupMqtt() {
     if (mqttClient) {
@@ -128,15 +130,19 @@ void IRAM_ATTR uicpalInterruptHandler() {
 }
 
 void IRAM_ATTR tslInterruptHandler() {
-    static unsigned long last = 0;
-    if (millis() - last > 500) {
-        last = millis();
+   static unsigned long last = 0;
+   if (millis() - last > 1000) {
+       last = millis();
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
         xEventGroupSetBitsFromISR(xInterruptsGroup, TSL2591_INTERRUPT, &xHigherPriorityTaskWoken);
         if (xHigherPriorityTaskWoken) {
             portYIELD_FROM_ISR();
         }
-    }
+   }
+}
+
+void IRAM_ATTR tslDataReadyHandler() {
+    xEventGroupSetBits(xInterruptsGroup, TSL2591_READY);
 }
 
 void workload(void *parameter) {
@@ -176,28 +182,29 @@ void workload(void *parameter) {
             lastMqttStatus = millis();
         }
         // update meteo every METEO_MEASURE_DELAY without blocking webserver
-        if (immediate || (millis() > meteoLastRan + METEO_MEASURE_DELAY)) {
+        if (immediate || readiness || (millis() > meteoLastRan + METEO_MEASURE_DELAY)) {
             meteo.update(immediate);
             meteoLastRan = millis();
         }
         // update observingconditions every refresh without blocking webserver
         if (ALPACA_OBSCON) {
-            if (immediate || (millis() > observingConditionsLastRan + (1000 * observingconditions.getRefresh()))) {
+            if (immediate || readiness || (millis() > observingConditionsLastRan + (1000 * observingconditions.getRefresh()))) {
                 observingconditions.update(&meteo);
                 observingConditionsLastRan = millis();
             }
         }
         // update safetymonitor every METEO_MEASURE_DELAY without blocking webserver
         if (ALPACA_SAFEMON) {
-            if (immediate || (millis() > safetyMonitorLastRan + SAFETY_MONITOR_DELAY)) {
+            if (immediate || readiness || (millis() > safetyMonitorLastRan + SAFETY_MONITOR_DELAY)) {
                 safetymonitor.update(&meteo);
                 safetyMonitorLastRan = millis();
             }
         }
         immediate = false;
+        readiness = false;
         esp_task_wdt_reset();
         taskYIELD();
-        EventBits_t await = UICPAL_INTERRUPT | TSL2591_INTERRUPT;
+        EventBits_t await = UICPAL_INTERRUPT | TSL2591_INTERRUPT | TSL2591_READY;
         xEventGroupClearBits(xInterruptsGroup, await);
         EventBits_t xBits = xEventGroupWaitBits(
             xInterruptsGroup,
@@ -212,6 +219,10 @@ void workload(void *parameter) {
         if ((xBits & TSL2591_INTERRUPT) != 0) {
             logTechMessage("[TECH][TSL2591] Thresholds exceeded, immediate update");
             immediate = true;
+        }
+        if ((xBits & TSL2591_READY) != 0) {
+            logTechMessage("[TECH][TSL2591] Data ready, update");
+            readiness = true;
         }
     }
     esp_task_wdt_delete(NULL);
@@ -315,6 +326,7 @@ void setup() {
     }
     alpacaServer.loadSettings();
     // Meteo sensors
+    meteo.getTsl2591()->setDataReadyCallback(tslDataReadyHandler);
     meteo.setLogger(LogSource::Meteo, logLine, logLinePart, logTime);
     meteo.begin();
     if (HARDWARE_UICPAL) {

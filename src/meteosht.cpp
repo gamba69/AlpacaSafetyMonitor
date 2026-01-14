@@ -84,7 +84,7 @@ bool SHT45AutoHeat::begin() {
     }
     xSemaphoreGive(semaphore);
     return xTaskCreate(taskWrapper, "SHTHeatingTask", 2048,
-                       this, 2, &task) == pdPASS;
+                       this, 1, &task) == pdPASS;
 }
 
 SHT45Data SHT45AutoHeat::readData() {

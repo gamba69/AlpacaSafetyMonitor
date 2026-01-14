@@ -7,7 +7,7 @@ Adafruit_BMP280 bmp;
 Adafruit_AHTX0 aht;
 SHT45AutoHeat sht;
 Adafruit_MLX90614 mlx;
-TSL2591AutoGain tsl(true);
+TSL2591AutoGain tsl;
 PCNTFrequencyCounter anm((gpio_num_t)WIND_SENSOR_PIN);
 RG15 rg15(Serial0);
 
@@ -54,6 +54,10 @@ void Meteo::setLogger(const int logSrc, std::function<void(String, const int)> l
     logTime = logTimeCallback;
     tsl.setLogger(LogSource::Tech, logLine, logLinePart, logTime);
     sht.setLogger(LogSource::Tech, logLine, logLinePart, logTime);
+}
+
+TSL2591AutoGain *Meteo::getTsl2591() {
+    return &tsl;
 }
 
 void Meteo::begin() {
@@ -135,16 +139,14 @@ void Meteo::begin() {
             &updateMlx90614Handle);
     }
     if (HARDWARE_TSL2591) {
-        tsl.begin();
-        // potentially long running
-        xTaskCreatePinnedToCore(
+        tsl.begin(true);
+        xTaskCreate(
             Meteo::updateTsl2591Wrapper,
             "updateTsl2591",
             2048,
             this,
             1,
-            &updateTsl2591Handle,
-            1);
+            &updateTsl2591Handle);
     }
     if (HARDWARE_ANEMO4403) {
         anm.begin();
@@ -405,10 +407,12 @@ void Meteo::updateMlx90614() {
 void Meteo::updateTsl2591() {
     EventBits_t xBits;
     static unsigned long last_update = 0;
-    static bool force_update = true;
+    static bool force_update = false;
     while (true) {
         if (force_update || millis() - last_update > METEO_MEASURE_DELAY) {
-            // potentially long running
+            if (force_update) {
+                tsl.immediateUpdate();
+            }
             TSL2591Data tslData = tsl.getData();
             sensors.sky_brightness = tsl.calculateLux(tslData);
             sensors.sky_quality = tsl.calculateSQM(tslData);
@@ -515,7 +519,7 @@ void Meteo::update(bool force) {
         if (HARDWARE_TSL2591) {
             xDone |= TSL2591_DONE;
             xKick |= TSL2591_KICK;
-            // xWait |= TSL2591_DONE; // potentially long running
+            xWait |= TSL2591_DONE;
         }
         if (HARDWARE_ANEMO4403) {
             xDone |= ANEMO4403_DONE;

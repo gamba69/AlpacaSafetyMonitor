@@ -44,11 +44,13 @@
     https://cdn-learn.adafruit.com/assets/assets/000/078/658/original/TSL2591_DS000338_6-00.pdf?1564168468
 */
 
-bool TSL2591AutoGain::begin() {
+bool TSL2591AutoGain::begin(bool interrupt) {
+    this->interrupt = interrupt;
     if (!tsl.begin()) {
         return false;
     }
     tsl.enable();
+    xTslEvents = xEventGroupCreate();
     settings[0] = TSL2591Settings(TSL2591_GAIN_LOW, TSL2591_INTEGRATIONTIME_100MS, 1843, 35020);
     settings[1] = TSL2591Settings(TSL2591_GAIN_LOW, TSL2591_INTEGRATIONTIME_600MS, 3277, 62258);
     settings[2] = TSL2591Settings(TSL2591_GAIN_MED, TSL2591_INTEGRATIONTIME_200MS, 3277, 62258);
@@ -57,12 +59,51 @@ bool TSL2591AutoGain::begin() {
     settings[5] = TSL2591Settings(TSL2591_GAIN_MAX, TSL2591_INTEGRATIONTIME_200MS, 3277, 62258);
     settings[6] = TSL2591Settings(TSL2591_GAIN_MAX, TSL2591_INTEGRATIONTIME_600MS, 3277, 62258);
     setAutoGain(currentIndex);
-    if (useInterrupt) {
+    lastData = getLastData();
+    if (interrupt) {
         pinMode(TSL_SENSOR_PIN, INPUT_PULLUP);
-        tsl.clearInterrupt();
         tsl.registerInterrupt(0, 0, TSL2591_PERSIST_ANY);
+        tsl.clearInterrupt();
     }
-    return true;
+    return xTaskCreate(taskWrapper, "TSLUpdatingTask", 2048, this, 1, &task) == pdPASS;
+}
+
+void TSL2591AutoGain::setDataReadyCallback(std::function<void()> dataReadyCallback) {
+    this->dataReadyCallback = dataReadyCallback;
+}
+
+void TSL2591AutoGain::taskWrapper(void *p) {
+    ((TSL2591AutoGain *)p)->updatingTask();
+}
+
+void TSL2591AutoGain::updatingTask() {
+    EventBits_t xBits;
+    static unsigned long lastUpdate = 0;
+    static bool forced = false;
+    while (true) {
+        uint32_t now = millis();
+        if (forced || now - lastUpdate >= 3000) {
+            lastData = getLastData();
+            lastUpdate = millis();
+            if (forced && dataReadyCallback) {
+                dataReadyCallback();
+            }
+            forced = false;
+        }
+        xBits = xEventGroupWaitBits(
+            xTslEvents,
+            TSL_KICK,
+            pdTRUE,
+            pdFALSE,
+            pdMS_TO_TICKS(200));
+        if ((xBits & TSL_KICK) != 0) {
+            forced = true;
+        }
+    }
+}
+
+void TSL2591AutoGain::immediateUpdate() {
+    xEventGroupSetBits(xTslEvents, TSL_KICK);
 }
 
 void TSL2591AutoGain::logMessage(String msg, bool showtime) {
@@ -106,8 +147,8 @@ void TSL2591AutoGain::setThresholds(uint16_t channel0) {
         low = settings[currentIndex].low;
         high = settings[currentIndex].high;
     }
-    tsl.clearInterrupt();
     tsl.registerInterrupt(low, high, TSL2591_PERSIST_ANY);
+    tsl.clearInterrupt();
 }
 
 String TSL2591AutoGain::gainAsString(tsl2591Gain_t gain) {
@@ -145,6 +186,10 @@ String TSL2591AutoGain::timeAsString(tsl2591IntegrationTime_t time) {
 }
 
 TSL2591Data TSL2591AutoGain::getData() {
+    return lastData;
+}
+
+TSL2591Data TSL2591AutoGain::getLastData() {
     int previousIndex = currentIndex;
     int s = currentIndex;
     uint32_t lum;
@@ -165,7 +210,7 @@ TSL2591Data TSL2591AutoGain::getData() {
     if (previousIndex != currentIndex) {
         logMessage("[TECH][TSL2591] Auto gain changed to #" + String(currentIndex + 1) + " " + gainAsString(settings[s].gain) + " " + timeAsString(settings[s].time));
     }
-    if (useInterrupt) {
+    if (interrupt) {
         setThresholds(lum & 0xFFFF);
     }
     return TSL2591Data(settings[s].gain, settings[s].time, lum);

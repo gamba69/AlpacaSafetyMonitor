@@ -67,6 +67,8 @@ class Meteo {
     // Set current logger
     void setLogger(const int source, std::function<void(String, const int)> logLineCallback = nullptr, std::function<void(String, const int)> logLinePartCallback = nullptr, std::function<String()> logTimeCallback = nullptr);
 
+    TSL2591AutoGain* getTsl2591();
+
   private:
     // Formatting
     String trimmed(float, int);
