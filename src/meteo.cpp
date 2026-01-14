@@ -305,8 +305,6 @@ void Meteo::updateSht45() {
     while (true) {
         if (force_update || millis() - last_update > METEO_MEASURE_DELAY) {
             // potentially long running
-            // TODO Smart with heating - simple NOT working!
-            // Need to be heat, wait (stabilize?), read
             SHT45Data measure = sht.readData();
             if (measure.valid) {
                 sensors.sht_temperature = measure.temperature;
@@ -315,7 +313,7 @@ void Meteo::updateSht45() {
                 int error = measure.error;
                 switch (error) {
                 case -1:
-                    logTechMessage("[TECH][SHT45] Heating active, skip!");
+                    logTechMessage("[TECH][SHT45] Heating active, skip reading!");
                     break;
                 case -2:
                     logTechMessage("[TECH][SHT45] Timeout error!");
@@ -411,7 +409,6 @@ void Meteo::updateTsl2591() {
     while (true) {
         if (force_update || millis() - last_update > METEO_MEASURE_DELAY) {
             // potentially long running
-            // TODO Interrupt, long delay (not METEO_MEASURE_DELAY!)
             TSL2591Data tslData = tsl.getData();
             sensors.sky_brightness = tsl.calculateLux(tslData);
             sensors.sky_quality = tsl.calculateSQM(tslData);
@@ -508,7 +505,7 @@ void Meteo::update(bool force) {
         if (HARDWARE_SHT45) {
             xDone |= SHT45_DONE;
             xKick |= SHT45_KICK;
-            // xWait |= SHT45_DONE; // potentially long running
+            xWait |= SHT45_DONE;
         }
         if (HARDWARE_MLX90614) {
             xDone |= MLX90614_DONE;
