@@ -139,7 +139,7 @@ void Meteo::begin() {
             &updateMlx90614Handle);
     }
     if (HARDWARE_TSL2591) {
-        tsl.begin(true);
+        tsl.begin(false);
         xTaskCreate(
             Meteo::updateTsl2591Wrapper,
             "updateTsl2591",
