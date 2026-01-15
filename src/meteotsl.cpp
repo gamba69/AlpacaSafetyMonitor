@@ -64,7 +64,7 @@ bool TSL2591AutoGain::begin(int events) {
     TSL2591Data d = getLastData();
     if (xSemaphoreTake(dataMutex, portMAX_DELAY) == pdTRUE) {
         lastData = d;
-        xSemaphoreGive(dataMutex); // Освобождаем
+        xSemaphoreGive(dataMutex);
     }
     if (events & TSL2591Events::THRESHOLD_INTERRUPT) {
         pinMode(TSL_SENSOR_PIN, INPUT_PULLUP);
@@ -88,11 +88,11 @@ void TSL2591AutoGain::updatingTask() {
     static bool forced = false;
     while (true) {
         uint32_t now = millis();
-        if (forced || now - lastUpdate >= 3000) {
+        if (forced || now - lastUpdate >= METEO_MEASURE_DELAY) {
             TSL2591Data d = getLastData();
             if (xSemaphoreTake(dataMutex, portMAX_DELAY) == pdTRUE) {
                 lastData = d;
-                xSemaphoreGive(dataMutex); // Освобождаем
+                xSemaphoreGive(dataMutex);
             }
             lastUpdate = millis();
             if (dataReadyCallback) {
@@ -113,7 +113,7 @@ void TSL2591AutoGain::updatingTask() {
             TSL_KICK,
             pdTRUE,
             pdFALSE,
-            pdMS_TO_TICKS(200));
+            pdMS_TO_TICKS(METEO_TASK_SLEEP));
         if ((xBits & TSL_KICK) != 0) {
             forced = true;
         }

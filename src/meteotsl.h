@@ -1,4 +1,5 @@
 #pragma once
+
 #include "config.h"
 #include <Adafruit_TSL2591.h>
 
@@ -11,7 +12,7 @@ class TSL2591Events {
   public:
     static const int THRESHOLD_INTERRUPT = (1 << 0);
     static const int DATAREADY_CALLBACK = (1 << 1);
-    static const int THRESHOLD_CALLBACK = (1 << 1);
+    static const int THRESHOLD_CALLBACK = (1 << 2);
 };
 
 class TSL2591Settings {

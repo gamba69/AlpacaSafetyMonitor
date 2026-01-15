@@ -9,7 +9,7 @@ SHT45AutoHeat sht;
 Adafruit_MLX90614 mlx;
 TSL2591AutoGain tsl;
 PCNTFrequencyCounter anm((gpio_num_t)WIND_SENSOR_PIN);
-RG15 rg15(Serial0);
+RGAsync rg15;
 
 void Meteo::logMessage(String msg, bool showtime) {
     if (logLine && logLinePart) {
@@ -54,6 +54,7 @@ void Meteo::setLogger(const int logSrc, std::function<void(String, const int)> l
     logTime = logTimeCallback;
     tsl.setLogger(LogSource::Tech, logLine, logLinePart, logTime);
     sht.setLogger(LogSource::Tech, logLine, logLinePart, logTime);
+    rg15.setLogger(LogSource::Tech, logLine, logLinePart, logTime);
 }
 
 TSL2591AutoGain *Meteo::getTsl2591() {
@@ -82,17 +83,15 @@ void Meteo::begin() {
     }
     if (HARDWARE_RG15) {
         rg15.begin();
-        if (rg15.poll()) {
-            sensors.rg15_rate = rg15.getRainfallIntensity();
-        }
-        xTaskCreatePinnedToCore(
+        RGData d = rg15.getData();
+        sensors.rg15_rate = d.rainfallIntensity;
+        xTaskCreate(
             Meteo::updateRg15Wrapper,
             "updateRg15",
             2048,
             this,
             1,
-            &updateRg15Handle,
-            1);
+            &updateRg15Handle);
     }
     sensors.rain_rate = max(sensors.uicpal_rate, sensors.rg15_rate);
 
@@ -118,15 +117,13 @@ void Meteo::begin() {
     }
     if (HARDWARE_SHT45) {
         sht.begin();
-        // potentially long running
-        xTaskCreatePinnedToCore(
+        xTaskCreate(
             Meteo::updateSht45Wrapper,
             "updateSht45",
             2048,
             this,
             1,
-            &updateSht45Handle,
-            1);
+            &updateSht45Handle);
     }
     if (HARDWARE_MLX90614) {
         mlx.begin(I2C_MLX_ADDR);
@@ -200,53 +197,24 @@ void Meteo::updateRg15() {
     static bool force_update = true;
     while (true) {
         if (force_update || millis() - last_update > METEO_MEASURE_DELAY) {
-            // potentially long running
-            if (rg15.poll()) {
-                sensors.rg15_rate = rg15.getRainfallIntensity();
-            } else {
-                int error = rg15.getErrorCode();
-                switch (error) {
-                case 0:
-                    logTechMessage("[TECH][RG15] No error occurred (you shouldn't see this)");
-                    break;
-                case 1:
-                    logTechMessage("[TECH][RG15] Serial connection does not exist!");
-                    break;
-                case 2:
-                    logTechMessage("[TECH][RG15] Serial connection could not write!");
-                    break;
-                case 3:
-                    logTechMessage("[TECH][RG15] Response is invalid!");
-                    break;
-                case 4:
-                    logTechMessage("[TECH][RG15] Response timed out!");
-                    break;
-                case 5:
-                    logTechMessage("[TECH][RG15] Baud rate not supported!");
-                    break;
-                case 6:
-                    logTechMessage("[TECH][RG15] Parsing failed!");
-                    break;
-                case 7:
-                    logTechMessage("[TECH][RG15] Unit does not match!");
-                    break;
-                default:
-                    break;
-                }
+            if (force_update) {
+                rg15.forceUpdate();
             }
-            last_update = millis();
-            force_update = false;
-            xEventGroupSetBits(xDevicesGroup, RG15_DONE);
+            RGData d = rg15.getData();
+            sensors.rg15_rate = d.rainfallIntensity;
         }
-        xBits = xEventGroupWaitBits(
-            xDevicesGroup,
-            RG15_KICK,
-            pdTRUE,
-            pdFALSE,
-            pdMS_TO_TICKS(METEO_TASK_SLEEP));
-        if ((xBits & RG15_KICK) != 0) {
-            force_update = true;
-        }
+        last_update = millis();
+        force_update = false;
+        xEventGroupSetBits(xDevicesGroup, RG15_DONE);
+    }
+    xBits = xEventGroupWaitBits(
+        xDevicesGroup,
+        RG15_KICK,
+        pdTRUE,
+        pdFALSE,
+        pdMS_TO_TICKS(METEO_TASK_SLEEP));
+    if ((xBits & RG15_KICK) != 0) {
+        force_update = true;
     }
 }
 
@@ -306,7 +274,6 @@ void Meteo::updateSht45() {
     static bool force_update = true;
     while (true) {
         if (force_update || millis() - last_update > METEO_MEASURE_DELAY) {
-            // potentially long running
             SHT45Data measure = sht.readData();
             if (measure.valid) {
                 sensors.sht_temperature = measure.temperature;
@@ -494,7 +461,7 @@ void Meteo::update(bool force) {
         if (HARDWARE_RG15) {
             xDone |= RG15_DONE;
             xKick |= RG15_KICK;
-            // xWait |= RG15_DONE; // potentially long running
+            xWait |= RG15_DONE;
         }
         if (HARDWARE_BMP280) {
             xDone |= BMP280_DONE;
