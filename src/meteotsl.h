@@ -7,6 +7,13 @@
 #define TSL_INTERRUPT_UPPER_PERCENT 9.647819614 // +9.647819614%
 #define TSL_KICK (1UL << 0)
 
+class TSL2591Events {
+  public:
+    static const int THRESHOLD_INTERRUPT = (1 << 0);
+    static const int DATAREADY_CALLBACK = (1 << 1);
+    static const int THRESHOLD_CALLBACK = (1 << 1);
+};
+
 class TSL2591Settings {
   public:
     tsl2591Gain_t gain;
@@ -30,7 +37,7 @@ class TSL2591AutoGain {
   private:
     Adafruit_TSL2591 tsl;
     TaskHandle_t task;
-    bool interrupt = false;
+    int events = 0;
     TSL2591Data lastData;
 
     TSL2591Settings settings[TSL_SETTINGS_SIZE];
@@ -63,7 +70,7 @@ class TSL2591AutoGain {
 
   public:
     TSL2591AutoGain() : tsl(2591), currentIndex(3) {}
-    bool begin(bool = false);
+    bool begin(int = 0);
     TSL2591Data getData();
     void immediateUpdate();
     float calculateLux(const TSL2591Data &);

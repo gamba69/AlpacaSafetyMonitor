@@ -44,8 +44,8 @@
     https://cdn-learn.adafruit.com/assets/assets/000/078/658/original/TSL2591_DS000338_6-00.pdf?1564168468
 */
 
-bool TSL2591AutoGain::begin(bool interrupt) {
-    this->interrupt = interrupt;
+bool TSL2591AutoGain::begin(int events) {
+    this->events = events;
     if (!tsl.begin()) {
         return false;
     }
@@ -60,12 +60,12 @@ bool TSL2591AutoGain::begin(bool interrupt) {
     settings[6] = TSL2591Settings(TSL2591_GAIN_MAX, TSL2591_INTEGRATIONTIME_600MS, 3277, 62258);
     setAutoGain(currentIndex);
     lastData = getLastData();
-    if (interrupt) {
+    if (events & TSL2591Events::THRESHOLD_INTERRUPT) {
         pinMode(TSL_SENSOR_PIN, INPUT_PULLUP);
         tsl.registerInterrupt(0, 0, TSL2591_PERSIST_ANY);
         tsl.clearInterrupt();
     }
-    return xTaskCreate(taskWrapper, "TSLUpdatingTask", 2048, this, 1, &task) == pdPASS;
+    return xTaskCreatePinnedToCore(taskWrapper, "TSLUpdatingTask", 2048, this, 1, &task, 1) == pdPASS;
 }
 
 void TSL2591AutoGain::setDataReadyCallback(std::function<void()> dataReadyCallback) {
@@ -85,8 +85,16 @@ void TSL2591AutoGain::updatingTask() {
         if (forced || now - lastUpdate >= 3000) {
             lastData = getLastData();
             lastUpdate = millis();
-            if (forced && dataReadyCallback) {
-                dataReadyCallback();
+            if (dataReadyCallback) {
+                if (forced) {
+                    if (events & (TSL2591Events::THRESHOLD_CALLBACK | TSL2591Events::DATAREADY_CALLBACK)) {
+                        dataReadyCallback();
+                    }
+                } else {
+                    if (events & TSL2591Events::DATAREADY_CALLBACK) {
+                        dataReadyCallback();
+                    }
+                }
             }
             forced = false;
         }
@@ -210,7 +218,7 @@ TSL2591Data TSL2591AutoGain::getLastData() {
     if (previousIndex != currentIndex) {
         logMessage("[TECH][TSL2591] Auto gain changed to #" + String(currentIndex + 1) + " " + gainAsString(settings[s].gain) + " " + timeAsString(settings[s].time));
     }
-    if (interrupt) {
+    if (events & TSL2591Events::THRESHOLD_INTERRUPT) {
         setThresholds(lum & 0xFFFF);
     }
     return TSL2591Data(settings[s].gain, settings[s].time, lum);

@@ -2,8 +2,8 @@
 
 #include "config.h"
 #include "meteoanm.h"
-#include "meteotsl.h"
 #include "meteosht.h"
+#include "meteotsl.h"
 #include <Adafruit_AHTX0.h>
 #include <Adafruit_BMP280.h>
 #include <Adafruit_MLX90614.h>
@@ -67,7 +67,7 @@ class Meteo {
     // Set current logger
     void setLogger(const int source, std::function<void(String, const int)> logLineCallback = nullptr, std::function<void(String, const int)> logLinePartCallback = nullptr, std::function<String()> logTimeCallback = nullptr);
 
-    TSL2591AutoGain* getTsl2591();
+    TSL2591AutoGain *getTsl2591();
 
   private:
     // Formatting
