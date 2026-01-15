@@ -278,51 +278,6 @@ void Meteo::updateSht45() {
             if (measure.valid) {
                 sensors.sht_temperature = measure.temperature;
                 sensors.sht_humidity = measure.humidity;
-            } else {
-                int error = measure.error;
-                switch (error) {
-                case -1:
-                    logTechMessage("[TECH][SHT45] Heating active, skip reading!");
-                    break;
-                case -2:
-                    logTechMessage("[TECH][SHT45] Timeout error!");
-                    break;
-                case SHT4x_OK:
-                    logTechMessage("[TECH][SHT45] No error occurred (you shouldn't see this)");
-                    break;
-                case SHT4x_ERR_WRITECMD:
-                    logTechMessage("[TECH][SHT45] Write command error!");
-                    break;
-                case SHT4x_ERR_READBYTES:
-                    logTechMessage("[TECH][SHT45] Read bytes error!");
-                    break;
-                case SHT4x_ERR_HEATER_OFF:
-                    logTechMessage("[TECH][SHT45] Heater off error!");
-                    break;
-                case SHT4x_ERR_NOT_CONNECT:
-                    logTechMessage("[TECH][SHT45] Not connected error!");
-                    break;
-                case SHT4x_ERR_CRC_TEMP:
-                    logTechMessage("[TECH][SHT45] Temperature CRC error!");
-                    break;
-                case SHT4x_ERR_CRC_HUM:
-                    logTechMessage("[TECH][SHT45] Humidity CRC error!");
-                    break;
-                case SHT4x_ERR_HEATER_COOLDOWN:
-                    logTechMessage("[TECH][SHT45] Heater cooldown error!");
-                    break;
-                case SHT4x_ERR_HEATER_ON:
-                    logTechMessage("[TECH][SHT45] Heater on error!");
-                    break;
-                case SHT4x_ERR_SERIAL_NUMBER_CRC:
-                    logTechMessage("[TECH][SHT45] Serial number CRC error!");
-                    break;
-                case 0x8B:
-                    logTechMessage("[TECH][SHT45] Invalid address error!");
-                    break;
-                default:
-                    break;
-                }
             }
             last_update = millis();
             force_update = false;

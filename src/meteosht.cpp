@@ -91,6 +91,7 @@ SHT45Data SHT45AutoHeat::readData() {
     SHT45Data d = {0, 0, false, 0};
     if (xSemaphoreTake(semaphore, 0) != pdTRUE) {
         d.error = -1; // heating
+        logMessage("[TECH][SHT45] Heating active, skip reading!");
         return d;
     }
     sht.requestData(SHT4x_MEASUREMENT_SLOW);
@@ -101,6 +102,7 @@ SHT45Data SHT45AutoHeat::readData() {
     if (!sht.dataReady()) {
         d.error = -2; // timeout
         xSemaphoreGive(semaphore);
+        logMessage("[TECH][SHT45] Timeout error!");
         return d;
     }
     if (sht.readData(true)) {
@@ -115,6 +117,46 @@ SHT45Data SHT45AutoHeat::readData() {
         d.error = sht.getError();
     }
     xSemaphoreGive(semaphore);
+    if (d.error) {
+        switch (d.error) {
+        case SHT4x_OK:
+            logMessage("[TECH][SHT45] No error occurred (you shouldn't see this)");
+            break;
+        case SHT4x_ERR_WRITECMD:
+            logMessage("[TECH][SHT45] Write command error!");
+            break;
+        case SHT4x_ERR_READBYTES:
+            logMessage("[TECH][SHT45] Read bytes error!");
+            break;
+        case SHT4x_ERR_HEATER_OFF:
+            logMessage("[TECH][SHT45] Heater off error!");
+            break;
+        case SHT4x_ERR_NOT_CONNECT:
+            logMessage("[TECH][SHT45] Not connected error!");
+            break;
+        case SHT4x_ERR_CRC_TEMP:
+            logMessage("[TECH][SHT45] Temperature CRC error!");
+            break;
+        case SHT4x_ERR_CRC_HUM:
+            logMessage("[TECH][SHT45] Humidity CRC error!");
+            break;
+        case SHT4x_ERR_HEATER_COOLDOWN:
+            logMessage("[TECH][SHT45] Heater cooldown error!");
+            break;
+        case SHT4x_ERR_HEATER_ON:
+            logMessage("[TECH][SHT45] Heater on error!");
+            break;
+        case SHT4x_ERR_SERIAL_NUMBER_CRC:
+            logMessage("[TECH][SHT45] Serial number CRC error!");
+            break;
+        case 0x8B:
+            logMessage("[TECH][SHT45] Invalid address error!");
+            break;
+        default:
+            logMessage("[TECH][SHT45] Unknown error (you shouldn't see this)");
+            break;
+        }
+    }
     return d;
 }
 
