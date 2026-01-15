@@ -411,7 +411,7 @@ void Meteo::updateTsl2591() {
     while (true) {
         if (force_update || millis() - last_update > METEO_MEASURE_DELAY) {
             if (force_update) {
-                tsl.immediateUpdate();
+                tsl.forceUpdate();
             }
             TSL2591Data tslData = tsl.getData();
             sensors.sky_brightness = tsl.calculateLux(tslData);

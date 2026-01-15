@@ -59,7 +59,13 @@ bool TSL2591AutoGain::begin(int events) {
     settings[5] = TSL2591Settings(TSL2591_GAIN_MAX, TSL2591_INTEGRATIONTIME_200MS, 3277, 62258);
     settings[6] = TSL2591Settings(TSL2591_GAIN_MAX, TSL2591_INTEGRATIONTIME_600MS, 3277, 62258);
     setAutoGain(currentIndex);
-    lastData = getLastData();
+    dataMutex = xSemaphoreCreateMutex();
+    xSemaphoreGive(dataMutex);
+    TSL2591Data d = getLastData();
+    if (xSemaphoreTake(dataMutex, portMAX_DELAY) == pdTRUE) {
+        lastData = d;
+        xSemaphoreGive(dataMutex); // Освобождаем
+    }
     if (events & TSL2591Events::THRESHOLD_INTERRUPT) {
         pinMode(TSL_SENSOR_PIN, INPUT_PULLUP);
         tsl.registerInterrupt(0, 0, TSL2591_PERSIST_ANY);
@@ -83,7 +89,11 @@ void TSL2591AutoGain::updatingTask() {
     while (true) {
         uint32_t now = millis();
         if (forced || now - lastUpdate >= 3000) {
-            lastData = getLastData();
+            TSL2591Data d = getLastData();
+            if (xSemaphoreTake(dataMutex, portMAX_DELAY) == pdTRUE) {
+                lastData = d;
+                xSemaphoreGive(dataMutex); // Освобождаем
+            }
             lastUpdate = millis();
             if (dataReadyCallback) {
                 if (forced) {
@@ -110,7 +120,7 @@ void TSL2591AutoGain::updatingTask() {
     }
 }
 
-void TSL2591AutoGain::immediateUpdate() {
+void TSL2591AutoGain::forceUpdate() {
     xEventGroupSetBits(xTslEvents, TSL_KICK);
 }
 
@@ -194,7 +204,12 @@ String TSL2591AutoGain::timeAsString(tsl2591IntegrationTime_t time) {
 }
 
 TSL2591Data TSL2591AutoGain::getData() {
-    return lastData;
+    TSL2591Data d;
+    if (xSemaphoreTake(dataMutex, portMAX_DELAY) == pdTRUE) {
+        d = lastData;
+        xSemaphoreGive(dataMutex);
+    }
+    return d;
 }
 
 TSL2591Data TSL2591AutoGain::getLastData() {

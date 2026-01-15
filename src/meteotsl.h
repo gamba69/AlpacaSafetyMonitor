@@ -26,9 +26,9 @@ class TSL2591Settings {
 
 class TSL2591Data {
   public:
-    volatile tsl2591Gain_t gain;
-    volatile tsl2591IntegrationTime_t time;
-    volatile uint32_t luminosity;
+    tsl2591Gain_t gain;
+    tsl2591IntegrationTime_t time;
+    uint32_t luminosity;
     TSL2591Data() {};
     TSL2591Data(tsl2591Gain_t g, tsl2591IntegrationTime_t t, uint32_t l) : gain(g), time(t), luminosity(l) {}
 };
@@ -39,6 +39,7 @@ class TSL2591AutoGain {
     TaskHandle_t task;
     int events = 0;
     TSL2591Data lastData;
+    SemaphoreHandle_t dataMutex;
 
     TSL2591Settings settings[TSL_SETTINGS_SIZE];
     int currentIndex;
@@ -72,7 +73,7 @@ class TSL2591AutoGain {
     TSL2591AutoGain() : tsl(2591), currentIndex(3) {}
     bool begin(int = 0);
     TSL2591Data getData();
-    void immediateUpdate();
+    void forceUpdate();
     float calculateLux(const TSL2591Data &);
     float calculateSQM(const TSL2591Data &);
     void setLogger(const int source, std::function<void(String, const int)> logLineCallback = nullptr, std::function<void(String, const int)> logLinePartCallback = nullptr, std::function<String()> logTimeCallback = nullptr);
