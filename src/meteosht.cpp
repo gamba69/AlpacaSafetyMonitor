@@ -83,15 +83,15 @@ bool SHT45AutoHeat::begin() {
         return false;
     }
     xSemaphoreGive(semaphore);
-    return xTaskCreate(taskWrapper, "SHTHeatingTask", 2048,
-                       this, 1, &task) == pdPASS;
+    return xTaskCreatePinnedToCore(taskWrapper, "SHTHeatingTask", 4096,
+                       this, 1, &task, 1) == pdPASS;
 }
 
 SHT45Data SHT45AutoHeat::readData() {
     SHT45Data d = {0, 0, false, 0};
     if (xSemaphoreTake(semaphore, 0) != pdTRUE) {
         d.error = -1; // heating
-        logMessage("[TECH][SHT45] Heating active, skip reading!");
+        logMessage("[TECH][SHT45] Heating active, skip measure.");
         return d;
     }
     sht.requestData(SHT4x_MEASUREMENT_SLOW);
@@ -209,19 +209,23 @@ void SHT45AutoHeat::heatingTask() {
             continue;
         }
         if (now - lastHeat >= interval) {
-            logMessage("[TECH][SHT45] Heating creep on humidity " + String(humidity, 0) + "%, after " + String(interval / (60 * 1000)) + "m, " + cmdAsString(p->cmd) + ", x" + String(p->cycles) + ", cooldown " + String(p->cooldown / 1000, 0) + "s");
+            logMessage("[TECH][SHT45] Begin heating on humidity " + String(humidity, 0) + "%, after " + String(interval / (60 * 1000)) + "m, " + cmdAsString(p->cmd) + ", x" + String(p->cycles) + ", cooldown " + String(p->cooldown / 1000) + "s");
             vTaskDelay(pdMS_TO_TICKS(500));
             xSemaphoreTake(semaphore, portMAX_DELAY);
             for (uint8_t i = 0; i < p->cycles; i++) {
+                logMessage("[TECH][SHT45] Heating cycle #" + String(i + 1) + "...");
                 doHeat(p->cmd);
                 if (i < p->cycles - 1) {
                     uint32_t dutyCycleDelay = getHeatDuration(p->cmd) * 9;
+                    logMessage("[TECH][SHT45] Await heating duty cycle...");
                     vTaskDelay(pdMS_TO_TICKS(dutyCycleDelay));
                 }
             }
             lastHeat = millis();
             nextAllowed = millis() + p->cooldown;
+            logMessage("[TECH][SHT45] Await cooldown...");
             vTaskDelay(pdMS_TO_TICKS(p->cooldown));
+            logMessage("[TECH][SHT45] Cooldown done, heating complete.");
             updateHumidity();
             xSemaphoreGive(semaphore);
         }

@@ -76,7 +76,7 @@ void Meteo::begin() {
         xTaskCreate(
             Meteo::updateUicpalWrapper,
             "updateUicpal",
-            2048,
+            4096,
             this,
             1,
             &updateUicpalHandle);
@@ -88,7 +88,7 @@ void Meteo::begin() {
         xTaskCreate(
             Meteo::updateRg15Wrapper,
             "updateRg15",
-            2048,
+            4096,
             this,
             1,
             &updateRg15Handle);
@@ -100,7 +100,7 @@ void Meteo::begin() {
         xTaskCreate(
             Meteo::updateBmp280Wrapper,
             "updateBmp280",
-            2048,
+            4096,
             this,
             1,
             &updateBmp280Handle);
@@ -110,7 +110,7 @@ void Meteo::begin() {
         xTaskCreate(
             Meteo::updateAht20Wrapper,
             "updateAht20",
-            2048,
+            4096,
             this,
             1,
             &updateAht20Handle);
@@ -120,7 +120,7 @@ void Meteo::begin() {
         xTaskCreate(
             Meteo::updateSht45Wrapper,
             "updateSht45",
-            2048,
+            4096,
             this,
             1,
             &updateSht45Handle);
@@ -130,7 +130,7 @@ void Meteo::begin() {
         xTaskCreate(
             Meteo::updateMlx90614Wrapper,
             "updateMlx80614",
-            2048,
+            4096,
             this,
             1,
             &updateMlx90614Handle);
@@ -140,7 +140,7 @@ void Meteo::begin() {
         xTaskCreate(
             Meteo::updateTsl2591Wrapper,
             "updateTsl2591",
-            2048,
+            4096,
             this,
             1,
             &updateTsl2591Handle);
@@ -150,14 +150,14 @@ void Meteo::begin() {
         xTaskCreate(
             Meteo::updateAnemo4403SpeedWrapper,
             "updateAnemo4403Speed",
-            2048,
+            4096,
             this,
             1,
             &updateAnemo4403SpeedHandle);
         xTaskCreate(
             Meteo::updateAnemo4403GustWrapper,
             "updateAnemo4403Gust",
-            2048,
+            4096,
             this,
             1,
             &updateAnemo4403GustHandle);

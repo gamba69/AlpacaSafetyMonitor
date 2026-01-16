@@ -71,7 +71,7 @@ bool TSL2591AutoGain::begin(int events) {
         tsl.registerInterrupt(0, 0, TSL2591_PERSIST_ANY);
         tsl.clearInterrupt();
     }
-    return xTaskCreatePinnedToCore(taskWrapper, "TSLUpdatingTask", 2048, this, 1, &task, 1) == pdPASS;
+    return xTaskCreatePinnedToCore(taskWrapper, "TSLUpdatingTask", 4096, this, 1, &task, 1) == pdPASS;
 }
 
 void TSL2591AutoGain::setDataReadyCallback(std::function<void()> dataReadyCallback) {

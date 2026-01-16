@@ -130,19 +130,23 @@ void IRAM_ATTR uicpalInterruptHandler() {
 }
 
 void IRAM_ATTR tslInterruptHandler() {
-   static unsigned long last = 0;
-   if (millis() - last > 1000) {
-       last = millis();
+    static unsigned long last = 0;
+    if (millis() - last > 1000) {
+        last = millis();
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
         xEventGroupSetBitsFromISR(xInterruptsGroup, TSL2591_INTERRUPT, &xHigherPriorityTaskWoken);
         if (xHigherPriorityTaskWoken) {
             portYIELD_FROM_ISR();
         }
-   }
+    }
 }
 
 void IRAM_ATTR tslDataReadyHandler() {
     xEventGroupSetBits(xInterruptsGroup, TSL2591_READY);
+}
+
+unsigned long urandom(unsigned long min, unsigned long max) {
+    return (esp_random() % (max - min + 1)) + min;
 }
 
 void workload(void *parameter) {
@@ -150,6 +154,7 @@ void workload(void *parameter) {
     static unsigned long meteoLastRan = 0;
     static unsigned long safetyMonitorLastRan = 0;
     static unsigned long observingConditionsLastRan = 0;
+    static unsigned long uptimeNextRun = 0;
     // mqtt status loop delay
     static int prevWifiStatus = WL_DISCONNECTED;
     static int mqttStatusDelay = MQTT_STATUS_DELAY;
@@ -199,6 +204,10 @@ void workload(void *parameter) {
                 safetymonitor.update(&meteo);
                 safetyMonitorLastRan = millis();
             }
+        }
+        if (millis() > uptimeNextRun) {
+            logMessage("[MAIN][UPTIME] " + uptime());
+            uptimeNextRun = millis() + urandom(UPTIME_MIN_DELAY, UPTIME_MAX_DELAY);
         }
         immediate = false;
         readiness = false;

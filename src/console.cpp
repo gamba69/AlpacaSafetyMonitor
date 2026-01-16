@@ -2,6 +2,7 @@
 #include "hardware.h"
 #include "log.h"
 #include "weights.h"
+#include "helpers.h"
 #include <Arduino.h>
 #include <algorithm>
 #include <iterator>
@@ -136,6 +137,12 @@ void commandHumiWeightState() {
     logConsoleMessage("[INFO] ---------------------");
     logConsoleMessage("[INFO]  SHT45  - " + String(H_NORM_WEIGHT_SHT45) + " [" + String(H_WEIGHT_SHT45) + "]");
     logConsoleMessage("[INFO]  AHT20  - " + String(H_NORM_WEIGHT_AHT20) + " [" + String(H_WEIGHT_AHT20) + "]");
+}
+
+void commandUptime() {
+    logConsoleMessage("[INFO] Uptime");
+    logConsoleMessage("[INFO] ------------");
+    logConsoleMessage("[INFO] " + uptime());
 }
 
 void commandReboot() {
@@ -586,6 +593,8 @@ void initConsoleCommands() {
     console_commands["hwuicpaloff"] = commandHwUicpalOff;
     console_commands["hwrg15on"] = commandHwRg15On;
     console_commands["hwrg15off"] = commandHwRg15Off;
+
+    console_commands["uptime"] = commandUptime;
 }
 
 TempHumiWeightCommand parseTempHumiWeightCommand(const std::string &input) {

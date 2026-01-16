@@ -5,6 +5,7 @@
 #include "meteo.h"
 #include "observingconditions.h"
 #include "safetymonitor.h"
+#include "helpers.h"
 #include <AlpacaServer.h>
 #include <Arduino.h>
 #include <ESPNtpClient.h>

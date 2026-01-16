@@ -107,5 +107,7 @@ void commandHumiWeightState();
 void commandHumiWeightAht20(float);
 void commandHumiWeightSht45(float);
 
+void commandUptime();
+
 void initConsoleCommands();
 void IRAM_ATTR processConsoleCommand(const std::string &msg);
