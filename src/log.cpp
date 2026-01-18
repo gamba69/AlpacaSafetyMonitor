@@ -131,14 +131,14 @@ void logMessagePart(String msg, bool showtime) {
 
 void logConsoleMessage(String msg, bool showtime) {
     if (showtime)
-        logLinePart(logTime() + " ", LogSource::Console);
-    logLine(msg, LogSource::Console);
+        logLinePart(logTime() + " ", LogSource::Console, false);
+    logLine(msg, LogSource::Console, false);
 }
 
 void logConsoleMessagePart(String msg, bool showtime) {
     if (showtime)
-        logLinePart(logTime() + " ", LogSource::Console);
-    logLinePart(msg, LogSource::Console);
+        logLinePart(logTime() + " ", LogSource::Console, false);
+    logLinePart(msg, LogSource::Console, false);
 }
 
 void logTechMessage(String msg, bool showtime) {

@@ -157,8 +157,8 @@ void TSL2591AutoGain::setAutoGain(int index) {
 }
 
 void TSL2591AutoGain::setThresholds(uint16_t channel0) {
-    float lowerThreshold = channel0 * (1.0 - TSL_INTERRUPT_LOWER_PERCENT / 100.0);
-    float upperThreshold = channel0 * (1.0 + TSL_INTERRUPT_UPPER_PERCENT / 100.0);
+    float lowerThreshold = channel0 * (1.0 - TSL_INTERRUPT_LOWER_PERCENT * TSL_INTERRUPT_PERCECT_MULT / 100.0);
+    float upperThreshold = channel0 * (1.0 + TSL_INTERRUPT_UPPER_PERCENT * TSL_INTERRUPT_PERCECT_MULT / 100.0);
     uint16_t low = max((uint16_t)lowerThreshold, (uint16_t)settings[currentIndex].low);
     uint16_t high = min((uint16_t)upperThreshold, (uint16_t)settings[currentIndex].high);
     if (low >= high) {
