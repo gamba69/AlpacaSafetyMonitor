@@ -12,7 +12,14 @@ bool RGAsync::begin(int events) {
         lastData = d;
         xSemaphoreGive(dataMutex);
     }
-    return xTaskCreatePinnedToCore(taskWrapper, "RG15UpdatingTask", 4096, this, 1, &task, 1) == pdPASS;
+    return xTaskCreatePinnedToCore(
+               taskWrapper,
+               "RG15UpdatingTask",
+               4096,
+               this,
+               1,
+               &task,
+               1) == pdPASS;
 }
 
 void RGAsync::setDataReadyCallback(std::function<void()> dataReadyCallback) {

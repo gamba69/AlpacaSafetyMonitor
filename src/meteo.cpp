@@ -202,19 +202,19 @@ void Meteo::updateRg15() {
             }
             RGData d = rg15.getData();
             sensors.rg15_rate = d.rainfallIntensity;
+            last_update = millis();
+            force_update = false;
+            xEventGroupSetBits(xDevicesGroup, RG15_DONE);
         }
-        last_update = millis();
-        force_update = false;
-        xEventGroupSetBits(xDevicesGroup, RG15_DONE);
-    }
-    xBits = xEventGroupWaitBits(
-        xDevicesGroup,
-        RG15_KICK,
-        pdTRUE,
-        pdFALSE,
-        pdMS_TO_TICKS(METEO_TASK_SLEEP));
-    if ((xBits & RG15_KICK) != 0) {
-        force_update = true;
+        xBits = xEventGroupWaitBits(
+            xDevicesGroup,
+            RG15_KICK,
+            pdTRUE,
+            pdFALSE,
+            pdMS_TO_TICKS(METEO_TASK_SLEEP));
+        if ((xBits & RG15_KICK) != 0) {
+            force_update = true;
+        }
     }
 }
 
