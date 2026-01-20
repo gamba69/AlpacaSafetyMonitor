@@ -50,7 +50,7 @@ void commandHelpLog() {
     logConsoleMessage("[HELP] --------------------------");
     logConsoleMessage("[HELP] Log settings:");
     logConsoleMessage("[HELP]   log                   - show curent log settings");
-    logConsoleMessage("[HELP]   log on/off                    - enable/disable all logging");
+    logConsoleMessage("[HELP]   log on/slow/off               - enable/disable all logging");
     logConsoleMessage("[HELP]   log main on/off               - enable/disable main logging");
     logConsoleMessage("[HELP]   log alpaca on/off             - enable/disable alpaca server logging");
     logConsoleMessage("[HELP]   log meteo on/slow [nnn]/off   - enable/slow, nnn seconds/disable meteo logging");
