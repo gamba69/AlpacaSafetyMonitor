@@ -11,6 +11,14 @@ struct TempHumiWeightCommand {
 };
 
 void commandHelp();
+void commandHelpInfo();
+void commandHelpGeneral();
+void commandHelpLog();
+void commandHelpTarget();
+void commandHelpHw();
+void commandHelpAlpaca();
+void commandHelpTemp();
+void commandHelpHumi();
 
 void commandReboot();
 

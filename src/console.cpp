@@ -13,20 +13,43 @@
 std::map<std::string, std::function<void()>> console_commands;
 
 void commandHelp() {
+    logConsoleMessage("[HELP] Use the following commands");
+    logConsoleMessage("[HELP] --------------------------");
+    logConsoleMessage("[HELP]   help         - this screen");
+    logConsoleMessage("[HELP]   help info    - show help about informational commands");
+    logConsoleMessage("[HELP]   help general - show help about general commands");
+    logConsoleMessage("[HELP]   help log     - show help about log settings");
+    logConsoleMessage("[HELP]   help target  - show help about log target settings");
+    logConsoleMessage("[HELP]   help hw      - show help about hardware settings");
+    logConsoleMessage("[HELP]   help alpaca  - show help about alpaca settings");
+    logConsoleMessage("[HELP]   help temp    - show help about temperature calc weights");
+    logConsoleMessage("[HELP]   help humi    - show help about humidity calc weights");
+}
+
+void commandHelpInfo() {
     logConsoleMessage("[HELP] Available console commands");
     logConsoleMessage("[HELP] --------------------------");
     logConsoleMessage("[HELP] Info:");
-    logConsoleMessage("[HELP]   help   - this screen");
     logConsoleMessage("[HELP]   log    - show curent log settings");
     logConsoleMessage("[HELP]   target - show curent log target settings");
-    logConsoleMessage("[HELP]   hw     - show curent log settings");
+    logConsoleMessage("[HELP]   hw     - show curent hw settings");
     logConsoleMessage("[HELP]   temp   - show curent temperature calc weights");
     logConsoleMessage("[HELP]   humi   - show curent humidity calc weights");
     logConsoleMessage("[HELP]   uptime - show curent system uptime");
     logConsoleMessage("[HELP]   faults - show curent sensor faults");
     logConsoleMessage("[HELP] General:");
-    logConsoleMessage("[HELP]   reboot            - restart esp32 ascom alpaca device");
+    logConsoleMessage("[HELP]   reboot - restart esp32 ascom alpaca device");
+}
+
+void commandHelpGeneral() {
+    commandHelpInfo();
+}
+
+void commandHelpLog() {
+    logConsoleMessage("[HELP] Available console commands");
+    logConsoleMessage("[HELP] --------------------------");
     logConsoleMessage("[HELP] Log settings:");
+    logConsoleMessage("[HELP]   log                   - show curent log settings");
     logConsoleMessage("[HELP]   log on/off                    - enable/disable all logging");
     logConsoleMessage("[HELP]   log main on/off               - enable/disable main logging");
     logConsoleMessage("[HELP]   log alpaca on/off             - enable/disable alpaca server logging");
@@ -37,11 +60,22 @@ void commandHelp() {
     logConsoleMessage("[HELP]   log ota on/off                - enable/disable ota update logging");
     logConsoleMessage("[HELP]   log tech on/off               - enable/disable tech sensor data logging");
     logConsoleMessage("[HELP] Log target settings:");
+    logConsoleMessage("[HELP]   target                - show curent log target settings");
     logConsoleMessage("[HELP]   target serial on/off  - enable/disable serial log output");
     logConsoleMessage("[HELP]   target console on/off - enable/disable console log output");
     logConsoleMessage("[HELP]   target mqtt on/off    - enable/disable mqtt log output");
     logConsoleMessage("[HELP]   target led on/off     - enable/disable led log output");
+}
+
+void commandHelpTarget() {
+    commandHelpLog();
+}
+
+void commandHelpHw() {
+    logConsoleMessage("[HELP] Available console commands");
+    logConsoleMessage("[HELP] --------------------------");
     logConsoleMessage("[HELP] Hardware settings (reboot required):");
+    logConsoleMessage("[HELP]   hw                  - show curent hw settings");
     logConsoleMessage("[HELP]   hw bmp280 on/off    - enable/disable BMP280 sensor");
     logConsoleMessage("[HELP]   hw aht20 on/off     - enable/disable AHT20 sensor");
     logConsoleMessage("[HELP]   hw sht45 on/off     - enable/disable SHT45 sensor");
@@ -50,18 +84,33 @@ void commandHelp() {
     logConsoleMessage("[HELP]   hw anemo4403 on/off - enable/disable ANEMO4403 sensor");
     logConsoleMessage("[HELP]   hw uicpal on/off    - enable/disable UICPAL sensor");
     logConsoleMessage("[HELP]   hw rg15 on/off      - enable/disable RG-15 sensor");
+    logConsoleMessage("[HELP] Alpaca settings (reboot required):");
+    logConsoleMessage("[HELP]   alpaca obscon on/off  - enable/disable observing conditions service");
+    logConsoleMessage("[HELP]   alpaca safemon on/off - enable/disable safety monitor service");
+}
+
+void commandHelpAlpaca() {
+    commandHelpHw();
+}
+
+void commandHelpTemp() {
+    logConsoleMessage("[HELP] Available console commands");
+    logConsoleMessage("[HELP] --------------------------");
     logConsoleMessage("[HELP] Temperature calc weights:");
+    logConsoleMessage("[HELP]   temp          - show curent temperature calc weights");
     logConsoleMessage("[HELP]   temp sht n.nn - set SHT45 temperature calc weight");
     logConsoleMessage("[HELP]   temp aht n.nn - set AHT20 temperature calc weight");
     logConsoleMessage("[HELP]   temp bmp n.nn - set BMP280 temperature calc weight");
     logConsoleMessage("[HELP]   temp weight n.nn n.nn n.nn - set SHT45/AHT20/BMP280 temperature calc weights at once");
     logConsoleMessage("[HELP] Humidity calc weights:");
+    logConsoleMessage("[HELP]   humi          - show curent humidity calc weights");
     logConsoleMessage("[HELP]   humi sht n.nn - set SHT45 humidity calc weight");
     logConsoleMessage("[HELP]   humi aht n.nn - set AHT20 humidity calc weight");
     logConsoleMessage("[HELP]   humi weight n.nn n.nn - set SHT45/AHT20 humidity calc weights at once");
-    logConsoleMessage("[HELP] Alpaca settings (reboot required):");
-    logConsoleMessage("[HELP]   alpaca obscon on/off  - enable/disable observing conditions service");
-    logConsoleMessage("[HELP]   alpaca safemon on/off - enable/disable safety monitor service");
+}
+
+void commandHelpHumi() {
+    commandHelpHumi();
 }
 
 void commandLogState() {
@@ -536,6 +585,15 @@ void commandHumiWeightSht45(float weight) {
 void initConsoleCommands() {
 
     console_commands["help"] = commandHelp;
+    console_commands["helpinfo"] = commandHelpInfo;
+    console_commands["helpgeneral"] = commandHelpGeneral;
+    console_commands["helplog"] = commandHelpLog;
+    console_commands["helptarget"] = commandHelpTarget;
+    console_commands["helphw"] = commandHelpHw;
+    console_commands["helpalpaca"] = commandHelpAlpaca;
+    console_commands["helptemp"] = commandHelpTemp;
+    console_commands["helphumi"] = commandHelpHumi;
+
     console_commands["reboot"] = commandReboot;
 
     console_commands["target"] = commandTargetState;
