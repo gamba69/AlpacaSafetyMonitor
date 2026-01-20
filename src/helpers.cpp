@@ -25,7 +25,7 @@ String smart_round(float x) {
     while (v < 1.0f) {
         v *= 10;
         sh++;
-    }                        // первая значащая
+    } // первая значащая
     v = roundf(v * 10) / 10; // две значащие
     while (sh--)
         v /= 10; // вернуть масштаб
@@ -51,4 +51,65 @@ String uptime() {
     sprintf(uptimeBuffer, "%03lu:%02lu:%02lu:%02lu",
             days, hours, minutes, seconds);
     return String(uptimeBuffer);
+}
+
+void faults(int *count, String *description) {
+    *description = "";
+    *count = 0;
+    if (HARDWARE_BMP280 && !INITED_BMP280) {
+        if (*count > 0) {
+            *description += " ";
+        }
+        *count++;
+        *description += "BMP280";
+    }
+    if (HARDWARE_AHT20 && !INITED_AHT20) {
+        if (*count > 0) {
+            *description += " ";
+        }
+        *count++;
+        *description += "AHT20";
+    }
+    if (HARDWARE_SHT45 && !INITED_SHT45) {
+        if (*count > 0) {
+            *description += " ";
+        }
+        *count++;
+        *description += "SHT45";
+    }
+    if (HARDWARE_MLX90614 && !INITED_MLX90614) {
+        if (*count > 0) {
+            *description += " ";
+        }
+        *count++;
+        *description += "MLX90614";
+    }
+    if (HARDWARE_TSL2591 && !INITED_TSL2591) {
+        if (*count > 0) {
+            *description += " ";
+        }
+        *count++;
+        *description += "TSL2591";
+    }
+    if (HARDWARE_ANEMO4403 && !INITED_ANEMO4403) {
+        if (*count > 0) {
+            *description += " ";
+        }
+        *count++;
+        *description += "ANEMO4403";
+    }
+    if (HARDWARE_UICPAL && !INITED_UICPAL) {
+        if (*count > 0) {
+            *description += " ";
+        }
+        *count++;
+        *description += "UICPAL";
+    }
+    if (HARDWARE_RG15 && !INITED_RG15) {
+        if (*count > 0) {
+            *description += " ";
+        }
+        *count++;
+        *description += "RG15";
+    }
 }

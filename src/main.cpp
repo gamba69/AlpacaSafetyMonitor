@@ -207,6 +207,13 @@ void workload(void *parameter) {
         }
         if (millis() > uptimeNextRun) {
             logMessage("[MAIN][UPTIME] " + uptime());
+            int count;
+            String descr;
+            faults(&count, &descr);
+            if (count > 0) {
+                logMessage("[MAIN][FAULTS] " + String(count) + " sensor(s): " + String(descr));
+            }
+
             uptimeNextRun = millis() + urandom(UPTIME_MIN_DELAY, UPTIME_MAX_DELAY);
         }
         immediate = false;
