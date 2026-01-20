@@ -10,11 +10,8 @@ class RGEvents {
     static const int DATAREADY_CALLBACK = (1 << 0);
 };
 
-class RGData {
-  public:
+struct RGData {
     float rainfallIntensity = 0;
-    RGData() {};
-    RGData(float i) : rainfallIntensity(i) {}
 };
 
 class RGAsync {

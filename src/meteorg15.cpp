@@ -2,10 +2,15 @@
 #include <cmath>
 
 bool RGAsync::begin(int events) {
+    if (!rg15.begin()) {
+        return false;
+    }
     this->events = events;
-    rg15.begin();
     xRg15Events = xEventGroupCreate();
     dataMutex = xSemaphoreCreateMutex();
+    if (!dataMutex) {
+        return false;
+    }
     xSemaphoreGive(dataMutex);
     RGData d = getLastData();
     if (xSemaphoreTake(dataMutex, portMAX_DELAY) == pdTRUE) {

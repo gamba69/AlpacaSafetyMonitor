@@ -6,6 +6,7 @@
 Preferences hwPrefs;
 
 bool hwEnabled[HW_ENABLED_SIZE];
+bool hwInited[HW_ENABLED_SIZE];
 
 void calcHwPrefs() {
     OBSCON_RAINRATE =  HARDWARE_UICPAL || HARDWARE_RG15;
@@ -47,6 +48,7 @@ void initHwPrefs() {
     ALPACA_SAFEMON = FIRMWARE_ALPACA_SAFEMON;
     calcHwPrefs();
     loadHwPrefs();
+    std::fill(std::begin(hwInited), std::end(hwInited), false);
 }
 
 void loadHwPrefs() {

@@ -14,6 +14,15 @@
 #define HARDWARE_RG15 hwEnabled[hwRg15]
 #define HARDWARE_DS3231 hwEnabled[hwDs3231]
 
+#define INITED_BMP280 hwInited[hwBmp280]
+#define INITED_AHT20 hwInited[hwAht20]
+#define INITED_SHT45 hwInited[hwSht45]
+#define INITED_MLX90614 hwInited[hwMlx90614]
+#define INITED_TSL2591 hwInited[hwTsl2591]
+#define INITED_UICPAL hwInited[hwUicpal]
+#define INITED_ANEMO4403 hwInited[hwAnemo4403]
+#define INITED_RG15 hwInited[hwRg15]
+
 #define ALPACA_OBSCON hwEnabled[alpacaObscon]
 #define ALPACA_SAFEMON hwEnabled[alpacaSafemon]
 
@@ -41,6 +50,7 @@
 #define HW_ENABLED_SIZE 64
 
 extern bool hwEnabled[HW_ENABLED_SIZE];
+extern bool hwInited[HW_ENABLED_SIZE];
 
 enum Hardware {
 

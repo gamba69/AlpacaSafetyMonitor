@@ -73,7 +73,9 @@ void SHT45AutoHeat::setLogger(const int logSrc, std::function<void(String, const
 }
 
 bool SHT45AutoHeat::begin() {
-    sht.begin();
+    if (!sht.begin()) {
+        return false;
+    }
     if (!sht.isConnected()) {
         return false;
     }
@@ -83,8 +85,14 @@ bool SHT45AutoHeat::begin() {
         return false;
     }
     xSemaphoreGive(semaphore);
-    return xTaskCreatePinnedToCore(taskWrapper, "SHTHeatingTask", 4096,
-                       this, 1, &task, 1) == pdPASS;
+    return xTaskCreatePinnedToCore(
+               taskWrapper,
+               "SHTHeatingTask",
+               4096,
+               this,
+               1,
+               &task,
+               1) == pdPASS;
 }
 
 SHT45Data SHT45AutoHeat::readData() {

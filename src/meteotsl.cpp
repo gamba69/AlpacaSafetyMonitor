@@ -45,11 +45,11 @@
 */
 
 bool TSL2591AutoGain::begin(int events) {
-    this->events = events;
     if (!tsl.begin()) {
         return false;
     }
     tsl.enable();
+    this->events = events;
     xTslEvents = xEventGroupCreate();
     settings[0] = TSL2591Settings(TSL2591_GAIN_LOW, TSL2591_INTEGRATIONTIME_100MS, 1843, 35020);
     settings[1] = TSL2591Settings(TSL2591_GAIN_LOW, TSL2591_INTEGRATIONTIME_600MS, 3277, 62258);
@@ -60,6 +60,9 @@ bool TSL2591AutoGain::begin(int events) {
     settings[6] = TSL2591Settings(TSL2591_GAIN_MAX, TSL2591_INTEGRATIONTIME_600MS, 3277, 62258);
     setAutoGain(currentIndex);
     dataMutex = xSemaphoreCreateMutex();
+    if (!dataMutex) {
+        return false;
+    }
     xSemaphoreGive(dataMutex);
     TSL2591Data d = getLastData();
     if (xSemaphoreTake(dataMutex, portMAX_DELAY) == pdTRUE) {
@@ -71,7 +74,14 @@ bool TSL2591AutoGain::begin(int events) {
         tsl.registerInterrupt(0, 0, TSL2591_PERSIST_ANY);
         tsl.clearInterrupt();
     }
-    return xTaskCreatePinnedToCore(taskWrapper, "TSLUpdatingTask", 4096, this, 1, &task, 1) == pdPASS;
+    return xTaskCreatePinnedToCore(
+               taskWrapper,
+               "TSLUpdatingTask",
+               4096,
+               this,
+               1,
+               &task,
+               1) == pdPASS;
 }
 
 void TSL2591AutoGain::setDataReadyCallback(std::function<void()> dataReadyCallback) {

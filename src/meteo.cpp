@@ -67,6 +67,7 @@ void Meteo::begin() {
     Wire.setPins(I2C_SDA_PIN, I2C_SCL_PIN);
     Wire.begin();
     if (HARDWARE_UICPAL) {
+        INITED_UICPAL = true;
         pinMode(RAIN_SENSOR_PIN, INPUT_PULLDOWN);
         if (digitalRead(RAIN_SENSOR_PIN)) {
             sensors.uicpal_rate = 0.02;
@@ -82,85 +83,99 @@ void Meteo::begin() {
             &updateUicpalHandle);
     }
     if (HARDWARE_RG15) {
-        rg15.begin();
-        RGData d = rg15.getData();
-        sensors.rg15_rate = d.rainfallIntensity;
-        xTaskCreate(
-            Meteo::updateRg15Wrapper,
-            "updateRg15",
-            4096,
-            this,
-            1,
-            &updateRg15Handle);
+        if (rg15.begin()) {
+            INITED_RG15 = true;
+            RGData d = rg15.getData();
+            sensors.rg15_rate = d.rainfallIntensity;
+            xTaskCreate(
+                Meteo::updateRg15Wrapper,
+                "updateRg15",
+                4096,
+                this,
+                1,
+                &updateRg15Handle);
+        }
     }
     sensors.rain_rate = max(sensors.uicpal_rate, sensors.rg15_rate);
 
     if (HARDWARE_BMP280) {
-        bmp.begin(I2C_BMP_ADDR);
-        xTaskCreate(
-            Meteo::updateBmp280Wrapper,
-            "updateBmp280",
-            4096,
-            this,
-            1,
-            &updateBmp280Handle);
+        if (bmp.begin(I2C_BMP_ADDR)) {
+            INITED_BMP280 = true;
+            xTaskCreate(
+                Meteo::updateBmp280Wrapper,
+                "updateBmp280",
+                4096,
+                this,
+                1,
+                &updateBmp280Handle);
+        }
     }
     if (HARDWARE_AHT20) {
-        aht.begin(&Wire, 0, I2C_AHT_ADDR);
-        xTaskCreate(
-            Meteo::updateAht20Wrapper,
-            "updateAht20",
-            4096,
-            this,
-            1,
-            &updateAht20Handle);
+        if (aht.begin(&Wire, 0, I2C_AHT_ADDR)) {
+            INITED_AHT20 = true;
+            xTaskCreate(
+                Meteo::updateAht20Wrapper,
+                "updateAht20",
+                4096,
+                this,
+                1,
+                &updateAht20Handle);
+        }
     }
     if (HARDWARE_SHT45) {
-        sht.begin();
-        xTaskCreate(
-            Meteo::updateSht45Wrapper,
-            "updateSht45",
-            4096,
-            this,
-            1,
-            &updateSht45Handle);
+        if (sht.begin()) {
+            INITED_SHT45 = true;
+            xTaskCreate(
+                Meteo::updateSht45Wrapper,
+                "updateSht45",
+                4096,
+                this,
+                1,
+                &updateSht45Handle);
+        }
     }
     if (HARDWARE_MLX90614) {
-        mlx.begin(I2C_MLX_ADDR);
-        xTaskCreate(
-            Meteo::updateMlx90614Wrapper,
-            "updateMlx80614",
-            4096,
-            this,
-            1,
-            &updateMlx90614Handle);
+        if (mlx.begin(I2C_MLX_ADDR)) {
+            INITED_MLX90614 = true;
+            xTaskCreate(
+                Meteo::updateMlx90614Wrapper,
+                "updateMlx80614",
+                4096,
+                this,
+                1,
+                &updateMlx90614Handle);
+        }
     }
     if (HARDWARE_TSL2591) {
-        tsl.begin(TSL2591Events::THRESHOLD_INTERRUPT);
-        xTaskCreate(
-            Meteo::updateTsl2591Wrapper,
-            "updateTsl2591",
-            4096,
-            this,
-            1,
-            &updateTsl2591Handle);
+        if (tsl.begin(TSL2591Events::THRESHOLD_INTERRUPT)) {
+            INITED_TSL2591 = true;
+            xTaskCreate(
+                Meteo::updateTsl2591Wrapper,
+                "updateTsl2591",
+                4096,
+                this,
+                1,
+                &updateTsl2591Handle);
+        }
     }
     if (HARDWARE_ANEMO4403) {
-        anm.begin();
-        xTaskCreate(
-            Meteo::updateAnemo4403SpeedWrapper,
-            "updateAnemo4403Speed",
-            4096,
-            this,
-            1,
-            &updateAnemo4403SpeedHandle);
-        xTaskCreate(
-            Meteo::updateAnemo4403GustWrapper,
-            "updateAnemo4403Gust",
-            4096,
-            this,
-            1,
-            &updateAnemo4403GustHandle);
+        if (anm.begin()) {
+            INITED_ANEMO4403 = true;
+            xTaskCreate(
+                Meteo::updateAnemo4403SpeedWrapper,
+                "updateAnemo4403Speed",
+                4096,
+                this,
+                1,
+                &updateAnemo4403SpeedHandle);
+            xTaskCreate(
+                Meteo::updateAnemo4403GustWrapper,
+                "updateAnemo4403Gust",
+                4096,
+                this,
+                1,
+                &updateAnemo4403GustHandle);
+        }
     }
 }
 
@@ -408,42 +423,42 @@ void Meteo::update(bool force) {
         EventBits_t xDone;
         EventBits_t xKick;
         EventBits_t xWait;
-        if (HARDWARE_UICPAL) {
+        if (HARDWARE_UICPAL && INITED_UICPAL) {
             xDone |= UICPAL_DONE;
             xKick |= UICPAL_KICK;
             xWait |= UICPAL_DONE;
         }
-        if (HARDWARE_RG15) {
+        if (HARDWARE_RG15 && INITED_RG15) {
             xDone |= RG15_DONE;
             xKick |= RG15_KICK;
             xWait |= RG15_DONE;
         }
-        if (HARDWARE_BMP280) {
+        if (HARDWARE_BMP280 && INITED_BMP280) {
             xDone |= BMP280_DONE;
             xKick |= BMP280_KICK;
             xWait |= BMP280_DONE;
         }
-        if (HARDWARE_AHT20) {
+        if (HARDWARE_AHT20 && INITED_AHT20) {
             xDone |= AHT20_DONE;
             xKick |= AHT20_KICK;
             xWait |= AHT20_DONE;
         }
-        if (HARDWARE_SHT45) {
+        if (HARDWARE_SHT45 && INITED_SHT45) {
             xDone |= SHT45_DONE;
             xKick |= SHT45_KICK;
             xWait |= SHT45_DONE;
         }
-        if (HARDWARE_MLX90614) {
+        if (HARDWARE_MLX90614 && INITED_MLX90614) {
             xDone |= MLX90614_DONE;
             xKick |= MLX90614_KICK;
             xWait |= MLX90614_DONE;
         }
-        if (HARDWARE_TSL2591) {
+        if (HARDWARE_TSL2591 && INITED_TSL2591) {
             xDone |= TSL2591_DONE;
             xKick |= TSL2591_KICK;
             xWait |= TSL2591_DONE;
         }
-        if (HARDWARE_ANEMO4403) {
+        if (HARDWARE_ANEMO4403 && INITED_ANEMO4403) {
             xDone |= ANEMO4403_DONE;
             xKick |= ANEMO4403_KICK;
             xWait |= ANEMO4403_DONE;
@@ -453,14 +468,14 @@ void Meteo::update(bool force) {
         xEventGroupWaitBits(xDevicesGroup, xWait, pdFALSE, pdTRUE, pdMS_TO_TICKS(METEO_FORCE_DELAY));
     }
 
-    if (HARDWARE_UICPAL) {
+    if (HARDWARE_UICPAL && INITED_UICPAL) {
         message += " UR:" + trimmed(sensors.uicpal_rate, 2);
     } else {
         sensors.uicpal_rate = 0;
         message += " UR:n/a";
     }
 
-    if (HARDWARE_RG15) {
+    if (HARDWARE_RG15 && INITED_RG15) {
         message += " RR:" + trimmed(sensors.rg15_rate, 2);
     } else {
         sensors.rg15_rate = 0;
@@ -469,7 +484,7 @@ void Meteo::update(bool force) {
 
     sensors.rain_rate = max(sensors.uicpal_rate, sensors.rg15_rate);
 
-    if (HARDWARE_BMP280) {
+    if (HARDWARE_BMP280 && INITED_BMP280) {
         message += " TB:" + trimmed(sensors.bmp_temperature, 1);
         message += " PB:" + trimmed(sensors.bmp_pressure, 0);
     } else {
@@ -478,7 +493,7 @@ void Meteo::update(bool force) {
         message += " TB:n/a PB:n/a";
     }
 
-    if (HARDWARE_AHT20) {
+    if (HARDWARE_AHT20 && INITED_AHT20) {
         message += " TA:" + trimmed(sensors.aht_temperature, 1);
         message += " HA:" + trimmed(sensors.aht_humidity, 0);
     } else {
@@ -487,7 +502,7 @@ void Meteo::update(bool force) {
         message += " TA:n/a HA:n/a";
     }
 
-    if (HARDWARE_SHT45) {
+    if (HARDWARE_SHT45 && INITED_SHT45) {
         message += " TS:" + trimmed(sensors.sht_temperature, 1);
         message += " HS:" + trimmed(sensors.sht_humidity, 0);
     } else {
@@ -499,7 +514,7 @@ void Meteo::update(bool force) {
     sensors.temperature = T_NORM_WEIGHT_BMP280 * sensors.bmp_temperature + T_NORM_WEIGHT_AHT20 * sensors.aht_temperature + T_NORM_WEIGHT_SHT45 * sensors.sht_temperature;
     sensors.humidity = H_NORM_WEIGHT_AHT20 * sensors.aht_humidity + H_NORM_WEIGHT_SHT45 * sensors.sht_humidity;
 
-    if (HARDWARE_AHT20 || HARDWARE_SHT45) {
+    if ((HARDWARE_AHT20 && INITED_AHT20) || (HARDWARE_SHT45 && INITED_SHT45)) {
         sensors.dew_point = sensors.temperature - (100 - sensors.humidity) / 5.;
         message += " DP:" + trimmed(sensors.dew_point, 1);
     } else {
@@ -507,7 +522,7 @@ void Meteo::update(bool force) {
         message += " DP:n/a";
     }
 
-    if (HARDWARE_MLX90614) {
+    if (HARDWARE_MLX90614 && INITED_MLX90614) {
         message += " MA:" + trimmed(sensors.mlx_tempamb, 1);
         message += " MO:" + trimmed(sensors.mlx_tempobj, 1);
         sensors.sky_temperature = tsky_calc(sensors.mlx_tempobj, sensors.mlx_tempamb);
@@ -532,14 +547,14 @@ void Meteo::update(bool force) {
         message += " MA:n/a MO:n/a ST:n/a TR:n/a CC:n/a";
     }
 
-    if (HARDWARE_TSL2591) {
+    if (HARDWARE_TSL2591 && INITED_TSL2591) {
         message += " SB:" + smart_round(sensors.sky_brightness);
         message += " SQ:" + trimmed(sensors.sky_quality, 1);
     } else {
         message += " SB:n/a SQ:n/a";
     }
 
-    if (HARDWARE_ANEMO4403) {
+    if (HARDWARE_ANEMO4403 && INITED_ANEMO4403) {
         message += " WS:" + trimmed(sensors.wind_speed, 1);
         message += " WG:" + trimmed(sensors.wind_gust, 1);
     } else {

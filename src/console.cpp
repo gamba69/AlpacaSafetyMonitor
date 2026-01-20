@@ -1,8 +1,8 @@
 #include "console.h"
 #include "hardware.h"
+#include "helpers.h"
 #include "log.h"
 #include "weights.h"
-#include "helpers.h"
 #include <Arduino.h>
 #include <algorithm>
 #include <iterator>
@@ -90,14 +90,14 @@ void commandHardwareState() {
     logConsoleMessage("[INFO] ---------------------------");
     logConsoleMessage("[INFO] Sensors:");
     logConsoleMessage("[INFO]   DS3231    - " + String(HARDWARE_DS3231 ? "enabled " : "disabled") + " (realtime clock)");
-    logConsoleMessage("[INFO]   BMP280    - " + String(HARDWARE_BMP280 ? "enabled " : "disabled") + " (temperature and pressure)");
-    logConsoleMessage("[INFO]   AHT20     - " + String(HARDWARE_AHT20 ? "enabled " : "disabled") + " (temperature and humidity)");
-    logConsoleMessage("[INFO]   SHT45     - " + String(HARDWARE_SHT45 ? "enabled " : "disabled") + " (temperature and humidity)");
-    logConsoleMessage("[INFO]   MLX90614  - " + String(HARDWARE_MLX90614 ? "enabled " : "disabled") + " (sky temperature)");
-    logConsoleMessage("[INFO]   TSL2591   - " + String(HARDWARE_TSL2591 ? "enabled " : "disabled") + " (sky brightness)");
-    logConsoleMessage("[INFO]   ANEMO4403 - " + String(HARDWARE_ANEMO4403 ? "enabled " : "disabled") + " (wind speed)");
-    logConsoleMessage("[INFO]   UICPAL    - " + String(HARDWARE_UICPAL ? "enabled " : "disabled") + " (rain/snow sensor)");
-    logConsoleMessage("[INFO]   RG15      - " + String(HARDWARE_RG15 ? "enabled " : "disabled") + " (rain rate sensor)");
+    logConsoleMessage("[INFO]   BMP280    - " + String(HARDWARE_BMP280 ? "enabled " : "disabled") + String(HARDWARE_BMP280 && INITED_BMP280 ? ", inited" : ", ERROR") + " (temperature and pressure)");
+    logConsoleMessage("[INFO]   AHT20     - " + String(HARDWARE_AHT20 ? "enabled " : "disabled") + String(HARDWARE_AHT20 && INITED_AHT20 ? ", inited" : ", ERROR") + " (temperature and humidity)");
+    logConsoleMessage("[INFO]   SHT45     - " + String(HARDWARE_SHT45 ? "enabled " : "disabled") + String(HARDWARE_SHT45 && INITED_SHT45 ? ", inited" : ", ERROR") + " (temperature and humidity)");
+    logConsoleMessage("[INFO]   MLX90614  - " + String(HARDWARE_MLX90614 ? "enabled " : "disabled") + String(HARDWARE_MLX90614 && INITED_MLX90614 ? ", inited" : ", ERROR") + " (sky temperature)");
+    logConsoleMessage("[INFO]   TSL2591   - " + String(HARDWARE_TSL2591 ? "enabled " : "disabled") + String(HARDWARE_TSL2591 && INITED_TSL2591 ? ", inited" : ", ERROR") + " (sky brightness)");
+    logConsoleMessage("[INFO]   ANEMO4403 - " + String(HARDWARE_ANEMO4403 ? "enabled " : "disabled") + String(HARDWARE_ANEMO4403 && INITED_ANEMO4403 ? ", inited" : ", ERROR") + " (wind speed)");
+    logConsoleMessage("[INFO]   UICPAL    - " + String(HARDWARE_UICPAL ? "enabled " : "disabled") + String(HARDWARE_UICPAL && INITED_UICPAL ? ", inited" : ", ERROR") + " (rain/snow sensor)");
+    logConsoleMessage("[INFO]   RG15      - " + String(HARDWARE_RG15 ? "enabled " : "disabled") + String(HARDWARE_RG15 && INITED_RG15 ? ", inited" : ", ERROR") + " (rain rate sensor)");
     logConsoleMessage("[INFO] Alpaca:");
     logConsoleMessage("[INFO]   Observing conditions - " + String(ALPACA_OBSCON ? "enabled" : "disabled"));
     logConsoleMessage("[INFO]   Safety monitor       - " + String(ALPACA_SAFEMON ? "enabled" : "disabled"));
