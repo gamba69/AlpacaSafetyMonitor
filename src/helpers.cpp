@@ -60,56 +60,56 @@ void faults(int *count, String *description) {
         if (*count > 0) {
             *description += " ";
         }
-        *count++;
+        *count += 1;
         *description += "BMP280";
     }
     if (HARDWARE_AHT20 && !INITED_AHT20) {
         if (*count > 0) {
             *description += " ";
         }
-        *count++;
+        *count += 1;
         *description += "AHT20";
     }
     if (HARDWARE_SHT45 && !INITED_SHT45) {
         if (*count > 0) {
             *description += " ";
         }
-        *count++;
+        *count += 1;
         *description += "SHT45";
     }
     if (HARDWARE_MLX90614 && !INITED_MLX90614) {
         if (*count > 0) {
             *description += " ";
         }
-        *count++;
+        *count += 1;
         *description += "MLX90614";
     }
     if (HARDWARE_TSL2591 && !INITED_TSL2591) {
         if (*count > 0) {
             *description += " ";
         }
-        *count++;
+        *count += 1;
         *description += "TSL2591";
     }
     if (HARDWARE_ANEMO4403 && !INITED_ANEMO4403) {
         if (*count > 0) {
             *description += " ";
         }
-        *count++;
+        *count += 1;
         *description += "ANEMO4403";
     }
     if (HARDWARE_UICPAL && !INITED_UICPAL) {
         if (*count > 0) {
             *description += " ";
         }
-        *count++;
+        *count += 1;
         *description += "UICPAL";
     }
     if (HARDWARE_RG15 && !INITED_RG15) {
         if (*count > 0) {
             *description += " ";
         }
-        *count++;
+        *count += 1;
         *description += "RG15";
     }
 }

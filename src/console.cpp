@@ -22,6 +22,8 @@ void commandHelp() {
     logConsoleMessage("[HELP]   hw     - show curent log settings");
     logConsoleMessage("[HELP]   temp   - show curent temperature calc weights");
     logConsoleMessage("[HELP]   humi   - show curent humidity calc weights");
+    logConsoleMessage("[HELP]   uptime - show curent system uptime");
+    logConsoleMessage("[HELP]   faults - show curent sensor faults");
     logConsoleMessage("[HELP] General:");
     logConsoleMessage("[HELP]   reboot            - restart esp32 ascom alpaca device");
     logConsoleMessage("[HELP] Log settings:");
@@ -143,6 +145,19 @@ void commandUptime() {
     logConsoleMessage("[INFO] Uptime");
     logConsoleMessage("[INFO] ------------");
     logConsoleMessage("[INFO] " + uptime());
+}
+
+void commandFaults() {
+    int count;
+    String descr;
+    faults(&count, &descr);
+    logConsoleMessage("[INFO] Faults");
+    logConsoleMessage("[INFO] ------------");
+    if (count > 0) {
+        logConsoleMessage("[INFO] " + String(count) + ": " + descr);
+    } else {
+        logConsoleMessage("[INFO] None");
+    }
 }
 
 void commandReboot() {
@@ -595,6 +610,8 @@ void initConsoleCommands() {
     console_commands["hwrg15off"] = commandHwRg15Off;
 
     console_commands["uptime"] = commandUptime;
+    console_commands["fault"] = commandFaults;
+    console_commands["faults"] = commandFaults;
 }
 
 TempHumiWeightCommand parseTempHumiWeightCommand(const std::string &input) {
