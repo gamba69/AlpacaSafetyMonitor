@@ -1,4 +1,5 @@
 #include "console.h"
+#include "calibrate.h"
 #include "hardware.h"
 #include "helpers.h"
 #include "log.h"
@@ -175,6 +176,44 @@ void commandHardwareState() {
     logConsoleMessage("[INFO]   Wind speed      - " + String(SAFEMON_WINDSPEED ? "enabled" : "disabled"));
 }
 
+String calCoeffAsString(CalCoefficient c) {
+    String result = "y = ";
+    if (c.a != 1) {
+        result += String(c.a) + " * ";
+    }
+    result += "x ";
+    if (c.b != 0) {
+        if (c.b > 0) {
+            result += "+ " + String(c.b);
+        } else {
+            result += "- " + String(abs(c.b));
+        }
+    }
+    return result;
+}
+
+void commandCalibrateState() {
+    logConsoleMessage("[INFO] Calibration coefficients");
+    logConsoleMessage("[INFO] ------------------------");
+    logConsoleMessage("[INFO]   BMP280 Temperature       - " + calCoeffAsString(CAL_BMP280_TEMPERATURE));
+    logConsoleMessage("[INFO]   BMP280 Pressure          - " + calCoeffAsString(CAL_BMP280_PRESSURE));
+    logConsoleMessage("[INFO]   AHT20 Temperature        - " + calCoeffAsString(CAL_AHT20_TEMPERATURE));
+    logConsoleMessage("[INFO]   AHT20 Humidity           - " + calCoeffAsString(CAL_AHT20_HUMIDITY));
+    logConsoleMessage("[INFO]   SHT45 Temperature        - " + calCoeffAsString(CAL_SHT45_TEMPERATURE));
+    logConsoleMessage("[INFO]   SHT45 Humidity           - " + calCoeffAsString(CAL_SHT45_HUMIDITY));
+    logConsoleMessage("[INFO]   Dew Point                - " + calCoeffAsString(CAL_DEW_POINT));
+    logConsoleMessage("[INFO]   MLX90614 Ambient         - " + calCoeffAsString(CAL_MLX90614_AMBIENT));
+    logConsoleMessage("[INFO]   MLX90614 Object          - " + calCoeffAsString(CAL_MLX90614_OBJECT));
+    logConsoleMessage("[INFO]   MLX90614 Sky Temperature - " + calCoeffAsString(CAL_MLX90614_SKYTEMP));
+    logConsoleMessage("[INFO]   MLX90614 Cloud Cover     - " + calCoeffAsString(CAL_MLX90614_CLOUDCOVER));
+    logConsoleMessage("[INFO]   TSL2591 Sky Brightness   - " + calCoeffAsString(CAL_TSL2591_SKYBRIGHTNESS));
+    logConsoleMessage("[INFO]   TSL2591 Sky Quality      - " + calCoeffAsString(CAL_TSL2591_SKYQUALITY));
+    logConsoleMessage("[INFO]   ANEMO4403 Wind Speed     - " + calCoeffAsString(CAL_ANEMO4403_WINDSPEED));
+    logConsoleMessage("[INFO]   ANEMO4403 Wind Gust      - " + calCoeffAsString(CAL_ANEMO4403_WINDGUST));
+    logConsoleMessage("[INFO]   UICPAL Rain Rate         - " + calCoeffAsString(CAL_UICPAL_RAINRATE));
+    logConsoleMessage("[INFO]   RG15 Rain Rate           - " + calCoeffAsString(CAL_RG15_RAINRATE));
+}
+
 void commandTempWeightState() {
     logConsoleMessage("[INFO] Temperature calc weights");
     logConsoleMessage("[INFO] ------------------------");
@@ -214,6 +253,108 @@ void commandReboot() {
     logConsoleMessage("[REBOOT]");
     delay(1000);
     ESP.restart();
+}
+
+void commandCalibrateBMP280Temperature(float a, float b) {
+    CalCoefficient c(a, b);
+    CAL_BMP280_TEMPERATURE = c;
+    saveCalPrefs();
+}
+
+void commandCalibrateBMP280Pressure(float a, float b) {
+    CalCoefficient c(a, b);
+    CAL_BMP280_PRESSURE = c;
+    saveCalPrefs();
+}
+
+void commandCalibrateAHT20Temperature(float a, float b) {
+    CalCoefficient c(a, b);
+    CAL_AHT20_TEMPERATURE = c;
+    saveCalPrefs();
+}
+
+void commandCalibrateAHT20Humidity(float a, float b) {
+    CalCoefficient c(a, b);
+    CAL_AHT20_HUMIDITY = c;
+    saveCalPrefs();
+}
+
+void commandCalibrateSHT45Temperature(float a, float b) {
+    CalCoefficient c(a, b);
+    CAL_SHT45_TEMPERATURE = c;
+    saveCalPrefs();
+}
+
+void commandCalibrateSHT45Humidity(float a, float b) {
+    CalCoefficient c(a, b);
+    CAL_SHT45_TEMPERATURE = c;
+    saveCalPrefs();
+}
+
+void commandCalibrateDewPoint(float a, float b) {
+    CalCoefficient c(a, b);
+    CAL_DEW_POINT = c;
+    saveCalPrefs();
+}
+
+void commandCalibrateMLX90614Ambient(float a, float b) {
+    CalCoefficient c(a, b);
+    CAL_MLX90614_AMBIENT = c;
+    saveCalPrefs();
+}
+
+void commandCalibrateMLX90614Object(float a, float b) {
+    CalCoefficient c(a, b);
+    CAL_MLX90614_OBJECT = c;
+    saveCalPrefs();
+}
+
+void commandCalibrateMLX90614SkyTemperature(float a, float b) {
+    CalCoefficient c(a, b);
+    CAL_MLX90614_SKYTEMP = c;
+    saveCalPrefs();
+}
+
+void commandCalibrateMLX90614CloudCover(float a, float b) {
+    CalCoefficient c(a, b);
+    CAL_MLX90614_CLOUDCOVER = c;
+    saveCalPrefs();
+}
+
+void commandCalibrateTSL2591SkyBrightness(float a, float b) {
+    CalCoefficient c(a, b);
+    CAL_TSL2591_SKYBRIGHTNESS = c;
+    saveCalPrefs();
+}
+
+void commandCalibrateTSL2591SkyQuality(float a, float b) {
+    CalCoefficient c(a, b);
+    CAL_TSL2591_SKYQUALITY = c;
+    saveCalPrefs();
+}
+
+void commandCalibrateANEMO4403WindSpeed(float a, float b) {
+    CalCoefficient c(a, b);
+    CAL_ANEMO4403_WINDSPEED = c;
+    saveCalPrefs();
+}
+
+void commandCalibrateANEMO4403WindGust(float a, float b) {
+    CalCoefficient c(a, b);
+    CAL_ANEMO4403_WINDGUST = c;
+    saveCalPrefs();
+}
+
+void commandCalibrateUICPALRainRate(float a, float b) {
+    CalCoefficient c(a, b);
+    CAL_UICPAL_RAINRATE = c;
+    saveCalPrefs();
+}
+
+void commandCalibrateRG15RainRate(float a, float b) {
+    CalCoefficient c(a, b);
+    CAL_RG15_RAINRATE = c;
+    saveCalPrefs();
 }
 
 void commandTargetSerialOn() {
@@ -596,6 +737,10 @@ void initConsoleCommands() {
 
     console_commands["reboot"] = commandReboot;
 
+    console_commands["cal"] = commandCalibrateState;
+    console_commands["calibrate"] = commandCalibrateState;
+    console_commands["calibration"] = commandCalibrateState;
+
     console_commands["target"] = commandTargetState;
     console_commands["targets"] = commandTargetState;
 
@@ -676,9 +821,9 @@ TempHumiWeightCommand parseTempHumiWeightCommand(const std::string &input) {
     TempHumiWeightCommand result = {"", {0}, 0, false};
     std::string str = input;
     std::transform(str.begin(), str.end(), str.begin(), ::tolower);
-    for (char &c : str) {
-        if (c == ',' || c == ';' || c == '/') {
-            c = ' ';
+    for (char &thwc : str) {
+        if (thwc == ',' || thwc == ';' || thwc == '/') {
+            thwc = ' ';
         }
     }
     std::istringstream iss(str);
@@ -718,39 +863,287 @@ TempHumiWeightCommand parseTempHumiWeightCommand(const std::string &input) {
     return result;
 }
 
+CalibrateCommand parseCalibrateCommand(const std::string &input) {
+    // Все 18 валидных команд (на выходе]):
+    // calbmptemp
+    // calbmppres
+    // calahttemp
+    // calahthumi
+    // calshttemp
+    // calshthumi
+    // caldewpoint
+    // calmlxamb
+    // calmlxobj
+    // calmlxsky
+    // calmlxcloud
+    // caltslbright
+    // caltslsky
+    // caltslsqm
+    // calanemowindspeed
+    // calanemowindgust
+    // caluicpalrain
+    // calrgrain
+    CalibrateCommand result = {"", 0.0, 0.0, false};
+    std::string str = input;
+    // Trim
+    size_t start = str.find_first_not_of(" \t\r\n");
+    size_t end = str.find_last_not_of(" \t\r\n");
+    if (start == std::string::npos) {
+        return result;
+    }
+    str = str.substr(start, end - start + 1);
+    // To lowercase
+    for (char &c : str) {
+        if (c >= 'A' && c <= 'Z')
+            c = c + 32;
+    }
+    // Remove extra spaces
+    size_t pos = 0;
+    while ((pos = str.find("  ", pos)) != std::string::npos) {
+        str.erase(pos, 1);
+    }
+    if (str.find("cal") != 0) {
+        return result;
+    }
+    std::string tokens[10];
+    int count = 0;
+    size_t i = 0;
+    size_t tokenStart = 0;
+    while (i <= str.length()) {
+        if (i == str.length() || str[i] == ' ') {
+            if (i > tokenStart) {
+                tokens[count++] = str.substr(tokenStart, i - tokenStart);
+                if (count >= 10) {
+                    break;
+                }
+            }
+            tokenStart = i + 1;
+        }
+        i++;
+    }
+    if (count < 3) {
+        return result;
+    }
+    std::string cmd = "";
+    int floatStart = -1;
+    // BMP280
+    if (tokens[1].find("bmp") == 0) {
+        if (tokens[2].find("temp") == 0) {
+            cmd = "calbmptemp";
+            floatStart = 3;
+        } else if (tokens[2].find("pres") == 0) {
+            cmd = "calbmppres";
+            floatStart = 3;
+        }
+    }
+    // AHT20
+    else if (tokens[1].find("aht") == 0) {
+        if (tokens[2].find("temp") == 0) {
+            cmd = "calahttemp";
+            floatStart = 3;
+        } else if (tokens[2].find("humi") == 0) {
+            cmd = "calahthumi";
+            floatStart = 3;
+        }
+    }
+    // SHT45
+    else if (tokens[1].find("sht") == 0) {
+        if (tokens[2].find("temp") == 0) {
+            cmd = "calshttemp";
+            floatStart = 3;
+        } else if (tokens[2].find("humi") == 0) {
+            cmd = "calshthumi";
+            floatStart = 3;
+        }
+    }
+    // Dew Point
+    else if (tokens[1].find("dew") == 0 && count >= 4) {
+        if (tokens[2].find("point") == 0) {
+            cmd = "caldewpoint";
+            floatStart = 3;
+        }
+    }
+    // MLX90614
+    else if (tokens[1].find("mlx") == 0) {
+        if (tokens[2].find("amb") == 0) {
+            cmd = "calmlxamb";
+            floatStart = 3;
+        } else if (tokens[2].find("obj") == 0) {
+            cmd = "calmlxobj";
+            floatStart = 3;
+        } else if (tokens[2].find("sky") == 0) {
+            if (count >= 4 && tokens[3].find("t") == 0) {
+                cmd = "calmlxsky";
+                floatStart = 4;
+            } else {
+                cmd = "calmlxsky";
+                floatStart = 3;
+            }
+        } else if (tokens[2].find("cloud") == 0) {
+            if (count >= 4 && tokens[3].find("c") == 0) {
+                cmd = "calmlxcloud";
+                floatStart = 4;
+            } else {
+                cmd = "calmlxcloud";
+                floatStart = 3;
+            }
+        }
+    }
+    // TSL2591
+    else if (tokens[1].find("tsl") == 0) {
+        if (tokens[2].find("bright") == 0) {
+            cmd = "caltslbright";
+            floatStart = 3;
+        } else if (tokens[2].find("sky") == 0) {
+            cmd = "caltslsky";
+            floatStart = 3;
+        } else if (tokens[2].find("sqm") == 0) {
+            cmd = "caltslsqm";
+            floatStart = 3;
+        }
+    }
+    // ANEMO4403
+    else if (tokens[1].find("anem") == 0) {
+        if (tokens[2].find("wind") == 0) {
+            if (count >= 4 && tokens[3].find("s") == 0) {
+                cmd = "calanemowindspeed";
+                floatStart = 4;
+            } else if (count >= 4 && tokens[3].find("g") == 0) {
+                cmd = "calanemowindgust";
+                floatStart = 4;
+            }
+        } else if (tokens[2].find("winds") == 0) {
+            cmd = "calanemowindspeed";
+            floatStart = 3;
+        } else if (tokens[2].find("windg") == 0) {
+            cmd = "calanemowindgust";
+            floatStart = 3;
+        }
+    }
+    // UICPAL
+    else if (tokens[1].find("uic") == 0) {
+        if (tokens[2].find("rain") == 0) {
+            if (count >= 4 && tokens[3].find("r") == 0) {
+                cmd = "caluicpalrain";
+                floatStart = 4;
+            } else {
+                cmd = "caluicpalrain";
+                floatStart = 3;
+            }
+        }
+    }
+    // RG15
+    else if (tokens[1].find("rg") == 0) {
+        if (tokens[2].find("rain") == 0) {
+            if (count >= 4 && tokens[3].find("r") == 0) {
+                cmd = "calrgrain";
+                floatStart = 4;
+            } else {
+                cmd = "calrgrain";
+                floatStart = 3;
+            }
+        }
+    }
+    if (cmd.empty() || floatStart < 0 || count < floatStart + 2) {
+        return result;
+    }
+    result.a = std::atof(tokens[floatStart].c_str());
+    result.b = std::atof(tokens[floatStart + 1].c_str());
+    result.command = cmd;
+    result.success = true;
+    return result;
+}
+
 void processConsoleCommand(const std::string &msg) {
+    // Calibrate commands
+    CalibrateCommand calc = parseCalibrateCommand(msg);
+    if (calc.success) {
+        if (calc.command == "calbmptemp") {
+            commandCalibrateBMP280Temperature(calc.a, calc.b);
+        }
+        if (calc.command == "calbmppres") {
+            commandCalibrateBMP280Pressure(calc.a, calc.b);
+        }
+        if (calc.command == "calahttemp") {
+            commandCalibrateAHT20Temperature(calc.a, calc.b);
+        }
+        if (calc.command == "calahthumi") {
+            commandCalibrateAHT20Humidity(calc.a, calc.b);
+        }
+        if (calc.command == "calshttemp") {
+            commandCalibrateSHT45Temperature(calc.a, calc.b);
+        }
+        if (calc.command == "calshthumi") {
+            commandCalibrateSHT45Humidity(calc.a, calc.b);
+        }
+        if (calc.command == "caldewpoint") {
+            commandCalibrateDewPoint(calc.a, calc.b);
+        }
+        if (calc.command == "calmlxamb") {
+            commandCalibrateMLX90614Ambient(calc.a, calc.b);
+        }
+        if (calc.command == "calmlxobj") {
+            commandCalibrateMLX90614Object(calc.a, calc.b);
+        }
+        if (calc.command == "calmlxsky") {
+            commandCalibrateMLX90614SkyTemperature(calc.a, calc.b);
+        }
+        if (calc.command == "calmlxcloud") {
+            commandCalibrateMLX90614CloudCover(calc.a, calc.b);
+        }
+        if (calc.command == "caltslbright") {
+            commandCalibrateTSL2591SkyBrightness(calc.a, calc.b);
+        }
+        if (calc.command == "caltslsky" || calc.command == "caltslsqm") {
+            commandCalibrateTSL2591SkyQuality(calc.a, calc.b);
+        }
+        if (calc.command == "calanemowindspeed") {
+            commandCalibrateANEMO4403WindSpeed(calc.a, calc.b);
+        }
+        if (calc.command == "calanemowindgust") {
+            commandCalibrateANEMO4403WindGust(calc.a, calc.b);
+        }
+        if (calc.command == "caluicpalrain") {
+            commandCalibrateUICPALRainRate(calc.a, calc.b);
+        }
+        if (calc.command == "calrgrain") {
+            commandCalibrateRG15RainRate(calc.a, calc.b);
+        }
+        commandCalibrateState();
+        return;
+    }
     // Temp and humi calc weights commmands
-    TempHumiWeightCommand c = parseTempHumiWeightCommand(msg);
-    if (c.success) {
-        if (c.command == "tempweight") {
-            commandTempWeightSht45(c.values[0]);
-            commandTempWeightAht20(c.values[1]);
-            commandTempWeightBmp280(c.values[2]);
+    TempHumiWeightCommand thwc = parseTempHumiWeightCommand(msg);
+    if (thwc.success) {
+        if (thwc.command == "tempweight") {
+            commandTempWeightSht45(thwc.values[0]);
+            commandTempWeightAht20(thwc.values[1]);
+            commandTempWeightBmp280(thwc.values[2]);
             commandTempWeightState();
         }
-        if (c.command == "tempsht") {
-            commandTempWeightSht45(c.values[0]);
+        if (thwc.command == "tempsht") {
+            commandTempWeightSht45(thwc.values[0]);
             commandTempWeightState();
         }
-        if (c.command == "tempaht") {
-            commandTempWeightAht20(c.values[0]);
+        if (thwc.command == "tempaht") {
+            commandTempWeightAht20(thwc.values[0]);
             commandTempWeightState();
         }
-        if (c.command == "tempbmp") {
-            commandTempWeightBmp280(c.values[0]);
+        if (thwc.command == "tempbmp") {
+            commandTempWeightBmp280(thwc.values[0]);
             commandTempWeightState();
         }
-        if (c.command == "humiweight") {
-            commandHumiWeightSht45(c.values[0]);
-            commandHumiWeightAht20(c.values[1]);
+        if (thwc.command == "humiweight") {
+            commandHumiWeightSht45(thwc.values[0]);
+            commandHumiWeightAht20(thwc.values[1]);
             commandHumiWeightState();
         }
-        if (c.command == "humisht") {
-            commandHumiWeightSht45(c.values[0]);
+        if (thwc.command == "humisht") {
+            commandHumiWeightSht45(thwc.values[0]);
             commandHumiWeightState();
         }
-        if (c.command == "humiaht") {
-            commandHumiWeightAht20(c.values[0]);
+        if (thwc.command == "humiaht") {
+            commandHumiWeightAht20(thwc.values[0]);
             commandHumiWeightState();
         }
         return;
@@ -759,7 +1152,7 @@ void processConsoleCommand(const std::string &msg) {
     std::string cmd;
     cmd.resize(msg.size());
     std::transform(msg.begin(), msg.end(), cmd.begin(),
-                   [](unsigned char c) { return std::tolower(c); });
+                   [](unsigned char thwc) { return std::tolower(thwc); });
     cmd.erase(remove_if(cmd.begin(), cmd.end(), isspace), cmd.end());
 
     if (cmd.length() > 12 && cmd.substr(0, 12) == "logmeteoslow") {

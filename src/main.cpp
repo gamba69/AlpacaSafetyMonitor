@@ -1,4 +1,5 @@
 #include "main.h"
+#include "calibrate.h"
 #include "console.h"
 #include "hardware.h"
 #include "log.h"
@@ -255,6 +256,8 @@ void setup() {
     initHwPrefs();
     // Temperature and humidity calculation preferences
     initThWeightsPrefs();
+    // Calibration preferences
+    initCalPrefs();
     // System Timezone
     setenv("TZ", RTC_TIMEZONE, 1);
     tzset();

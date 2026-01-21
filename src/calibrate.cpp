@@ -22,3 +22,7 @@ void loadCalPrefs() {
 void saveCalPrefs() {
     calPrefs.putBytes("calData", calData, sizeof(calData));
 }
+
+float calibrate(float v, CalCoefficient c) {
+    return c.a * v + c.b;
+}

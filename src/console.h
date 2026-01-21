@@ -10,6 +10,13 @@ struct TempHumiWeightCommand {
     bool success;
 };
 
+struct CalibrateCommand {
+    std::string command;
+    float a;
+    float b;
+    bool success;
+};
+
 void commandHelp();
 void commandHelpInfo();
 void commandHelpGeneral();
@@ -21,6 +28,25 @@ void commandHelpTemp();
 void commandHelpHumi();
 
 void commandReboot();
+
+void commandCalibrateState();
+void commandCalibrateBMP280Temperature(float, float);
+void commandCalibrateBMP280Pressure(float, float);
+void commandCalibrateAHT20Temperature(float, float);
+void commandCalibrateAHT20Humidity(float, float);
+void commandCalibrateSHT45Temperature(float, float);
+void commandCalibrateSHT45Humidity(float, float);
+void commandCalibrateDewPoint(float, float);
+void commandCalibrateMLX90614Ambient(float, float);
+void commandCalibrateMLX90614Object(float, float);
+void commandCalibrateMLX90614SkyTemperature(float, float);
+void commandCalibrateMLX90614CloudCover(float, float);
+void commandCalibrateTSL2591SkyBrightness(float, float);
+void commandCalibrateTSL2591SkyQuality(float, float);
+void commandCalibrateANEMO4403WindSpeed(float, float);
+void commandCalibrateANEMO4403WindGust(float, float);
+void commandCalibrateUICPALRainRate(float, float);
+void commandCalibrateRG15RainRate(float, float);
 
 void commandTargetState();
 
