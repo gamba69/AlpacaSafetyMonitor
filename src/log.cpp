@@ -20,7 +20,10 @@ uint8_t logEnabled[LOG_ENABLED_SIZE];
 uint16_t logSlow[LOG_ENABLED_SIZE];
 uint8_t logTargets[LOG_ENABLED_SIZE];
 
+SemaphoreHandle_t serialMutex;
+
 void initLogPrefs() {
+    serialMutex = xSemaphoreCreateMutex();
     logPrefs.begin("logPrefs", false);
     std::fill(std::begin(logEnabled), std::end(logEnabled), Log::On);
     std::fill(std::begin(logSlow), std::end(logSlow), 30);
@@ -72,7 +75,9 @@ void logLed(String line) {
 void logLine(String line, const int source, bool mqtt) {
     if (logEnabled[source] || source == LogSource::Console) {
         if (LOG_SERIAL) {
+            xSemaphoreTake(serialMutex, portMAX_DELAY);
             Serial.println(line);
+            xSemaphoreGive(serialMutex);
         }
         if (LOG_CONSOLE) {
             webSerial.println(line);
@@ -98,7 +103,9 @@ void logLine(String line, const int source) {
 void logLinePart(String line, int source, bool mqtt) {
     if (logEnabled[source] || source == LogSource::Console) {
         if (LOG_SERIAL) {
+            xSemaphoreTake(serialMutex, portMAX_DELAY);
             Serial.print(line);
+            xSemaphoreGive(serialMutex);
         }
         if (LOG_CONSOLE) {
             webSerial.print(line);
