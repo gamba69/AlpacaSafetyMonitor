@@ -26,6 +26,7 @@ void commandHelpHw();
 void commandHelpAlpaca();
 void commandHelpTemp();
 void commandHelpHumi();
+void commandHelpCal();
 
 void commandReboot();
 

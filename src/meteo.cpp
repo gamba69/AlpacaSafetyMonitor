@@ -2,6 +2,7 @@
 #include "hardware.h"
 #include "helpers.h"
 #include "weights.h"
+#include "calibrate.h"
 
 Adafruit_BMP280 bmp;
 Adafruit_AHTX0 aht;
@@ -325,6 +326,7 @@ void Meteo::updateMlx90614() {
             if (!std::isnan(val)) {
                 sensors.mlx_tempobj = val;
             }
+            // TODO Move calculation here!
             last_update = millis();
             force_update = false;
             xEventGroupSetBits(xDevicesGroup, MLX90614_DONE);

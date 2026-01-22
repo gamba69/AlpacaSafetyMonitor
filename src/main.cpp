@@ -263,8 +263,11 @@ void setup() {
     tzset();
     // RTC
     if (HARDWARE_DS3231) {
-        if (!rtc.begin())
+        if (rtc.begin()) {
+            INITED_DS3231 = true;
+        } else {
             logMessage("[TIME][RTC] Couldn't find RTC", false);
+        }
         if (rtc.lostPower()) {
             logMessage("[TIME][RTC] RTC lost power, let's set the time!", false);
             rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));

@@ -14,6 +14,7 @@
 #define HARDWARE_RG15 hwEnabled[hwRg15]
 #define HARDWARE_DS3231 hwEnabled[hwDs3231]
 
+#define INITED_DS3231 hwInited[hwDs3231]
 #define INITED_BMP280 hwInited[hwBmp280]
 #define INITED_AHT20 hwInited[hwAht20]
 #define INITED_SHT45 hwInited[hwSht45]
