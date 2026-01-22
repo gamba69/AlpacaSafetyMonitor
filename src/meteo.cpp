@@ -1,8 +1,8 @@
 #include "meteo.h"
+#include "calibrate.h"
 #include "hardware.h"
 #include "helpers.h"
 #include "weights.h"
-#include "calibrate.h"
 
 Adafruit_BMP280 bmp;
 Adafruit_AHTX0 aht;
@@ -71,9 +71,9 @@ void Meteo::begin() {
         INITED_UICPAL = true;
         pinMode(RAIN_SENSOR_PIN, INPUT_PULLDOWN);
         if (digitalRead(RAIN_SENSOR_PIN)) {
-            sensors.uicpal_rate = 0.02;
+            sensors.uicpal_rate = calibrate(0.02, CAL_UICPAL_RAINRATE);
         } else {
-            sensors.uicpal_rate = 0;
+            sensors.uicpal_rate = calibrate(0, CAL_UICPAL_RAINRATE);
         }
         xTaskCreate(
             Meteo::updateUicpalWrapper,
@@ -87,7 +87,7 @@ void Meteo::begin() {
         if (rg15.begin()) {
             INITED_RG15 = true;
             RGData d = rg15.getData();
-            sensors.rg15_rate = d.rainfallIntensity;
+            sensors.rg15_rate = calibrate(d.rainfallIntensity, CAL_RG15_RAINRATE);
             xTaskCreate(
                 Meteo::updateRg15Wrapper,
                 "updateRg15",
@@ -97,7 +97,7 @@ void Meteo::begin() {
                 &updateRg15Handle);
         }
     }
-    sensors.rain_rate = max(sensors.uicpal_rate, sensors.rg15_rate);
+    sensors.rain_rate = calibrate(max(sensors.uicpal_rate, sensors.rg15_rate), CAL_RAIN_RATE);
 
     if (HARDWARE_BMP280) {
         if (bmp.begin(I2C_BMP_ADDR)) {
@@ -187,9 +187,9 @@ void Meteo::updateUicpal() {
     while (true) {
         if (force_update || millis() - last_update > METEO_MEASURE_DELAY) {
             if (digitalRead(RAIN_SENSOR_PIN)) {
-                sensors.uicpal_rate = 0.02;
+                sensors.uicpal_rate = calibrate(0.02, CAL_UICPAL_RAINRATE);
             } else {
-                sensors.uicpal_rate = 0;
+                sensors.uicpal_rate = calibrate(0, CAL_UICPAL_RAINRATE);
             }
             last_update = millis();
             force_update = false;
@@ -217,7 +217,7 @@ void Meteo::updateRg15() {
                 rg15.forceUpdate();
             }
             RGData d = rg15.getData();
-            sensors.rg15_rate = d.rainfallIntensity;
+            sensors.rg15_rate = calibrate(d.rainfallIntensity, CAL_RG15_RAINRATE);
             last_update = millis();
             force_update = false;
             xEventGroupSetBits(xDevicesGroup, RG15_DONE);
@@ -240,8 +240,8 @@ void Meteo::updateBmp280() {
     static bool force_update = true;
     while (true) {
         if (force_update || millis() - last_update > METEO_MEASURE_DELAY) {
-            sensors.bmp_temperature = bmp.readTemperature();
-            sensors.bmp_pressure = bmp.readPressure() / 100.0F;
+            sensors.bmp_temperature = calibrate(bmp.readTemperature(), CAL_BMP280_TEMPERATURE);
+            sensors.bmp_pressure = calibrate(bmp.readPressure() / 100.0F, CAL_BMP280_PRESSURE);
             last_update = millis();
             force_update = false;
             xEventGroupSetBits(xDevicesGroup, BMP280_DONE);
@@ -266,8 +266,8 @@ void Meteo::updateAht20() {
         if (force_update || millis() - last_update > METEO_MEASURE_DELAY) {
             sensors_event_t aht_sensor_humidity, aht_sensor_temp;
             aht.getEvent(&aht_sensor_humidity, &aht_sensor_temp);
-            sensors.aht_temperature = aht_sensor_temp.temperature;
-            sensors.aht_humidity = aht_sensor_humidity.relative_humidity;
+            sensors.aht_temperature = calibrate(aht_sensor_temp.temperature, CAL_AHT20_TEMPERATURE);
+            sensors.aht_humidity = calibrate(aht_sensor_humidity.relative_humidity, CAL_AHT20_HUMIDITY);
             last_update = millis();
             force_update = false;
             xEventGroupSetBits(xDevicesGroup, AHT20_DONE);
@@ -292,8 +292,8 @@ void Meteo::updateSht45() {
         if (force_update || millis() - last_update > METEO_MEASURE_DELAY) {
             SHT45Data measure = sht.readData();
             if (measure.valid) {
-                sensors.sht_temperature = measure.temperature;
-                sensors.sht_humidity = measure.humidity;
+                sensors.sht_temperature = calibrate(measure.temperature, CAL_SHT45_TEMPERATURE);
+                sensors.sht_humidity = calibrate(measure.humidity, CAL_SHT45_HUMIDITY);
             }
             last_update = millis();
             force_update = false;
@@ -320,13 +320,24 @@ void Meteo::updateMlx90614() {
             double val;
             val = mlx.readAmbientTempC();
             if (!std::isnan(val)) {
-                sensors.mlx_tempamb = val;
+                sensors.mlx_tempamb = calibrate(val, CAL_MLX90614_AMBIENT);
             }
             val = mlx.readObjectTempC();
             if (!std::isnan(val)) {
-                sensors.mlx_tempobj = val;
+                sensors.mlx_tempobj = calibrate(val, CAL_MLX90614_OBJECT);
             }
-            // TODO Move calculation here!
+            sensors.sky_temperature = calibrate(tsky_calc(sensors.mlx_tempobj, sensors.mlx_tempamb), CAL_MLX90614_SKYTEMP);
+            // add tempsky value to circular buffer and calculate
+            // Turbulence (noise dB) / Seeing estimation
+            cb_add(sensors.sky_temperature);
+            sensors.noise_db = cb_noise_db_calc();
+            sensors.cloud_cover = calibrate(100. + (sensors.sky_temperature * 6.), CAL_MLX90614_CLOUDCOVER);
+            if (sensors.cloud_cover > 100.) {
+                sensors.cloud_cover = 100.;
+            }
+            if (sensors.cloud_cover < 0.) {
+                sensors.cloud_cover = 0.;
+            }
             last_update = millis();
             force_update = false;
             xEventGroupSetBits(xDevicesGroup, MLX90614_DONE);
@@ -353,8 +364,8 @@ void Meteo::updateTsl2591() {
                 tsl.forceUpdate();
             }
             TSL2591Data tslData = tsl.getData();
-            sensors.sky_brightness = tsl.calculateLux(tslData);
-            sensors.sky_quality = tsl.calculateSQM(tslData);
+            sensors.sky_brightness = calibrate(tsl.calculateLux(tslData), CAL_TSL2591_SKYBRIGHTNESS);
+            sensors.sky_quality = calibrate(tsl.calculateSQM(tslData), CAL_TSL2591_SKYQUALITY);
             last_update = millis();
             force_update = false;
             xEventGroupSetBits(xDevicesGroup, TSL2591_DONE);
@@ -381,7 +392,7 @@ void Meteo::updateAnemo4403Speed() {
             // and wind_gust (always 3 sec then 2 minutes max)
             // 40 values max - every 3 sec on 2 minutes
             float f = anm.getFrequency(METEO_MEASURE_DELAY);
-            sensors.wind_speed = (f / 1.05) / 3.6;
+            sensors.wind_speed = calibrate((f / 1.05) / 3.6, CAL_ANEMO4403_WINDSPEED);
             last_update = millis();
             force_update = false;
             xEventGroupSetBits(xDevicesGroup, ANEMO4403_DONE);
@@ -407,7 +418,7 @@ void Meteo::updateAnemo4403Gust() {
         float f = anm.getFrequency(3000);
         float s = (f / 1.05) / 3.6;
         wind_gust_ra.add(s);
-        sensors.wind_gust = wind_gust_ra.getMaxInBuffer();
+        sensors.wind_gust = calibrate(wind_gust_ra.getMaxInBuffer(), CAL_ANEMO4403_WINDGUST);
         vTaskDelay(pdMS_TO_TICKS(3000));
     }
 }
@@ -484,7 +495,7 @@ void Meteo::update(bool force) {
         message += " RR:n/a";
     }
 
-    sensors.rain_rate = max(sensors.uicpal_rate, sensors.rg15_rate);
+    sensors.rain_rate = calibrate(max(sensors.uicpal_rate, sensors.rg15_rate), CAL_RAIN_RATE);
 
     if (HARDWARE_BMP280 && INITED_BMP280) {
         message += " TB:" + trimmed(sensors.bmp_temperature, 1);
@@ -513,11 +524,11 @@ void Meteo::update(bool force) {
         message += " TS:n/a HS:n/a";
     }
 
-    sensors.temperature = T_NORM_WEIGHT_BMP280 * sensors.bmp_temperature + T_NORM_WEIGHT_AHT20 * sensors.aht_temperature + T_NORM_WEIGHT_SHT45 * sensors.sht_temperature;
-    sensors.humidity = H_NORM_WEIGHT_AHT20 * sensors.aht_humidity + H_NORM_WEIGHT_SHT45 * sensors.sht_humidity;
+    sensors.temperature = calibrate(T_NORM_WEIGHT_BMP280 * sensors.bmp_temperature + T_NORM_WEIGHT_AHT20 * sensors.aht_temperature + T_NORM_WEIGHT_SHT45 * sensors.sht_temperature, CAL_TEMPERATURE);
+    sensors.humidity = calibrate(H_NORM_WEIGHT_AHT20 * sensors.aht_humidity + H_NORM_WEIGHT_SHT45 * sensors.sht_humidity, CAL_HUMIDITY);
 
     if ((HARDWARE_AHT20 && INITED_AHT20) || (HARDWARE_SHT45 && INITED_SHT45)) {
-        sensors.dew_point = sensors.temperature - (100 - sensors.humidity) / 5.;
+        sensors.dew_point = calibrate(sensors.temperature - (100 - sensors.humidity) / 5., CAL_DEW_POINT);
         message += " DP:" + trimmed(sensors.dew_point, 1);
     } else {
         sensors.dew_point = 0;
@@ -527,18 +538,8 @@ void Meteo::update(bool force) {
     if (HARDWARE_MLX90614 && INITED_MLX90614) {
         message += " MA:" + trimmed(sensors.mlx_tempamb, 1);
         message += " MO:" + trimmed(sensors.mlx_tempobj, 1);
-        sensors.sky_temperature = tsky_calc(sensors.mlx_tempobj, sensors.mlx_tempamb);
         message += " ST:" + trimmed(sensors.sky_temperature, 1);
-        // add tempsky value to circular buffer and calculate
-        // Turbulence (noise dB) / Seeing estimation
-        cb_add(sensors.sky_temperature);
-        sensors.noise_db = cb_noise_db_calc();
         message += " TR:" + trimmed(sensors.noise_db, 1);
-        sensors.cloud_cover = 100. + (sensors.sky_temperature * 6.);
-        if (sensors.cloud_cover > 100.)
-            sensors.cloud_cover = 100.;
-        if (sensors.cloud_cover < 0.)
-            sensors.cloud_cover = 0.;
         message += " CC:" + trimmed(sensors.cloud_cover, 0);
     } else {
         sensors.mlx_tempamb = 0;

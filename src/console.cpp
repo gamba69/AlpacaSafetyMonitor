@@ -34,14 +34,14 @@ void commandHelpInfo() {
     logConsoleMessage("[HELP] Available info and general commands");
     logConsoleMessage("[HELP] -----------------------------------");
     logConsoleMessage("[HELP] Info:");
-    logConsoleMessage("[HELP]   log    - show curent log settings");
-    logConsoleMessage("[HELP]   target - show curent log target settings");
-    logConsoleMessage("[HELP]   hw     - show curent hw settings");
-    logConsoleMessage("[HELP]   temp   - show curent temperature calc weights");
-    logConsoleMessage("[HELP]   humi   - show curent humidity calc weights");
-    logConsoleMessage("[HELP]   cal    - show curent calibration settings");
-    logConsoleMessage("[HELP]   uptime - show curent system uptime");
-    logConsoleMessage("[HELP]   faults - show curent sensor faults");
+    logConsoleMessage("[HELP]   log    - show current log settings");
+    logConsoleMessage("[HELP]   target - show current log target settings");
+    logConsoleMessage("[HELP]   hw     - show current hw settings");
+    logConsoleMessage("[HELP]   temp   - show current temperature calc weights");
+    logConsoleMessage("[HELP]   humi   - show current humidity calc weights");
+    logConsoleMessage("[HELP]   cal    - show current calibration settings");
+    logConsoleMessage("[HELP]   uptime - show current system uptime");
+    logConsoleMessage("[HELP]   faults - show current sensor faults");
     logConsoleMessage("[HELP] General:");
     logConsoleMessage("[HELP]   reboot - restart esp32 ascom alpaca device");
 }
@@ -55,7 +55,7 @@ void commandHelpLog() {
     logConsoleMessage("[HELP] Available log and target commands");
     logConsoleMessage("[HELP] ---------------------------------");
     logConsoleMessage("[HELP] Log settings:");
-    logConsoleMessage("[HELP]   log                   - show curent log settings");
+    logConsoleMessage("[HELP]   log                   - show current log settings");
     logConsoleMessage("[HELP]   log on/slow/off               - enable/disable all logging");
     logConsoleMessage("[HELP]   log main on/off               - enable/disable main logging");
     logConsoleMessage("[HELP]   log alpaca on/off             - enable/disable alpaca server logging");
@@ -66,7 +66,7 @@ void commandHelpLog() {
     logConsoleMessage("[HELP]   log ota on/off                - enable/disable ota update logging");
     logConsoleMessage("[HELP]   log tech on/off               - enable/disable tech sensor data logging");
     logConsoleMessage("[HELP] Log target settings:");
-    logConsoleMessage("[HELP]   target                - show curent log target settings");
+    logConsoleMessage("[HELP]   target                - show current log target settings");
     logConsoleMessage("[HELP]   target serial on/off  - enable/disable serial log output");
     logConsoleMessage("[HELP]   target console on/off - enable/disable console log output");
     logConsoleMessage("[HELP]   target mqtt on/off    - enable/disable mqtt log output");
@@ -82,7 +82,7 @@ void commandHelpHw() {
     logConsoleMessage("[HELP] Available hardware and alpaca commands");
     logConsoleMessage("[HELP] --------------------------------------");
     logConsoleMessage("[HELP] Hardware settings (reboot required):");
-    logConsoleMessage("[HELP]   hw                  - show curent hw settings");
+    logConsoleMessage("[HELP]   hw                  - show current hw settings");
     logConsoleMessage("[HELP]   hw bmp280 on/off    - enable/disable BMP280 sensor");
     logConsoleMessage("[HELP]   hw aht20 on/off     - enable/disable AHT20 sensor");
     logConsoleMessage("[HELP]   hw sht45 on/off     - enable/disable SHT45 sensor");
@@ -105,13 +105,13 @@ void commandHelpTemp() {
     logConsoleMessage("[HELP] Available calculate weights commands");
     logConsoleMessage("[HELP] ------------------------------------");
     logConsoleMessage("[HELP] Temperature calc weights:");
-    logConsoleMessage("[HELP]   temp          - show curent temperature calc weights");
+    logConsoleMessage("[HELP]   temp          - show current temperature calc weights");
     logConsoleMessage("[HELP]   temp sht n.nn - set SHT45 temperature calc weight");
     logConsoleMessage("[HELP]   temp aht n.nn - set AHT20 temperature calc weight");
     logConsoleMessage("[HELP]   temp bmp n.nn - set BMP280 temperature calc weight");
     logConsoleMessage("[HELP]   temp weight n.nn n.nn n.nn - set SHT45/AHT20/BMP280 temperature calc weights at once");
     logConsoleMessage("[HELP] Humidity calc weights:");
-    logConsoleMessage("[HELP]   humi          - show curent humidity calc weights");
+    logConsoleMessage("[HELP]   humi          - show current humidity calc weights");
     logConsoleMessage("[HELP]   humi sht n.nn - set SHT45 humidity calc weight");
     logConsoleMessage("[HELP]   humi aht n.nn - set AHT20 humidity calc weight");
     logConsoleMessage("[HELP]   humi weight n.nn n.nn - set SHT45/AHT20 humidity calc weights at once");
@@ -126,24 +126,30 @@ void commandHelpCal() {
     logConsoleMessage("[HELP] Available calibration commands");
     logConsoleMessage("[HELP] ------------------------------");
     logConsoleMessage("[HELP] Default calibration (without changes) must be a=1 and b=0, i.e. y = x");
+    logConsoleMessage("[HELP]   cal                     - show current calibration coefficients");
+    logConsoleMessage("[HELP] Physical:");
     logConsoleMessage("[HELP]   cal bmp temp <a> <b>    - set BMP280 temperature calibration");
     logConsoleMessage("[HELP]   cal bmp pres <a> <b>    - set BMP280 pressure calibration");
     logConsoleMessage("[HELP]   cal aht temp <a> <b>    - set AHT20 temperature calibration");
     logConsoleMessage("[HELP]   cal aht humi <a> <b>    - set AHT20 humidity calibration");
     logConsoleMessage("[HELP]   cal sht temp <a> <b>    - set SHT45 temperature calibration");
     logConsoleMessage("[HELP]   cal sht humi <a> <b>    - set SHT45 humidity calibration");
-    logConsoleMessage("[HELP]   cal dew point <a> <b>   - set dew point calibration");
     logConsoleMessage("[HELP]   cal mlx amb <a> <b>     - set MLX90614 ambient temp calibration");
     logConsoleMessage("[HELP]   cal mlx obj <a> <b>     - set MLX90614 object temp calibration");
-    logConsoleMessage("[HELP]   cal mlx sky <a> <b>     - set MLX90614 sky temp calibration");
-    logConsoleMessage("[HELP]   cal mlx cloud <a> <b>   - set MLX90614 cloud cover calibration");
     logConsoleMessage("[HELP]   cal tsl bright <a> <b>  - set TSL2591 sky brightness calibration");
-    logConsoleMessage("[HELP]   cal tsl sky <a> <b>     - set TSL2591 sky quality calibration");
-    logConsoleMessage("[HELP]   cal tsl sqm <a> <b>     - set TSL2591 sky quality calibration");
     logConsoleMessage("[HELP]   cal anemo wind <a> <b>  - set ANEMO4403 wind speed calibration");
-    logConsoleMessage("[HELP]   cal anemo gust <a> <b>  - set ANEMO4403 wind gust calibration");
     logConsoleMessage("[HELP]   cal uicpal rain <a> <b> - set UICPAL rain rate calibration");
     logConsoleMessage("[HELP]   cal rg rain <a> <b>     - set RG15 rain rate calibration");
+    logConsoleMessage("[HELP] Logical:");
+    logConsoleMessage("[HELP]   cal mlx sky <a> <b>     - set MLX90614 sky temp calibration");
+    logConsoleMessage("[HELP]   cal mlx cloud <a> <b>   - set MLX90614 cloud cover calibration");
+    logConsoleMessage("[HELP]   cal tsl sky <a> <b>     - set TSL2591 sky quality calibration");
+    logConsoleMessage("[HELP]   cal tsl sqm <a> <b>     - set TSL2591 sky quality calibration");
+    logConsoleMessage("[HELP]   cal anemo gust <a> <b>  - set ANEMO4403 wind gust calibration");
+    logConsoleMessage("[HELP]   cal rain <a> <b>        - set rain rate calibration");
+    logConsoleMessage("[HELP]   cal temp <a> <b>        - set temperature calibration");
+    logConsoleMessage("[HELP]   cal humi <a> <b>        - set humidity calibration");
+    logConsoleMessage("[HELP]   cal dew <a> <b>         - set dew point calibration");
 }
 
 void commandLogState() {
@@ -235,23 +241,28 @@ void commandCalibrateState() {
     logConsoleMessage("[INFO] --------------------------------------");
     logConsoleMessage("[INFO] Calibration (y = a*x + b) coefficients");
     logConsoleMessage("[INFO] --------------------------------------");
+    logConsoleMessage("[INFO] Physical:");
     logConsoleMessage("[INFO]   BMP280 Temperature       - " + calCoeffAsString(CAL_BMP280_TEMPERATURE));
     logConsoleMessage("[INFO]   BMP280 Pressure          - " + calCoeffAsString(CAL_BMP280_PRESSURE));
     logConsoleMessage("[INFO]   AHT20 Temperature        - " + calCoeffAsString(CAL_AHT20_TEMPERATURE));
     logConsoleMessage("[INFO]   AHT20 Humidity           - " + calCoeffAsString(CAL_AHT20_HUMIDITY));
     logConsoleMessage("[INFO]   SHT45 Temperature        - " + calCoeffAsString(CAL_SHT45_TEMPERATURE));
     logConsoleMessage("[INFO]   SHT45 Humidity           - " + calCoeffAsString(CAL_SHT45_HUMIDITY));
-    logConsoleMessage("[INFO]   Dew Point                - " + calCoeffAsString(CAL_DEW_POINT));
     logConsoleMessage("[INFO]   MLX90614 Ambient         - " + calCoeffAsString(CAL_MLX90614_AMBIENT));
     logConsoleMessage("[INFO]   MLX90614 Object          - " + calCoeffAsString(CAL_MLX90614_OBJECT));
-    logConsoleMessage("[INFO]   MLX90614 Sky Temperature - " + calCoeffAsString(CAL_MLX90614_SKYTEMP));
-    logConsoleMessage("[INFO]   MLX90614 Cloud Cover     - " + calCoeffAsString(CAL_MLX90614_CLOUDCOVER));
     logConsoleMessage("[INFO]   TSL2591 Sky Brightness   - " + calCoeffAsString(CAL_TSL2591_SKYBRIGHTNESS));
-    logConsoleMessage("[INFO]   TSL2591 Sky Quality      - " + calCoeffAsString(CAL_TSL2591_SKYQUALITY));
     logConsoleMessage("[INFO]   ANEMO4403 Wind Speed     - " + calCoeffAsString(CAL_ANEMO4403_WINDSPEED));
-    logConsoleMessage("[INFO]   ANEMO4403 Wind Gust      - " + calCoeffAsString(CAL_ANEMO4403_WINDGUST));
     logConsoleMessage("[INFO]   UICPAL Rain Rate         - " + calCoeffAsString(CAL_UICPAL_RAINRATE));
     logConsoleMessage("[INFO]   RG15 Rain Rate           - " + calCoeffAsString(CAL_RG15_RAINRATE));
+    logConsoleMessage("[INFO] Logical:");
+    logConsoleMessage("[INFO]   MLX90614 Sky Temperature - " + calCoeffAsString(CAL_MLX90614_SKYTEMP));
+    logConsoleMessage("[INFO]   MLX90614 Cloud Cover     - " + calCoeffAsString(CAL_MLX90614_CLOUDCOVER));
+    logConsoleMessage("[INFO]   TSL2591 Sky Quality      - " + calCoeffAsString(CAL_TSL2591_SKYQUALITY));
+    logConsoleMessage("[INFO]   ANEMO4403 Wind Gust      - " + calCoeffAsString(CAL_ANEMO4403_WINDGUST));
+    logConsoleMessage("[INFO]   Rain Rate                - " + calCoeffAsString(CAL_RAIN_RATE));
+    logConsoleMessage("[INFO]   Temperature              - " + calCoeffAsString(CAL_TEMPERATURE));
+    logConsoleMessage("[INFO]   Humidity                 - " + calCoeffAsString(CAL_HUMIDITY));
+    logConsoleMessage("[INFO]   Dew Point                - " + calCoeffAsString(CAL_DEW_POINT));
 }
 
 void commandTempWeightState() {
@@ -338,6 +349,24 @@ void commandCalibrateSHT45Humidity(float a, float b) {
 void commandCalibrateDewPoint(float a, float b) {
     CalCoefficient c(a, b);
     CAL_DEW_POINT = c;
+    saveCalPrefs();
+}
+
+void commandCalibrateTemperature(float a, float b) {
+    CalCoefficient c(a, b);
+    CAL_TEMPERATURE = c;
+    saveCalPrefs();
+}
+
+void commandCalibrateHumidity(float a, float b) {
+    CalCoefficient c(a, b);
+    CAL_HUMIDITY = c;
+    saveCalPrefs();
+}
+
+void commandCalibrateRainRate(float a, float b) {
+    CalCoefficient c(a, b);
+    CAL_RAIN_RATE = c;
     saveCalPrefs();
 }
 
@@ -904,25 +933,6 @@ TempHumiWeightCommand parseTempHumiWeightCommand(const std::string &input) {
 }
 
 CalibrateCommand parseCalibrateCommand(const std::string &input) {
-    // Все 18 валидных команд (на выходе]):
-    // calbmptemp
-    // calbmppres
-    // calahttemp
-    // calahthumi
-    // calshttemp
-    // calshthumi
-    // caldewpoint
-    // calmlxamb
-    // calmlxobj
-    // calmlxsky
-    // calmlxcloud
-    // caltslbright
-    // caltslsky
-    // caltslsqm
-    // calanemowindspeed
-    // calanemowindgust
-    // caluicpalrain
-    // calrgrain
     CalibrateCommand result = {"", 0.0, 0.0, false};
     std::string str = input;
     // Trim
@@ -997,11 +1007,24 @@ CalibrateCommand parseCalibrateCommand(const std::string &input) {
         }
     }
     // Dew Point
-    else if (tokens[1].find("dew") == 0 && count >= 4) {
-        if (tokens[2].find("point") == 0) {
-            cmd = "caldewpoint";
-            floatStart = 3;
-        }
+    else if (tokens[1].find("dew") == 0) {
+        cmd = "caldewpoint";
+        floatStart = 2;
+    }
+    // Temperature
+    else if (tokens[1].find("temp") == 0) {
+        cmd = "caltemp";
+        floatStart = 2;
+    }
+    // Humidity
+    else if (tokens[1].find("humi") == 0) {
+        cmd = "calhumi";
+        floatStart = 2;
+    }
+    // Rain Rate
+    else if (tokens[1].find("rain") == 0) {
+        cmd = "calrain";
+        floatStart = 2;
     }
     // MLX90614
     else if (tokens[1].find("mlx") == 0) {
@@ -1110,6 +1133,15 @@ void processConsoleCommand(const std::string &msg) {
         }
         if (calc.command == "caldewpoint") {
             commandCalibrateDewPoint(calc.a, calc.b);
+        }
+        if (calc.command == "caltemp") {
+            commandCalibrateTemperature(calc.a, calc.b);
+        }
+        if (calc.command == "calhumi") {
+            commandCalibrateHumidity(calc.a, calc.b);
+        }
+        if (calc.command == "calrain") {
+            commandCalibrateRainRate(calc.a, calc.b);
         }
         if (calc.command == "calmlxamb") {
             commandCalibrateMLX90614Ambient(calc.a, calc.b);

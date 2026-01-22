@@ -12,6 +12,9 @@
 #define CAL_SHT45_TEMPERATURE calData[CalDevice::SHT45Temperature]
 #define CAL_SHT45_HUMIDITY calData[CalDevice::SHT45Humidity]
 #define CAL_DEW_POINT calData[CalDevice::DewPoint]
+#define CAL_TEMPERATURE calData[CalDevice::Temperature]
+#define CAL_HUMIDITY calData[CalDevice::Humidity]
+#define CAL_RAIN_RATE calData[CalDevice::RainRate]
 #define CAL_MLX90614_AMBIENT calData[CalDevice::MLX90614Ambient]
 #define CAL_MLX90614_OBJECT calData[CalDevice::MLX90614Object]
 #define CAL_MLX90614_SKYTEMP calData[CalDevice::MLX90614SkyTemperature]
@@ -32,16 +35,19 @@ class CalDevice {
     static const int SHT45Temperature = 4;
     static const int SHT45Humidity = 5;
     static const int DewPoint = 6;
-    static const int MLX90614Ambient = 7;
-    static const int MLX90614Object = 8;
-    static const int MLX90614SkyTemperature = 9;
-    static const int MLX90614CloudCover = 10;
-    static const int TSL2591SkyBrightness = 11;
-    static const int TSL2591SkyQuality = 12;
-    static const int ANEMO4403WindSpeed = 13;
-    static const int ANEMO4403WindGust = 14;
-    static const int UICPALRainRate = 15;
-    static const int RG15RainRate = 16;
+    static const int Temperature = 7;
+    static const int Humidity = 8;
+    static const int RainRate = 9;
+    static const int MLX90614Ambient = 10;
+    static const int MLX90614Object = 11;
+    static const int MLX90614SkyTemperature = 12;
+    static const int MLX90614CloudCover = 13;
+    static const int TSL2591SkyBrightness = 14;
+    static const int TSL2591SkyQuality = 15;
+    static const int ANEMO4403WindSpeed = 16;
+    static const int ANEMO4403WindGust = 17;
+    static const int UICPALRainRate = 18;
+    static const int RG15RainRate = 19;
 };
 
 struct CalCoefficient {
