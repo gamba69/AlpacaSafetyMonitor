@@ -54,7 +54,7 @@ String mqttLogBuffer = "";
 void logLed(String line) {
     static bool usual = true;
     if (line.indexOf("[OTA] Begin firmware upgrade") != -1) {
-        led.Blink(25, 100).Forever();
+        led.Blink(500, 100).Forever();
     }
     if (line.indexOf("[WIFI][EVENT] AP mode started!") != -1) {
         usual = false;
@@ -69,7 +69,7 @@ void logLed(String line) {
         led.Blink(50, 10).Repeat(1);
     }
     if (usual && line.indexOf("[WIFI][STATUS] Connected to known") != -1) {
-        led.Blink(50, 100).Repeat(4);
+        led.Blink(50, 100).Repeat(6);
     }
 }
 
