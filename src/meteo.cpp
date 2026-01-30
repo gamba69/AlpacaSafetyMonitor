@@ -331,6 +331,7 @@ void Meteo::updateMlx90614() {
             // Turbulence (noise dB) / Seeing estimation
             cb_add(sensors.sky_temperature);
             sensors.noise_db = cb_noise_db_calc();
+            sensors.noise_x = cb_noise_x_calc();
             sensors.cloud_cover = calibrate(100. + (sensors.sky_temperature * 6.), CAL_MLX90614_CLOUDCOVER);
             if (sensors.cloud_cover > 100.) {
                 sensors.cloud_cover = 100.;
@@ -539,7 +540,7 @@ void Meteo::update(bool force) {
         message += " MA:" + trimmed(sensors.mlx_tempamb, 1);
         message += " MO:" + trimmed(sensors.mlx_tempobj, 1);
         message += " ST:" + trimmed(sensors.sky_temperature, 1);
-        message += " TR:" + trimmed(sensors.noise_db, 1);
+        message += " TR:" + trimmed(sensors.noise_x, 3);
         message += " CC:" + trimmed(sensors.cloud_cover, 0);
     } else {
         sensors.mlx_tempamb = 0;

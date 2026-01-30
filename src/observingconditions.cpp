@@ -111,10 +111,14 @@ void ObservingConditions::update(Meteo* meteo) {
     if (OBSCON_FWHM) {
         noisedb = meteo->sensors.noise_db;
         noisedb_ra.add(noisedb);
-        message += " TR:" + String(noisedb, 1) + "/" + String(noisedb_ra.getAverageLast(_averaging > noisedb_ra.getCount() ? noisedb_ra.getCount() : _averaging), 1);
+        noisex = meteo->sensors.noise_x;
+        noisex_ra.add(noisex);
+        message += " TR:" + String(noisex, 3) + "/" + String(noisex_ra.getAverageLast(_averaging > noisex_ra.getCount() ? noisex_ra.getCount() : _averaging), 3);
     } else {
         noisedb = 0;
         noisedb_ra.add(noisedb);
+        noisex = 0;
+        noisex_ra.add(noisex);
         message += " TR:-";
     }
 
@@ -292,9 +296,9 @@ void ObservingConditions::aGetCloudCover(AsyncWebServerRequest *request) {
 
 void ObservingConditions::aGetStarFwhm(AsyncWebServerRequest *request) {
     if (_noise_as_fwhm && OBSCON_FWHM) {
-        float value = noisedb_ra.getAverageLast(
-            _averaging > noisedb_ra.getCount() ? noisedb_ra.getCount() : _averaging);
-        value = round(10. * value) / 10.;
+        float value = noisex_ra.getAverageLast(
+            _averaging > noisex_ra.getCount() ? noisex_ra.getCount() : _averaging);
+        value = round(1000. * value) / 1000.;
         _alpacaServer->respond(request, value);
     } else {
         _alpacaServer->respond(request, nullptr, AlpacaNotImplementedException, "Not Implemented");
@@ -395,7 +399,7 @@ void ObservingConditions::aWriteJson(JsonObject &root) {
     obj_instant_state[F("Sky_Temp,_°Czro")] = OBSCON_SKYTEMP ? String(skytemp, 1) : "n/a";
     obj_instant_state[F("Cloud_Cover,_zpzro")] = OBSCON_CLOUDCOVER ? String(cloudcover, 0) : "n/a";
     // not exactly seeing (fwhm)
-    obj_instant_state[F("Turbulence,_dBzro")] = OBSCON_FWHM ? String(noisedb, 1) : "n/a";
+    obj_instant_state[F("Turbulence,_xzro")] = OBSCON_FWHM ? String(noisex, 3) : "n/a";
     obj_instant_state[F("Sky_Quality,_m/saszro")] = OBSCON_SKYQUALITY ? String(skyquality, 1) : "n/a";
     obj_instant_state[F("Sky_Brightness,_luxzro")] = OBSCON_SKYBRIGHTNESS ? smart_round(skybrightness) : "n/a";
     obj_instant_state[F("Wind_Direction,_°zro")] = OBSCON_WINDDIR ? String(winddir, 0) : "n/a";
@@ -413,7 +417,7 @@ void ObservingConditions::aWriteJson(JsonObject &root) {
     obj_averaged_state[F("Sky_Temp,_°Czro")] = OBSCON_SKYTEMP ? String(skytemp_ra.getAverageLast(_averaging > skytemp_ra.getCount() ? skytemp_ra.getCount() : _averaging), 1) : "n/a";
     obj_averaged_state[F("Cloud_Cover,_zpzro")] = OBSCON_CLOUDCOVER ? String(cloudcover_ra.getAverageLast(_averaging > cloudcover_ra.getCount() ? cloudcover_ra.getCount() : _averaging), 0) : "n/a";
     // not exactly seeing (fwhm)
-    obj_averaged_state[F("Turbulence,_dBzro")] = OBSCON_FWHM ? String(noisedb_ra.getAverageLast(_averaging > noisedb_ra.getCount() ? noisedb_ra.getCount() : _averaging), 1) : "n/a";
+    obj_averaged_state[F("Turbulence,_xzro")] = OBSCON_FWHM ? String(noisex_ra.getAverageLast(_averaging > noisex_ra.getCount() ? noisex_ra.getCount() : _averaging), 3) : "n/a";
     obj_averaged_state[F("Sky_Quality,_m/saszro")] = OBSCON_SKYQUALITY ? String(skyquality_ra.getAverageLast(_averaging > skyquality_ra.getCount() ? skyquality_ra.getCount() : _averaging), 1) : "n/a";
     obj_averaged_state[F("Sky_Brightness,_luxzro")] = OBSCON_SKYBRIGHTNESS ? smart_round(skybrightness_ra.getAverageLast(_averaging > skybrightness_ra.getCount() ? skybrightness_ra.getCount() : _averaging)) : "n/a";
     obj_averaged_state[F("Wind_Direction,_°zro")] = OBSCON_WINDDIR ? String(winddir_ra.getAverageLast(_averaging > winddir_ra.getCount() ? winddir_ra.getCount() : _averaging), 1) : "n/a";

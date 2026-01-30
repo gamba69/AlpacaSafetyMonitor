@@ -54,7 +54,7 @@ class Meteo {
         float sht_temperature, sht_humidity;
         float temperature, humidity, dew_point;
         float mlx_tempamb, mlx_tempobj, sky_temperature, cloud_cover;
-        float noise_db;
+        float noise_db, noise_x;
         float sky_quality, sky_brightness;
         float wind_direction, wind_speed, wind_gust;
     } sensors = {0};
@@ -93,12 +93,16 @@ class Meteo {
     // Print a part of log tech message, can be overwritten
     virtual void logTechMessagePart(String msg, bool showtime = false);
 
+    // CB state
+    int cb_count = 0;
+    bool cb_filled = false;
     // CB functions
     float tsky_calc(float ts, float ta);
     float cb_avg_calc();
     float cb_rms_calc();
     void cb_add(float value);
     float cb_noise_db_calc();
+    float cb_noise_x_calc();
     float cb_snr_calc();
 
     TSL2591Settings autoGainSettings[TSL_SETTINGS_SIZE];

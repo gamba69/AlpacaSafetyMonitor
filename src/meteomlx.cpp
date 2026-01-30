@@ -1,5 +1,5 @@
-#include "meteo.h"
 #include "hardware.h"
+#include "meteo.h"
 
 #define sgn(x) ((x) < 0 ? -1 : ((x) > 0 ? 1 : 0))
 
@@ -16,46 +16,88 @@ float Meteo::tsky_calc(float ts, float ta) {
 }
 
 float Meteo::cb_avg_calc() {
+    int count = cb_filled ? CB_SIZE : cb_count;
+    if (count == 0) {
+        return 0;
+    }
     int sum = 0;
-    for (int i = 0; i < CB_SIZE; i++)
+    for (int i = 0; i < count; i++) {
         sum += cb[i];
-    return ((float)sum) / CB_SIZE;
+    }
+    return ((float)sum) / count;
 }
 
 float Meteo::cb_rms_calc() {
+    int count = cb_filled ? CB_SIZE : cb_count;
+    if (count == 0) {
+        return 0;
+    }
     int sum = 0;
-    for (int i = 0; i < CB_SIZE; i++)
+    for (int i = 0; i < count; i++) {
         sum += cb[i] * cb[i];
-    return sqrt(sum / CB_SIZE);
+    }
+    return sqrt(sum / count);
 }
 
 void Meteo::cb_add(float value) {
     cb[cb_index] = value;
+    if (!cb_filled) {
+        cb_count++;
+        if (cb_count >= CB_SIZE) {
+            cb_filled = true;
+        }
+    }
     cb_avg = cb_avg_calc();
     cb_rms = cb_rms_calc();
     cb_noise[cb_index] = abs(value) - cb_rms;
     cb_index++;
-    if (cb_index == CB_SIZE)
+    if (cb_index == CB_SIZE) {
         cb_index = 0;
+    }
 }
 
 float Meteo::cb_noise_db_calc() {
+    int count = cb_filled ? CB_SIZE : cb_count;
+    if (count == 0) {
+        return 0;
+    }
     float n = 0;
-    for (int i = 0; i < CB_SIZE; i++) {
+    for (int i = 0; i < count; i++) {
         n += cb_noise[i] * cb_noise[i];
     }
-    if (n == 0)
+    if (n == 0) {
         return 0;
+    }
     return (10 * log10(n));
 }
 
+float Meteo::cb_noise_x_calc() {
+    int count = cb_filled ? CB_SIZE : cb_count;
+    if (count == 0) {
+        return 0;
+    }
+    float n = 0;
+    for (int i = 0; i < count; i++) {
+        n += cb_noise[i] * cb_noise[i];
+    }
+    if (n == 0) {
+        return 0;
+    }
+    return n;
+}
+
 float Meteo::cb_snr_calc() {
-    float s, n = 0;
-    for (int i = 0; i < CB_SIZE; i++) {
+    int count = cb_filled ? CB_SIZE : cb_count;
+    if (count == 0) {
+        return 0;
+    }
+    float s = 0, n = 0;
+    for (int i = 0; i < count; i++) {
         s += cb[i] * cb[i];
         n += cb_noise[i] * cb_noise[i];
     }
-    if (n == 0)
+    if (n == 0) {
         return 0;
+    }
     return (10 * log10(s / n));
 }
