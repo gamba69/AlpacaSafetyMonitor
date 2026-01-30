@@ -5,7 +5,7 @@ import os
 import hashlib
 import datetime
 
-version = "3.0"  # Your desired major.minor version
+version = "4.0"  # Your desired major.minor version
 IGNORE_FILES = ['firmware.h', 'secrets.h', 'version.h']
 SOURCE_PATHS = ['src', 'lib']
 
